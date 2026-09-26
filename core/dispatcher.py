@@ -6,10 +6,17 @@ from django.utils import timezone
 from .models import Complaint, ComplaintStatusHistory, UserProfile
 from .staff_matcher import suggest_staff
 
+# Department codes that route exclusively to the hall's Dining Incharge
+MESS_DEPT_CODES = frozenset({"MESS", "DINING"})
+
+
 def select_best_technician(complaint: Complaint):
     """
     Match complaint category.department and room.floor.building against the 156-person
     staff roster, selecting the least-loaded technician, with fallback to campus reserve.
+
+    For MESS / DINING complaints the hall's dedicated Dining Incharge is always preferred
+    before the generic AI roster matcher is consulted.
     """
     active_filter = ~Q(assigned_complaints__status__in=[Complaint.Status.RESOLVED, Complaint.Status.CLOSED])
     staff_qs = (
@@ -21,7 +28,29 @@ def select_best_technician(complaint: Complaint):
     dept = complaint.category.department if (complaint.category_id and complaint.category) else None
     category_name = complaint.category.name if (complaint.category_id and complaint.category) else ""
     b_name = building.name if building else ""
-    loc_text = f"{b_name} {complaint.location_description or str()}".strip()
+    loc_text = f"{b_name} {complaint.location_description or ''}".strip()
+
+    # 0. MESS / DINING fast-path — route directly to the hall's Dining Incharge
+    if dept and dept.code in MESS_DEPT_CODES:
+        if building:
+            dining_user = (
+                staff_qs.filter(
+                    profile__managed_building=building,
+                    username__startswith="dining_",
+                )
+                .order_by("active_load", "id")
+                .first()
+            )
+            if dining_user:
+                return dining_user
+        # Hall not resolved — pick the least-loaded Dining Incharge across campus
+        dining_any = (
+            staff_qs.filter(username__startswith="dining_")
+            .order_by("active_load", "id")
+            .first()
+        )
+        if dining_any:
+            return dining_any
 
     # 1. Try AI/Roster matcher (staff_matcher.suggest_staff) among candidates with low load
     matches = suggest_staff(
@@ -60,8 +89,9 @@ def select_best_technician(complaint: Complaint):
         if d_staff:
             return d_staff
 
-    # 5. Fallback to Campus Reserve (least-loaded active technician across the university)
+    # 5. Fallback — least-loaded active technician across the entire campus
     return staff_qs.order_by("active_load", "id").first()
+
 
 def auto_dispatch_complaint(complaint: Complaint, save: bool = True) -> Complaint:
     """
@@ -80,6 +110,7 @@ def auto_dispatch_complaint(complaint: Complaint, save: bool = True) -> Complain
             if save and complaint.pk:
                 complaint.save(update_fields=["assigned_to", "assigned_at", "status", "staff_task_token", "updated_at"])
     return complaint
+
 
 def backfill_unassigned_complaints() -> int:
     """

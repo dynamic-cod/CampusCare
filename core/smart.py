@@ -17,10 +17,40 @@ SPECIFIC_KEYWORD_WEIGHTS = {
     "door": 20, "window": 20, "lock": 25, "latches": 20, "carpentry": 25, "carpenter": 25, "furniture": 20, "masonry": 25, "plaster": 20,
     # Sanitation (weight 25)
     "garbage": 25, "trash": 25, "waste": 20, "dirty": 20, "toilet": 25, "washroom": 20, "cleaning": 25, "sanitation": 25, "dustbin": 25,
+    # Mess / Dining (weight 25) — maps to 'Food Quality & Hygiene' and related categories
+    "food": 25, "mess": 25, "dining": 25, "dining hall": 25, "cafeteria": 25, "canteen": 25,
+    "roti": 25, "rice": 20, "daal": 20, "dal": 20, "sabzi": 20, "biryani": 20,
+    "lunch": 20, "dinner": 20, "breakfast": 20, "meal": 20, "tiffin": 20,
+    "tasteless": 25, "stale": 25, "undercooked": 25, "raw": 20, "uncooked": 25,
+    "insect in food": 30, "insect": 25, "worm": 30, "cockroach": 30,
+    "caterer": 25, "diet": 20, "ration": 20, "portion": 20, "quantity": 20,
+    "food poisoning": 30, "contamination": 30, "contaminated": 30,
+    "ill after eating": 30, "sick after food": 30, "vomiting after": 30,
+    "water cooler": 25, "mess timing": 25, "menu": 20,
 }
 
-URGENT_KEYWORDS = ("fire", "smoke", "spark", "electric shock", "flood", "gas", "unsafe", "injury", "emergency", "theft", "security")
-HIGH_KEYWORDS = ("leak", "broken", "no power", "not working", "overflow", "security", "dark", "accident", "lost", "stolen")
+URGENT_KEYWORDS = (
+    "fire", "smoke", "spark", "electric shock", "flood", "gas", "unsafe", "injury",
+    "emergency", "theft", "security",
+    # Dining emergencies
+    "food poisoning", "contamination", "contaminated", "insect in food",
+    "cockroach", "worm", "ill after eating", "sick after food", "vomiting after",
+)
+HIGH_KEYWORDS = (
+    "leak", "broken", "no power", "not working", "overflow", "security", "dark",
+    "accident", "lost", "stolen",
+    # Dining quality issues
+    "stale", "undercooked", "uncooked", "insect", "tasteless", "raw",
+)
+
+# Mess/Dining specific category triggers — matched against lowercased combined text
+MESS_KEYWORDS = {
+    "food", "mess", "dining", "dining hall", "cafeteria", "canteen", "roti", "rice",
+    "daal", "dal", "sabzi", "lunch", "dinner", "breakfast", "meal", "tiffin",
+    "tasteless", "stale", "undercooked", "raw", "uncooked", "insect", "worm",
+    "cockroach", "caterer", "diet", "ration", "portion", "quantity", "menu",
+    "food poisoning", "contaminated", "water cooler", "mess timing",
+}
 
 
 def suggest_category(text, categories):
@@ -62,6 +92,12 @@ def get_ai_sla_hours(priority):
     }.get(priority, 24)
 
 
+def is_mess_complaint(text, title="", description="", category_name=""):
+    """Return True if text signals a mess/dining issue."""
+    combined = f"{title} {description} {text} {category_name}".lower()
+    return any(kw in combined for kw in MESS_KEYWORDS)
+
+
 def score_priority(text, title="", description="", category_name="", location=""):
     """Return (score, priority, reason, sla_hours) - all four values."""
     combined = f"{title} {description} {text} {category_name} {location}".lower()
@@ -73,7 +109,10 @@ def score_priority(text, title="", description="", category_name="", location=""
         priority = Complaint.Priority.HIGH
         reason = "Service-disruption language detected."
         score = 75
-    elif any(term in category_name.lower() for term in ("electrical", "plumbing", "sanitation", "network", "water", "security")):
+    elif any(term in category_name.lower() for term in (
+        "electrical", "plumbing", "sanitation", "network", "water", "security",
+        "food", "mess", "dining", "hygiene",
+    )):
         priority = Complaint.Priority.NORMAL
         reason = f"Essential facilities category '{category_name}' requires timely attention."
         score = 55
@@ -83,6 +122,37 @@ def score_priority(text, title="", description="", category_name="", location=""
         score = 30
     sla_hours = get_ai_sla_hours(priority)
     return score, priority, reason, sla_hours
+
+
+def suggest_mess_category(text, title="", description=""):
+    """
+    Return the best matching Mess/Dining category for a food-related complaint,
+    or None if no food signals are detected.
+    """
+    from .models import ComplaintCategory, Department
+    combined = f"{title} {description} {text}".lower()
+    if not is_mess_complaint(combined):
+        return None
+    mess_dept = Department.objects.filter(code="MESS").first()
+    if not mess_dept:
+        return None
+    # Tier 1: contamination/safety → Food Quality & Hygiene
+    if any(kw in combined for kw in ("insect", "worm", "cockroach", "contaminated", "food poisoning", "ill after", "sick after", "vomiting")):
+        cat = ComplaintCategory.objects.filter(department=mess_dept, name__icontains="Hygiene").first()
+        if cat:
+            return cat
+    # Tier 2: timing/quantity
+    if any(kw in combined for kw in ("timing", "late", "early", "quantity", "less food", "portion", "menu")):
+        cat = ComplaintCategory.objects.filter(department=mess_dept, name__icontains="Timing").first()
+        if cat:
+            return cat
+    # Tier 3: water cooler / infrastructure
+    if any(kw in combined for kw in ("water cooler", "cooler", "dining hall maintenance", "infrastructure")):
+        cat = ComplaintCategory.objects.filter(department=mess_dept, name__icontains="Water").first()
+        if cat:
+            return cat
+    # Default to Food Quality & Hygiene
+    return ComplaintCategory.objects.filter(department=mess_dept).first()
 
 
 def find_potential_duplicate(complaint):
