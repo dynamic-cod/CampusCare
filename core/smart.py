@@ -70,6 +70,8 @@ def suggest_category(text, categories):
                     score += weight
                 elif "plumbing" in cat_lower and kw in ("leak", "leaking", "pipe", "tap", "faucet", "water", "drain", "drainage", "sewer", "flush"):
                     score += weight
+                elif "dining incharge" in cat_lower and kw in ("food poisoning", "contamination", "insect in food","food","roti","dal","sabzi","tasteless","stale","undercooked","raw","uncooked","insect","worm","cockroach","caterer","diet","ration","portion","food quantity","food menu","dining water cooler","mess timing","mess"):
+                    score += weight
                 elif "water" in cat_lower and kw in ("water", "tap", "pipe", "leak", "leaking"):
                     score += weight
                 elif "sanitation" in cat_lower and kw in ("garbage", "trash", "waste", "dirty", "toilet", "washroom", "cleaning", "sanitation", "dustbin"):
