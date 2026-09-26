@@ -464,28 +464,35 @@ def complaint_create(request):
             bind_complaint_spatial_origin(complaint)
             set_sla_due_date(complaint)
 
-            # ── AI Staff Auto-Assignment ─────────────────────────────────────
+            # ── AI Staff Auto-Assignment ──────────────────────────────────────
             category_name = complaint.category.name if complaint.category_id else ""
-            location_text = complaint.location_description or ""
-            staff_matches = suggest_staff(
-                category_name=category_name,
-                location_description=location_text,
-                title=complaint.title or "",
-                description=complaint.description or "",
-                n=1,
-            )
-            if staff_matches:
-                best_match = staff_matches[0]
-                try:
-                    assigned_user = User.objects.get(username=best_match["username"])
-                    complaint.assigned_to = assigned_user
-                    complaint.assigned_at = timezone.now()
-                    complaint.status = Complaint.Status.ASSIGNED
-                except User.DoesNotExist:
-                    pass  # Staff user not in DB yet — fallback to dispatcher
-            if not complaint.assigned_to_id:
+            dept_code = complaint.category.department.code if (complaint.category_id and complaint.category.department_id) else ""
+
+            # For MESS / Dining categories: always use the hall's Dining Incharge
+            # directly from the DB — never fall through to the JSON roster matcher.
+            if dept_code in ("MESS", "DINING"):
                 auto_dispatch_complaint(complaint, save=False)
-            # ────────────────────────────────────────────────────────────────
+            else:
+                location_text = complaint.location_description or ""
+                staff_matches = suggest_staff(
+                    category_name=category_name,
+                    location_description=location_text,
+                    title=complaint.title or "",
+                    description=complaint.description or "",
+                    n=1,
+                )
+                if staff_matches:
+                    best_match = staff_matches[0]
+                    try:
+                        assigned_user = User.objects.get(username=best_match["username"])
+                        complaint.assigned_to = assigned_user
+                        complaint.assigned_at = timezone.now()
+                        complaint.status = Complaint.Status.ASSIGNED
+                    except User.DoesNotExist:
+                        pass  # Staff user not in DB yet — fallback to dispatcher
+                if not complaint.assigned_to_id:
+                    auto_dispatch_complaint(complaint, save=False)
+            # ─────────────────────────────────────────────────────────────────
 
             if request.FILES.get("evidence"):
                 complaint.evidence = compress_uploaded_image(request.FILES["evidence"])
@@ -944,7 +951,51 @@ def analyze_urgency_api(request):
         n=1,
     )
     suggested_staff = None
-    if staff_matches:
+
+    # Detect mess/dining category — look up Dining Incharge from DB for the given hall
+    from .models import Department, UserProfile, Building
+    from .smart import is_mess_complaint
+    mess_dept = Department.objects.filter(code="MESS").first()
+    category_is_mess = (
+        mess_dept
+        and any(mess_kw in category_name.lower() for mess_kw in ("dining", "mess", "food", "ration", "water & utilities"))
+    ) or is_mess_complaint(title + " " + description)
+
+    if category_is_mess and mess_dept:
+        # Try to resolve the hall from the location string
+        from .ai_triage import extract_building_and_department
+        building, _ = extract_building_and_department(
+            location_text=location, title=title, description=description
+        )
+        dining_profile = None
+        if building:
+            dining_profile = (
+                UserProfile.objects.select_related("user", "managed_building")
+                .filter(
+                    role=UserProfile.Role.STAFF,
+                    managed_building=building,
+                    managed_department=mess_dept,
+                )
+                .first()
+            )
+        if not dining_profile:
+            # Fallback: any Dining Incharge (campus-wide)
+            dining_profile = (
+                UserProfile.objects.select_related("user", "managed_building")
+                .filter(role=UserProfile.Role.STAFF, managed_department=mess_dept)
+                .first()
+            )
+        if dining_profile:
+            hall_name = dining_profile.managed_building.name if dining_profile.managed_building else "Residential Hall"
+            suggested_staff = {
+                "name": dining_profile.user.get_full_name() or dining_profile.user.username,
+                "role": "Dining Incharge",
+                "dept": "Dining & Mess Services",
+                "location": hall_name,
+                "contact": dining_profile.phone or "+91-571-2700920",
+                "reason": f"Hall Dining Incharge for {hall_name} — auto-routed for food/mess complaint",
+            }
+    elif staff_matches:
         s = staff_matches[0]
         suggested_staff = {
             "name": s["name"],
