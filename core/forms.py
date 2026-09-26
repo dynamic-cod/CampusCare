@@ -5,6 +5,31 @@ from .models import Complaint, ComplaintCategory, ComplaintFeedback, Room, UserP
 from .smart import score_priority, suggest_category
 
 
+class GroupedCategorySelect(forms.Select):
+    """
+    A <select> widget that renders complaint categories in optgroups:
+      1. 🍽️ Dining Hall & Mess Services  — always listed first
+      2. All other departments, sorted alphabetically
+    """
+
+    def optgroups(self, name, value, attrs=None):
+        """
+        Override to reorder/group options so MESS categories float to the top
+        inside their own clearly-labelled optgroup.
+        """
+        groups = super().optgroups(name, value, attrs)
+        dining_group = None
+        other_groups = []
+        for label, subgroup, idx in groups:
+            if label and "dining" in label.lower() or (label and "mess" in label.lower()):
+                dining_group = ("🍽️ Dining Hall & Mess Services", subgroup, idx)
+            else:
+                other_groups.append((label, subgroup, idx))
+        if dining_group:
+            return [dining_group] + other_groups
+        return groups
+
+
 class ComplaintSubmissionForm(forms.ModelForm):
     # Override room field to be a text input instead of dropdown
     room_number = forms.CharField(
@@ -23,14 +48,26 @@ class ComplaintSubmissionForm(forms.ModelForm):
         widgets = {
             "description": forms.Textarea(attrs={"rows": 5}),
             "title": forms.TextInput(attrs={"placeholder": "e.g., WiFi not working in Room A205"}),
-            "category": forms.Select(attrs={"class": "form-control"})
+            "category": GroupedCategorySelect(attrs={"class": "form-control"}),
         }
 
     def __init__(self, *args, **kwargs):
         super().__init__(*args, **kwargs)
+        # Build a grouped queryset: MESS categories first, then everything else
+        mess_cats = ComplaintCategory.objects.filter(is_active=True, department__code="MESS").order_by("name")
+        other_cats = ComplaintCategory.objects.filter(is_active=True).exclude(department__code="MESS").order_by("department__name", "name")
+        # Use a combined queryset preserving the MESS-first order via union
         self.fields["category"].queryset = ComplaintCategory.objects.filter(is_active=True)
+        # Provide the grouped choices manually so the widget can split them
+        dining_choices = [(c.pk, c.name) for c in mess_cats]
+        other_choices  = [(c.pk, c.name) for c in other_cats]
+        self.fields["category"].widget.choices = (
+            [("" , "---------")]
+            + [("🍽️ Dining Hall & Mess Services", dining_choices)]
+            + other_choices
+        )
         self.fields["category"].required = True
-        self.fields["category"].help_text = "Fill the category field"
+        self.fields["category"].help_text = "Select the category that best describes your issue."
         self.fields["reporter_name"].label = "Full name"
         self.fields["reporter_enrollment_number"].label = "University enrollment number"
         self.fields["reporter_enrollment_number"].help_text = "Use the number issued by your university."

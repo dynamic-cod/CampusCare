@@ -90,6 +90,16 @@
         <p class="text-xs font-medium text-emerald-900 truncate">Staff Accountability</p>
         <p class="text-2xl font-bold text-emerald-800 mt-1">{{ avg_accountability_score }}%</p>
       </div>
+      {% if tenant_mode == "provost" %}
+      <div class="min-w-0 bg-orange-50 border border-orange-200 rounded-xl p-4 shadow-sm">
+        <p class="text-xs font-medium text-orange-900 truncate">🍽️ Dining Pending</p>
+        <p class="text-2xl font-bold text-orange-700 mt-1">{{ dining_pending }}</p>
+      </div>
+      <div class="min-w-0 bg-teal-50 border border-teal-200 rounded-xl p-4 shadow-sm">
+        <p class="text-xs font-medium text-teal-900 truncate">🍽️ Dining Resolved</p>
+        <p class="text-2xl font-bold text-teal-700 mt-1">{{ dining_resolved }}</p>
+      </div>
+      {% endif %}
     </section>
 
     {% if tenant_mode == "provost" %}
@@ -124,14 +134,32 @@
                 <tr><th class="p-3">Technician</th><th class="p-3">Active Tasks</th><th class="p-3">Accountability</th></tr>
               </thead>
               <tbody class="divide-y">
+                {% if dining_incharge %}
+                  <tr class="bg-orange-50">
+                    <td class="p-3 max-w-xs break-words">
+                      <span class="inline-flex items-center gap-1">
+                        <span class="text-orange-600 font-bold">🍽️</span>
+                        {{ dining_incharge.get_full_name|default:dining_incharge.username }}
+                      </span>
+                      <div class="text-xs text-orange-700 font-semibold">Dining Incharge &middot; Mess &amp; Dining Services</div>
+                      <div class="text-xs text-slate-400 font-mono">{{ dining_incharge.username }}</div>
+                    </td>
+                    <td class="p-3 font-semibold text-orange-700">{{ dining_pending }}</td>
+                    <td class="p-3 font-bold text-emerald-800">{{ dining_incharge.profile.accountability_score }}/100</td>
+                  </tr>
+                {% endif %}
                 {% for tech in hall_technicians %}
+                  {% if not tech.username|slice:"0:7" == "dining_" %}
                   <tr>
                     <td class="p-3 max-w-xs truncate break-words">{{ tech.get_full_name|default:tech.username }}<div class="text-xs text-slate-500 truncate">{{ tech.profile.department.name|default:"Maintenance" }}</div></td>
                     <td class="p-3 font-semibold">{{ tech.active_tasks }}</td>
                     <td class="p-3 font-bold text-emerald-800">{{ tech.profile.accountability_score }}/100</td>
                   </tr>
+                  {% endif %}
                 {% empty %}
+                  {% if not dining_incharge %}
                   <tr><td colspan="3" class="p-3 text-slate-500">No technicians mapped yet.</td></tr>
+                  {% endif %}
                 {% endfor %}
               </tbody>
             </table>

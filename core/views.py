@@ -232,6 +232,10 @@ def dashboard(request):
         dept_technicians = []
         all_buildings = []
         all_departments = []
+        # Dining Incharge KPIs — populated only in provost tenant_mode
+        dining_incharge = None
+        dining_pending  = 0
+        dining_resolved = 0
 
         if tenant_mode == "provost" and profile.managed_building:
             b = profile.managed_building
@@ -295,6 +299,7 @@ def dashboard(request):
                     Q(profile__role=UserProfile.Role.STAFF)
                     & (
                         Q(profile__hall_location__icontains=b.name)
+                        | Q(profile__managed_building=b)
                         | Q(assigned_complaints__room__floor__building=b)
                         | Q(assigned_complaints__room__floor__building__parent=b)
                     )
@@ -311,6 +316,20 @@ def dashboard(request):
                     )
                 )
             )
+            # ── Dining Incharge KPIs for this hall ───────────────────────────
+            dining_incharge_profile = UserProfile.objects.select_related("user", "department").filter(
+                role=UserProfile.Role.STAFF,
+                managed_building=b,
+                managed_department__code="MESS",
+            ).first()
+            dining_incharge = dining_incharge_profile.user if dining_incharge_profile else None
+            dining_qs = scoped_qs.filter(category__department__code="MESS")
+            dining_pending  = dining_qs.exclude(
+                status__in=[Complaint.Status.RESOLVED, Complaint.Status.CLOSED]
+            ).count()
+            dining_resolved = dining_qs.filter(
+                status__in=[Complaint.Status.RESOLVED, Complaint.Status.CLOSED]
+            ).count()
         elif tenant_mode == "hod" and profile.managed_department:
             d = profile.managed_department
             dept_category_breakdown = list(
@@ -385,6 +404,10 @@ def dashboard(request):
                 "selected_department_code": selected_department_code,
                 "inspected_building": inspected_building,
                 "inspected_department": inspected_department,
+                # Dining Incharge KPIs (provost mode)
+                "dining_incharge": dining_incharge if tenant_mode == "provost" else None,
+                "dining_pending":  dining_pending  if tenant_mode == "provost" else 0,
+                "dining_resolved": dining_resolved if tenant_mode == "provost" else 0,
             }
         )
         return render(request, active_template, context)
