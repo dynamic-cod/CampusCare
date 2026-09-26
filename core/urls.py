@@ -30,6 +30,7 @@ urlpatterns = [
     path("complaints/<str:reference>/feedback/", views.complaint_feedback, name="complaint_feedback"),
     path("analytics/", views.analytics_dashboard, name="analytics_dashboard"),
     path("reports/complaints.csv", views.complaint_report_csv, name="complaint_report_csv"),
+    path("dashboard/dispatch-sheet/", views.daily_dispatch_sheet, name="daily_dispatch_sheet"),
     path("api/analyze-urgency/", views.analyze_urgency_api, name="analyze_urgency_api"),
     path("api/room-lookup/", views.room_lookup_api, name="room_lookup_api"),
 ]

@@ -96,7 +96,7 @@
     <section class="card" style="margin-top:1.5rem; background-color: #f0f7ff; border-left: 4px solid #2196F3;">
       <h2>🔐 Admin Management (Admin Only)</h2>
       <p><strong>Note:</strong> Only administrators can assign complaints to staff and update status.</p>
-      <form method="post" action="{% url 'core:complaint_assign' complaint.reference %}">{% csrf_token %}{{ assignment_form.as_p }}<button type="submit">Save assignment</button></form><hr style="margin:2rem 0;border:0;border-top:1px solid #e6e9e8"><form method="post" action="{% url 'core:complaint_update_status' complaint.reference %}">{% csrf_token %}{{ status_form.as_p }}<button type="submit">Update status</button></form>
+      <form method="post" action="{% url 'core:complaint_assign' complaint.reference %}">{% csrf_token %}{{ assignment_form.as_p }}<button type="submit">Save assignment</button></form><hr style="margin:2rem 0;border:0;border-top:1px solid #e6e9e8"><form method="post" enctype="multipart/form-data" action="{% url 'core:complaint_update_status' complaint.reference %}">{% csrf_token %}{{ status_form.as_p }}<button type="submit">Update status</button></form>
     </section>
   {% elif can_manage %}
     <section class="card" style="margin-top:1.5rem; background-color: #fff3cd; border-left: 4px solid #FF9800;">

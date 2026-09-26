@@ -140,6 +140,10 @@ class ComplaintStatusForm(forms.Form):
             (Complaint.Status.IN_PROGRESS, "In progress"), (Complaint.Status.RESOLVED, "Resolved"),
         ]
     )
+    resolution_proof = forms.ImageField(
+        required=False,
+        label="Proof Photo or Signed Paper Slip (Mandatory when marking Resolved)",
+    )
     note = forms.CharField(required=False, widget=forms.Textarea(attrs={"rows": 3}), max_length=1000)
 
 

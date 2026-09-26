@@ -1,0 +1,380 @@
+<!DOCTYPE html>
+<html lang="en">
+<head>
+  <meta charset="UTF-8">
+  <meta name="viewport" content="width=device-width, initial-scale=1.0">
+  <title>Daily Dispatch Sheet — {{ hall_name }} — CampusCare</title>
+  <style>
+    :root {
+      --primary: #065f46;
+      --border-color: #cbd5e1;
+      --text: #0f172a;
+      --muted: #475569;
+    }
+    * {
+      box-sizing: border-box;
+      margin: 0;
+      padding: 0;
+      font-family: -apple-system, BlinkMacSystemFont, "Segoe UI", Roboto, "Helvetica Neue", Arial, sans-serif;
+    }
+    body {
+      background: #f8fafc;
+      color: var(--text);
+      padding: 24px;
+      line-height: 1.4;
+    }
+    .sheet-container {
+      max-width: 1040px;
+      margin: 0 auto;
+      background: white;
+      padding: 32px;
+      border: 1px solid var(--border-color);
+      border-radius: 8px;
+      box-shadow: 0 4px 6px -1px rgba(0, 0, 0, 0.1);
+    }
+    .action-bar {
+      display: flex;
+      justify-content: space-between;
+      align-items: center;
+      margin-bottom: 24px;
+      padding-bottom: 16px;
+      border-bottom: 1px solid #e2e8f0;
+    }
+    .btn {
+      display: inline-flex;
+      align-items: center;
+      gap: 6px;
+      padding: 8px 16px;
+      font-size: 14px;
+      font-weight: 600;
+      border-radius: 6px;
+      text-decoration: none;
+      cursor: pointer;
+      border: none;
+    }
+    .btn-print {
+      background: #0284c7;
+      color: white;
+    }
+    .btn-print:hover {
+      background: #0369a1;
+    }
+    .btn-back {
+      background: #f1f5f9;
+      color: #334155;
+      border: 1px solid #cbd5e1;
+    }
+    .btn-back:hover {
+      background: #e2e8f0;
+    }
+    .instructions-box {
+      background: #f0fdf4;
+      border: 1px solid #bbf7d0;
+      border-left: 4px solid #16a34a;
+      padding: 12px 16px;
+      border-radius: 6px;
+      margin-bottom: 24px;
+      font-size: 13px;
+      color: #166534;
+    }
+    .institutional-header {
+      display: flex;
+      justify-content: space-between;
+      align-items: flex-start;
+      border-bottom: 2px solid #0f172a;
+      padding-bottom: 16px;
+      margin-bottom: 20px;
+    }
+    .inst-title h1 {
+      font-size: 20px;
+      font-weight: 800;
+      text-transform: uppercase;
+      letter-spacing: 0.5px;
+      color: #0f172a;
+    }
+    .inst-title h2 {
+      font-size: 15px;
+      font-weight: 600;
+      color: #047857;
+      margin-top: 2px;
+    }
+    .inst-meta {
+      text-align: right;
+      font-size: 13px;
+      color: var(--muted);
+    }
+    .inst-meta strong {
+      color: var(--text);
+    }
+    .tickets-grid {
+      display: flex;
+      flex-direction: column;
+      gap: 16px;
+    }
+    .ticket-card {
+      border: 1.5px dashed #64748b;
+      border-radius: 8px;
+      padding: 14px 18px;
+      background: #ffffff;
+      page-break-inside: avoid;
+      break-inside: avoid;
+    }
+    .ticket-top {
+      display: flex;
+      justify-content: space-between;
+      align-items: center;
+      margin-bottom: 8px;
+      padding-bottom: 6px;
+      border-bottom: 1px solid #e2e8f0;
+    }
+    .ref-badge {
+      font-family: ui-monospace, SFMono-Regular, Menlo, Monaco, Consolas, monospace;
+      font-weight: 700;
+      font-size: 14px;
+      background: #f1f5f9;
+      padding: 2px 8px;
+      border-radius: 4px;
+      border: 1px solid #cbd5e1;
+    }
+    .priority-badge {
+      font-size: 11px;
+      font-weight: 700;
+      padding: 2px 8px;
+      border-radius: 9999px;
+      text-transform: uppercase;
+    }
+    .priority-urgent {
+      background: #fee2e2;
+      color: #991b1b;
+      border: 1px solid #f87171;
+    }
+    .priority-high {
+      background: #fef3c7;
+      color: #92400e;
+      border: 1px solid #fcd34d;
+    }
+    .priority-medium, .priority-low {
+      background: #f1f5f9;
+      color: #334155;
+      border: 1px solid #cbd5e1;
+    }
+    .ticket-details {
+      display: grid;
+      grid-cols: 1fr 1fr;
+      grid-template-columns: 2fr 1fr;
+      gap: 12px;
+      margin-bottom: 10px;
+      font-size: 13px;
+    }
+    .ticket-desc {
+      background: #f8fafc;
+      padding: 8px 12px;
+      border-radius: 4px;
+      border: 1px solid #f1f5f9;
+      margin-top: 4px;
+      font-size: 12.5px;
+      color: #1e293b;
+    }
+    .assigned-box {
+      background: #f0fdf4;
+      border: 1px solid #bbf7d0;
+      padding: 8px 12px;
+      border-radius: 4px;
+      font-size: 12px;
+    }
+    .signoff-section {
+      margin-top: 10px;
+      padding-top: 8px;
+      border-top: 1px dotted #94a3b8;
+      display: grid;
+      grid-template-columns: repeat(3, 1fr);
+      gap: 12px;
+      font-size: 12px;
+      color: #334155;
+    }
+    .signoff-box {
+      border: 1px solid #e2e8f0;
+      padding: 6px 10px;
+      border-radius: 4px;
+      background: #fafafa;
+    }
+    .signoff-line {
+      display: block;
+      margin-top: 14px;
+      border-bottom: 1px solid #94a3b8;
+    }
+    .empty-state {
+      padding: 48px;
+      text-align: center;
+      color: #64748b;
+      font-size: 15px;
+    }
+
+    /* Print Specific Styles */
+    @media print {
+      body {
+        background: white !important;
+        padding: 0 !important;
+      }
+      .sheet-container {
+        border: none !important;
+        box-shadow: none !important;
+        padding: 0 !important;
+        max-width: 100% !important;
+      }
+      .no-print {
+        display: none !important;
+      }
+      .ticket-card {
+        border: 1.5px solid #000000 !important;
+        margin-bottom: 14px !important;
+        page-break-inside: avoid !important;
+        break-inside: avoid !important;
+      }
+      .ref-badge {
+        background: transparent !important;
+        border: 1px solid #000 !important;
+        color: #000 !important;
+      }
+      .assigned-box {
+        background: transparent !important;
+        border: 1px solid #000 !important;
+      }
+      .signoff-box {
+        background: transparent !important;
+        border: 1px solid #000 !important;
+      }
+    }
+  </style>
+</head>
+<body>
+
+<div class="sheet-container">
+  <!-- Screen Only Actions -->
+  <div class="action-bar no-print">
+    <a href="{% url 'core:dashboard' %}" class="btn btn-back">
+      ← Back to Console
+    </a>
+    <div style="display:flex; gap:10px; align-items:center;">
+      <span style="font-size:13px; color:#64748b;">Ready for standard A4 paper printing</span>
+      <button onclick="window.print()" class="btn btn-print">
+        🖨️ Print Dispatch Sheet (Ctrl + P)
+      </button>
+    </div>
+  </div>
+
+  <div class="instructions-box no-print">
+    <strong>📋 Hall Caretaker / Supervisor Protocol:</strong>
+    1. Print this sheet at the start of shift. Cut along the dashed lines if issuing individual tickets.
+    2. Dispatch ground workers (plumbers, electricians, mess attendants) with their physical slip.
+    3. Technicians get the student signature upon completing repair.
+    4. Return slip to Caretaker office, and Caretaker marks the complaint resolved in the dashboard with photo proof.
+  </div>
+
+  <!-- Printable Institutional Header -->
+  <div class="institutional-header">
+    <div class="inst-title">
+      <h1>CampusCare · Daily Maintenance &amp; Mess Dispatch Sheet</h1>
+      <h2>{{ hall_name }}</h2>
+    </div>
+    <div class="inst-meta">
+      <div>Date: <strong>{{ today|date:"l, j F Y" }}</strong></div>
+      <div>Active Jobs: <strong>{{ total_count }}</strong></div>
+      <div>Shift: <strong>General Maintenance Shift</strong></div>
+    </div>
+  </div>
+
+  <!-- Tickets List -->
+  <div class="tickets-grid">
+    {% for c in complaints %}
+      <div class="ticket-card">
+        <div class="ticket-top">
+          <div style="display:flex; align-items:center; gap:8px;">
+            <span class="ref-badge">{{ c.reference }}</span>
+            <strong style="font-size:14px; color:#0f172a;">{{ c.title }}</strong>
+          </div>
+          <div>
+            {% if c.priority == "urgent" %}
+              <span class="priority-badge priority-urgent">URGENT</span>
+            {% elif c.priority == "high" %}
+              <span class="priority-badge priority-high">HIGH</span>
+            {% else %}
+              <span class="priority-badge priority-medium">{{ c.get_priority_display }}</span>
+            {% endif %}
+            <span style="font-size:11px; color:#64748b; margin-left:6px;">SLA Due: <strong>{{ c.sla_due_at|date:"j M, H:i"|default:"Standard" }}</strong></span>
+          </div>
+        </div>
+
+        <div class="ticket-details">
+          <div>
+            <div>
+              <strong>📍 Location:</strong>
+              {% if c.room %}
+                {{ c.room.floor.building.name }} &middot; <strong>Room {{ c.room.number }}</strong>
+                {% if c.room.name %}({{ c.room.name }}){% endif %}
+              {% else %}
+                <strong>{{ c.location_description }}</strong>
+              {% endif %}
+            </div>
+            <div style="margin-top:2px;">
+              <strong>🛠️ Category:</strong> {{ c.category.name }} ({{ c.category.department.name }})
+            </div>
+            <div class="ticket-desc">
+              <strong>Description:</strong> {{ c.description }}
+            </div>
+          </div>
+
+          <div class="assigned-box">
+            <div style="font-weight:700; color:#166534; margin-bottom:3px;">👷 Assigned Technician:</div>
+            {% if c.assigned_to %}
+              <div style="font-size:13px; font-weight:600;">{{ c.assigned_to.get_full_name|default:c.assigned_to.username }}</div>
+              {% if c.assigned_to.profile.phone %}
+                <div style="margin-top:2px;">📞 Phone: <strong>{{ c.assigned_to.profile.phone }}</strong></div>
+              {% endif %}
+              <div style="font-size:11px; color:#15803d; margin-top:2px;">Trade: {{ c.assigned_to.profile.department.name|default:"General Maintenance" }}</div>
+            {% else %}
+              <div style="color:#b91c1c; font-weight:700;">Unassigned (Caretaker to designate)</div>
+            {% endif %}
+          </div>
+        </div>
+
+        <!-- Field Sign-Off Section -->
+        <div class="signoff-section">
+          <div class="signoff-box">
+            <strong>1. Technician Sign-off:</strong><br>
+            Time In: _______ Time Out: _______<br>
+            Parts Used: ____________________<br>
+            <span class="signoff-line"></span>
+            <small style="color:#64748b;">Staff Signature</small>
+          </div>
+          <div class="signoff-box">
+            <strong>2. Student / Room Occupant:</strong><br>
+            Work Satisfactory? [ ] Yes  [ ] No<br>
+            Remarks: ______________________<br>
+            <span class="signoff-line"></span>
+            <small style="color:#64748b;">Student Signature &amp; Date</small>
+          </div>
+          <div class="signoff-box">
+            <strong>3. Caretaker Office Verification:</strong><br>
+            [ ] Inspected on-site<br>
+            [ ] Proof uploaded to CampusCare<br>
+            <span class="signoff-line"></span>
+            <small style="color:#64748b;">Caretaker Stamp &amp; Signature</small>
+          </div>
+        </div>
+      </div>
+    {% empty %}
+      <div class="empty-state">
+        <p>🎉 All complaints in this jurisdiction are currently resolved or closed.</p>
+        <p style="font-size:13px; margin-top:4px;">No active work orders pending dispatch.</p>
+      </div>
+    {% endfor %}
+  </div>
+
+  <div style="margin-top:24px; padding-top:12px; border-top:1px solid #e2e8f0; text-align:center; font-size:11px; color:#94a3b8;">
+    Generated by CampusCare Automated Facilities Management &middot; Printed on {{ today|date:"Y-m-d H:i:s" }}
+  </div>
+</div>
+
+</body>
+</html>

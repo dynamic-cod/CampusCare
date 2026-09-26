@@ -751,19 +751,34 @@ def complaint_update_status(request, reference):
     complaint = get_object_or_404(Complaint, reference=reference)
     if request.method != "POST":
         return redirect("core:complaint_detail", reference=reference)
-    form = ComplaintStatusForm(request.POST)
+    form = ComplaintStatusForm(request.POST, request.FILES)
     if form.is_valid():
         new_status = form.cleaned_data["status"]
         complaint.status = new_status
+        fields_to_update = ["status", "updated_at"]
         if new_status == Complaint.Status.RESOLVED:
-            complaint.resolved_at = timezone.now()
+            now = timezone.now()
+            complaint.resolved_at = now
             complaint.resolution_verification = Complaint.ResolutionVerification.PENDING
-            complaint.resolution_note = form.cleaned_data["note"]
-        complaint.save(update_fields=["status", "resolved_at", "resolution_verification", "resolution_note", "updated_at"])
+            complaint.resolution_note = form.cleaned_data["note"] or "Resolved via Caretaker Office inspection."
+            fields_to_update.extend(["resolved_at", "resolution_verification", "resolution_note"])
+            proof_file = request.FILES.get("resolution_proof")
+            if proof_file:
+                complaint.resolution_proof = compress_uploaded_image(proof_file)
+                fields_to_update.append("resolution_proof")
+        elif new_status == Complaint.Status.IN_PROGRESS and not complaint.in_progress_at:
+            complaint.in_progress_at = timezone.now()
+            fields_to_update.append("in_progress_at")
+        complaint.save(update_fields=fields_to_update)
         ComplaintStatusHistory.objects.create(
-            complaint=complaint, status=new_status, note=form.cleaned_data["note"], changed_by=request.user
+            complaint=complaint,
+            status=new_status,
+            note=form.cleaned_data["note"] or f"Status set to {new_status} by {request.user.get_full_name() or request.user.username} (Caretaker/Admin proxy update).",
+            changed_by=request.user,
         )
-        messages.success(request, "Complaint status updated.")
+        messages.success(request, f"Complaint status updated to {complaint.get_status_display()}.")
+    else:
+        messages.error(request, "Failed to update complaint status. Please verify the form inputs.")
     return redirect("core:complaint_detail", reference=reference)
 
 
@@ -895,6 +910,63 @@ def complaint_report_csv(request):
             complaint.supports.count(), complaint.feedback.rating if hasattr(complaint, "feedback") else "",
         ])
     return response
+
+
+@login_required
+def daily_dispatch_sheet(request):
+    """
+    Printable Daily Maintenance & Mess Dispatch Sheet for Hall Caretakers / Supervisors.
+    Generates paper-ready job order tickets with checkboxes and student verification
+    signature lines so staff who do not use smartphones or know English can be dispatched.
+    """
+    profile = getattr(request.user, "profile", None)
+    role_upper = str(getattr(profile, "role", "")).upper()
+    admin_roles = {"ADMIN", "REGISTRAR", "PROVOST", "HOD"}
+    if not (request.user.is_superuser or role_upper in admin_roles):
+        messages.error(request, "Access restricted to administrators, provosts, and hall caretakers.")
+        return redirect("core:home")
+
+    scoped_qs = get_scoped_complaints_for_user(request.user)
+    active_complaints = scoped_qs.filter(
+        status__in=[
+            Complaint.Status.OPEN,
+            Complaint.Status.ASSIGNED,
+            Complaint.Status.IN_PROGRESS,
+            Complaint.Status.REOPENED,
+        ]
+    ).select_related(
+        "category",
+        "category__department",
+        "room",
+        "room__floor",
+        "room__floor__building",
+        "assigned_to",
+        "assigned_to__profile",
+    ).order_by("-priority_score", "-created_at")
+
+    hall_name = "Campus Maintenance & Services"
+    hall_code = ""
+    if role_upper == "PROVOST" and profile and profile.managed_building:
+        hall_name = f"{profile.managed_building.name} (Provost / Caretaker Office)"
+        hall_code = profile.managed_building.code
+    elif role_upper == "HOD" and profile and profile.managed_department:
+        hall_name = f"{profile.managed_department.name} Maintenance Depot"
+        hall_code = profile.managed_department.code
+    elif profile and profile.hall_location:
+        hall_name = f"{profile.hall_location} (Caretaker Office)"
+
+    return render(
+        request,
+        "core/daily_dispatch_sheet.html",
+        {
+            "complaints": active_complaints,
+            "hall_name": hall_name,
+            "hall_code": hall_code,
+            "today": timezone.now(),
+            "total_count": active_complaints.count(),
+            "role_upper": role_upper,
+        },
+    )
 
 
 @staff_or_admin_required
