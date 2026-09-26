@@ -1,0 +1,10 @@
+{% extends "base.html" %}
+{% block title %}Create account | CampusCare{% endblock %}
+{% block content %}
+  <section class="card">
+    <h1>Create your student account</h1>
+    <p>Use this account to report and follow campus maintenance issues.</p>
+    <form method="post">{% csrf_token %}{{ form.as_p }}<button type="submit">Create account</button></form>
+    <p>Already registered? <a href="{% url 'core:login' %}">Log in</a>.</p>
+  </section>
+{% endblock %}

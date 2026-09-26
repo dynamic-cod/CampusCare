@@ -1,0 +1,419 @@
+{% extends "base.html" %}
+{% block title %}Report an issue | CampusCare{% endblock %}
+{% block content %}
+  <section class="card">
+    <h1>Report a maintenance issue</h1>
+    <p>No account is needed. Enter your full name and university enrollment number, then give the maintenance team a clear description and location. Save your private tracking link after submission.</p>
+    <form method="post" enctype="multipart/form-data" id="complaint-form">
+      {% csrf_token %}
+      
+      <div style="margin-bottom: 20px;">
+        <label for="{{ form.reporter_name.id_for_label }}">{{ form.reporter_name.label }} *</label>
+        {{ form.reporter_name }}
+        {% if form.reporter_name.errors %}
+          <div style="color: red; font-size: 12px;">{{ form.reporter_name.errors.0 }}</div>
+        {% endif %}
+      </div>
+
+      <div style="margin-bottom: 20px;">
+        <label for="{{ form.reporter_enrollment_number.id_for_label }}">{{ form.reporter_enrollment_number.label }} *</label>
+        {{ form.reporter_enrollment_number }}
+        {% if form.reporter_enrollment_number.help_text %}
+          <small style="display: block; color: #666; margin-top: 4px;">{{ form.reporter_enrollment_number.help_text }}</small>
+        {% endif %}
+        {% if form.reporter_enrollment_number.errors %}
+          <div style="color: red; font-size: 12px;">{{ form.reporter_enrollment_number.errors.0 }}</div>
+        {% endif %}
+      </div>
+
+      <div style="margin-bottom: 20px;">
+        <label for="{{ form.title.id_for_label }}">{{ form.title.label }} *</label>
+        {{ form.title }}
+        {% if form.title.errors %}
+          <div style="color: red; font-size: 12px;">{{ form.title.errors.0 }}</div>
+        {% endif %}
+      </div>
+
+      <div style="margin-bottom: 20px;">
+        <label for="{{ form.description.id_for_label }}">{{ form.description.label }} *</label>
+        {{ form.description }}
+        {% if form.description.errors %}
+          <div style="color: red; font-size: 12px;">{{ form.description.errors.0 }}</div>
+        {% endif %}
+      </div>
+
+      {# Category field with suggestions #}
+      <div style="margin-bottom: 20px;">
+        <label for="{{ form.category.id_for_label }}">{{ form.category.label }} *</label>
+        {{ form.category }}
+        {% if form.category.help_text %}
+          <small style="display: block; color: #666; margin-top: 4px;">{{ form.category.help_text }}</small>
+        {% endif %}
+        {% if form.category.errors %}
+          <div style="color: red; font-size: 12px;">{{ form.category.errors.0 }}</div>
+        {% endif %}
+      </div>
+
+      {# Suggestions container #}
+      <div id="suggestions-container" style="display: none; margin: 15px 0; padding: 15px; background-color: #f0f8ff; border-left: 4px solid #2196F3; border-radius: 4px;">
+        <p style="margin: 0 0 10px 0; color: #555; font-weight: bold;">💡 Category suggestions based on your description:</p>
+        <div id="suggestions-list" style="margin: 0;"></div>
+      </div>
+
+      <div style="margin-bottom: 20px;">
+        <label for="id_room_number">{{ form.room_number.label }}</label>
+        {{ form.room_number }}
+        <div id="room-lookup-feedback" style="display: none; margin-top: 4px; font-size: 13px; font-weight: 500;"></div>
+        {% if form.room_number.help_text %}
+          <small style="display: block; color: #666; margin-top: 4px;">{{ form.room_number.help_text }}</small>
+        {% endif %}
+        {% if form.room_number.errors %}
+          <div style="color: red; font-size: 12px;">{{ form.room_number.errors.0 }}</div>
+        {% endif %}
+      </div>
+
+      <div style="margin-bottom: 20px;">
+        <label for="hall_hostel_select">Select Residential Hall or Constituent Hostel (Optional helper)</label>
+        <select id="hall_hostel_select" class="form-control" style="width: 100%; padding: 8px 12px; border: 1px solid #cbd5e1; border-radius: 4px; margin-bottom: 6px; font-size: 14px;">
+          <option value="">-- Choose Hall or Hostel Block (or enter manually below) --</option>
+          {% for hall in active_halls %}
+            <optgroup label="🏛️ {{ hall.name }} ({{ hall.code }})">
+              <option value="{{ hall.name }}" data-code="{{ hall.code }}">{{ hall.name }} (Central / Common Facilities)</option>
+              {% for hostel in hall.hostels.all %}
+                {% if hostel.is_active %}
+                  <option value="{{ hall.name }} · {{ hostel.short_name }}" data-code="{{ hostel.code }}" data-hall="{{ hall.code }}" data-hostel="{{ hostel.short_name }}">
+                    ↳ {{ hostel.short_name }} ({{ hostel.wing_detail|default:"Block" }})
+                  </option>
+                {% endif %}
+              {% endfor %}
+            </optgroup>
+          {% endfor %}
+        </select>
+        <small style="display: block; color: #64748b;">Selecting from this list automatically fills your location description.</small>
+      </div>
+
+      <div style="margin-bottom: 20px;">
+        <label for="{{ form.location_description.id_for_label }}">{{ form.location_description.label }}</label>
+        {{ form.location_description }}
+        {% if form.location_description.help_text %}
+          <small style="display: block; color: #666; margin-top: 4px;">{{ form.location_description.help_text }}</small>
+        {% endif %}
+        {% if form.location_description.errors %}
+          <div style="color: red; font-size: 12px;">{{ form.location_description.errors.0 }}</div>
+        {% endif %}
+      </div>
+
+      {# AI Priority, SLA & Staff Assignment Preview #}
+      <div id="ai-assessment-card" style="margin-bottom: 20px; padding: 16px; background: #f8fafc; border: 1px solid #cbd5e1; border-left: 4px solid #2563eb; border-radius: 6px;">
+        <div style="font-weight: 600; color: #1e3a8a; margin-bottom: 6px; font-size: 15px;">
+          🤖 AI Urgency &amp; Staff Auto-Assignment
+        </div>
+        <p style="margin: 0 0 10px 0; font-size: 13px; color: #475569;">
+          Priority, resolution SLA, and maintenance technician are automatically selected by the AI model based on your complaint details and location from the AMU Staff Roster.
+        </p>
+
+        <div style="display: grid; grid-template-columns: repeat(auto-fit, minmax(200px, 1fr)); gap: 10px; margin-bottom: 10px;">
+          <div style="background: white; padding: 10px; border-radius: 4px; border: 1px solid #e2e8f0;">
+            <div style="font-size: 11px; color: #64748b; font-weight: bold;">AI PRIORITY</div>
+            <div id="ai-priority-badge" style="font-size: 14px; font-weight: 600; color: #0284c7; margin-top: 2px;">
+              ℹ️ Normal (Auto)
+            </div>
+          </div>
+          <div style="background: white; padding: 10px; border-radius: 4px; border: 1px solid #e2e8f0;">
+            <div style="font-size: 11px; color: #64748b; font-weight: bold;">SLA TARGET</div>
+            <div id="ai-sla-badge" style="font-size: 14px; font-weight: 600; color: #059669; margin-top: 2px;">
+              24h (Next business day)
+            </div>
+          </div>
+        </div>
+
+        <div id="ai-staff-preview" style="background: white; padding: 10px 12px; border-radius: 4px; border: 1px solid #e2e8f0;">
+          <div style="font-size: 11px; color: #64748b; font-weight: bold; margin-bottom: 4px;">ASSIGNED TECHNICIAN (AMU STAFF DIRECTORY)</div>
+          <div id="ai-staff-details" style="font-size: 13px; color: #334155;">
+            Select a category and location to see your automatically assigned technician.
+          </div>
+        </div>
+      </div>
+
+      <div style="margin-bottom: 20px;">
+        <label for="{{ form.evidence.id_for_label }}">{{ form.evidence.label }}</label>
+        {{ form.evidence }}
+        {% if form.evidence.help_text %}
+          <small style="display: block; color: #666; margin-top: 4px;">{{ form.evidence.help_text }}</small>
+        {% endif %}
+        {% if form.evidence.errors %}
+          <div style="color: red; font-size: 12px;">{{ form.evidence.errors.0 }}</div>
+        {% endif %}
+      </div>
+
+      <div style="margin-bottom: 20px;">
+        <label for="{{ form.is_public.id_for_label }}">
+          {{ form.is_public }} {{ form.is_public.label }}
+        </label>
+        {% if form.is_public.errors %}
+          <div style="color: red; font-size: 12px;">{{ form.is_public.errors.0 }}</div>
+        {% endif %}
+      </div>
+
+      <button type="submit">Submit complaint</button>
+    </form>
+  </section>
+
+  <script>
+    document.addEventListener('DOMContentLoaded', function() {
+      const titleField = document.querySelector('#id_title');
+      const descriptionField = document.querySelector('#id_description');
+      const categoryField = document.querySelector('#id_category');
+      const suggestionsContainer = document.getElementById('suggestions-container');
+      const suggestionsList = document.getElementById('suggestions-list');
+      let debounceTimer;
+
+      if (!titleField || !descriptionField || !categoryField) {
+        console.warn('Form fields not found. Category suggestions will not work.');
+        return;
+      }
+
+      function fetchCategorySuggestions() {
+        const title = titleField.value.trim();
+        const description = descriptionField.value.trim();
+        const combinedText = `${title} ${description}`;
+
+        if (combinedText.length < 10) {
+          suggestionsContainer.style.display = 'none';
+          return;
+        }
+
+        const csrfToken = document.querySelector('[name=csrfmiddlewaretoken]').value;
+
+        fetch('/api/suggest-category/', {
+          method: 'POST',
+          headers: {
+            'Content-Type': 'application/json',
+            'X-CSRFToken': csrfToken,
+          },
+          body: JSON.stringify({ text: combinedText }),
+        })
+          .then(response => response.json())
+          .then(data => {
+            if (data.suggestions && data.suggestions.length > 0) {
+              displaySuggestions(data.suggestions);
+            } else {
+              suggestionsContainer.style.display = 'none';
+            }
+          })
+          .catch(error => console.error('Error fetching suggestions:', error));
+      }
+
+      function displaySuggestions(suggestions) {
+        suggestionsList.innerHTML = '';
+        suggestions.forEach(suggestion => {
+          const isSelected = parseInt(categoryField.value) === suggestion.id;
+          const suggestionEl = document.createElement('div');
+          suggestionEl.style.cssText = 'margin-bottom: 12px; padding: 10px; background-color: white; border-radius: 4px; border: 1px solid #ddd; cursor: pointer; transition: all 0.2s;';
+          
+          let htmlContent = `
+            <div style="display: flex; justify-content: space-between; align-items: start; gap: 12px;">
+              <div style="flex: 1;">
+                <strong style="display: block; color: #1976D2; margin-bottom: 4px;">${escapeHtml(suggestion.name)}</strong>
+                ${suggestion.description ? `<p style="margin: 0 0 6px 0; font-size: 13px; color: #666;">${escapeHtml(suggestion.description)}</p>` : ''}
+                <p style="margin: 0; font-size: 12px; color: #999;">Department: ${escapeHtml(suggestion.department)}</p>
+              </div>
+              <div style="text-align: right; white-space: nowrap;">
+                <div style="font-size: 12px; font-weight: bold; color: #666; margin-bottom: 6px;">Confidence</div>
+                <div style="font-size: 14px; color: #2196F3; font-weight: bold;">${suggestion.confidence}%</div>
+              </div>
+            </div>
+            <button type="button" class="suggestion-btn" data-category-id="${suggestion.id}" style="margin-top: 8px; padding: 8px 12px; background-color: #2196F3; color: white; border: none; border-radius: 4px; cursor: pointer; font-size: 13px; width: 100%; ${isSelected ? 'background-color: #4CAF50;' : ''} transition: all 0.2s;">
+              ${isSelected ? '✓ Selected' : 'Use this category'}
+            </button>
+          `;
+          suggestionEl.innerHTML = htmlContent;
+          suggestionsList.appendChild(suggestionEl);
+
+          const btn = suggestionEl.querySelector('.suggestion-btn');
+          btn.addEventListener('click', function(e) {
+            e.preventDefault();
+            e.stopPropagation();
+            categoryField.value = this.dataset.categoryId;
+            categoryField.dispatchEvent(new Event('change'));
+            updateSuggestionButtons();
+          });
+          
+          suggestionEl.addEventListener('mouseenter', function() {
+            this.style.backgroundColor = '#f5f5f5';
+          });
+          suggestionEl.addEventListener('mouseleave', function() {
+            this.style.backgroundColor = 'white';
+          });
+        });
+        suggestionsContainer.style.display = 'block';
+      }
+
+      function updateSuggestionButtons() {
+        document.querySelectorAll('.suggestion-btn').forEach(btn => {
+          const isSelected = parseInt(categoryField.value) === parseInt(btn.dataset.categoryId);
+          btn.textContent = isSelected ? '✓ Selected' : 'Use this category';
+          btn.style.backgroundColor = isSelected ? '#4CAF50' : '#2196F3';
+        });
+      }
+
+      function handleInputChange() {
+        clearTimeout(debounceTimer);
+        debounceTimer = setTimeout(fetchCategorySuggestions, 500);
+      }
+
+      function escapeHtml(text) {
+        const div = document.createElement('div');
+        div.textContent = text;
+        return div.innerHTML;
+      }
+
+      const roomField = document.querySelector('#id_room_number');
+      const locationField = document.querySelector('#id_location_description');
+      const hallHostelSelect = document.getElementById('hall_hostel_select');
+      const roomLookupFeedback = document.getElementById('room-lookup-feedback');
+      const aiPriorityBadge = document.getElementById('ai-priority-badge');
+      const aiSlaBadge = document.getElementById('ai-sla-badge');
+      const aiStaffDetails = document.getElementById('ai-staff-details');
+      let aiDebounceTimer;
+      let roomLookupDebounceTimer;
+
+      function updateAIAssessment() {
+        const title = titleField ? titleField.value.trim() : '';
+        const description = descriptionField ? descriptionField.value.trim() : '';
+        const categoryOption = categoryField && categoryField.selectedIndex >= 0 ? categoryField.options[categoryField.selectedIndex].text : '';
+        const room = roomField ? roomField.value.trim() : '';
+        const locationDesc = locationField ? locationField.value.trim() : '';
+        const location = `${room ? 'Room ' + room + ' ' : ''}${locationDesc}`.trim();
+
+        if (!title && !description && !categoryOption && !location) return;
+
+        const csrfToken = document.querySelector('[name=csrfmiddlewaretoken]') ? document.querySelector('[name=csrfmiddlewaretoken]').value : '';
+
+        fetch('/api/analyze-urgency/', {
+          method: 'POST',
+          headers: {
+            'Content-Type': 'application/json',
+            'X-CSRFToken': csrfToken,
+          },
+          body: JSON.stringify({
+            title: title,
+            description: description,
+            category: categoryOption,
+            location: location,
+          }),
+        })
+          .then(res => res.json())
+          .then(data => {
+            if (aiPriorityBadge && data.priority_display) {
+              aiPriorityBadge.textContent = data.priority_display;
+            }
+            if (aiSlaBadge && data.sla_display) {
+              aiSlaBadge.textContent = data.sla_display;
+            }
+            if (aiStaffDetails && data.suggested_staff) {
+              const staff = data.suggested_staff;
+              aiStaffDetails.innerHTML = `
+                <div style="font-size: 14px; font-weight: 600; color: #1e293b;">👷 ${escapeHtml(staff.name)} <span style="font-size:12px; font-weight:normal; color:#475569;">(${escapeHtml(staff.role)})</span></div>
+                <div style="font-size: 12px; color: #475569; margin-top: 2px;">
+                  📍 <strong>Location:</strong> ${escapeHtml(staff.location)} · 
+                  🏢 <strong>Dept:</strong> ${escapeHtml(staff.dept)} · 
+                  📞 <strong>Phone:</strong> ${escapeHtml(staff.contact)}
+                </div>
+                <div style="font-size: 11px; color: #059669; font-weight: 500; margin-top: 3px;">
+                  ✓ Auto-assigned technician: ${escapeHtml(staff.reason)}
+                </div>
+              `;
+            }
+          })
+          .catch(err => console.error('Error updating AI assessment:', err));
+      }
+
+      function handleRoomLookup() {
+        const roomVal = roomField ? roomField.value.trim() : '';
+        if (!roomVal) {
+          if (roomLookupFeedback) {
+            roomLookupFeedback.style.display = 'none';
+          }
+          return;
+        }
+
+        let hallVal = '';
+        let hostelVal = '';
+        if (hallHostelSelect && hallHostelSelect.selectedIndex > 0) {
+          const opt = hallHostelSelect.options[hallHostelSelect.selectedIndex];
+          hallVal = opt.dataset.hall || '';
+          hostelVal = opt.dataset.hostel || '';
+        }
+
+        const url = `/api/room-lookup/?q=${encodeURIComponent(roomVal)}&hall=${encodeURIComponent(hallVal)}&hostel=${encodeURIComponent(hostelVal)}`;
+        fetch(url)
+          .then(res => res.json())
+          .then(data => {
+            if (roomLookupFeedback) {
+              if (data.found) {
+                roomLookupFeedback.style.display = 'block';
+                roomLookupFeedback.style.color = '#059669';
+                roomLookupFeedback.textContent = `✓ Recognized: ${data.display}`;
+                // Auto-fill location if currently empty
+                if (locationField && !locationField.value.trim()) {
+                  locationField.value = data.display;
+                }
+                // If hallHostelSelect not set, try to select matching option
+                if (hallHostelSelect && (!hallHostelSelect.value || hallHostelSelect.selectedIndex <= 0)) {
+                  for (let i = 0; i < hallHostelSelect.options.length; i++) {
+                    const opt = hallHostelSelect.options[i];
+                    if ((data.hostel_code && opt.dataset.code === data.hostel_code) ||
+                        (data.hall_code && opt.dataset.code === data.hall_code)) {
+                      hallHostelSelect.selectedIndex = i;
+                      break;
+                    }
+                  }
+                }
+              } else {
+                roomLookupFeedback.style.display = 'block';
+                roomLookupFeedback.style.color = '#64748b';
+                roomLookupFeedback.textContent = `ℹ️ ${data.message || 'Custom room / unlisted'}`;
+              }
+            }
+          })
+          .catch(err => console.error('Error querying room lookup:', err));
+      }
+
+      if (hallHostelSelect) {
+        hallHostelSelect.addEventListener('change', function() {
+          const val = this.value;
+          if (val && locationField) {
+            locationField.value = val;
+          }
+          if (roomField && roomField.value.trim()) {
+            handleRoomLookup();
+          }
+          onAnyInputChange();
+        });
+      }
+
+      function onAnyInputChange() {
+        handleInputChange();
+        clearTimeout(aiDebounceTimer);
+        aiDebounceTimer = setTimeout(updateAIAssessment, 400);
+      }
+
+      titleField.addEventListener('input', onAnyInputChange);
+      descriptionField.addEventListener('input', onAnyInputChange);
+      categoryField.addEventListener('change', function() {
+        updateSuggestionButtons();
+        updateAIAssessment();
+      });
+      if (roomField) {
+        roomField.addEventListener('input', function() {
+          onAnyInputChange();
+          clearTimeout(roomLookupDebounceTimer);
+          roomLookupDebounceTimer = setTimeout(handleRoomLookup, 600);
+        });
+        roomField.addEventListener('blur', handleRoomLookup);
+      }
+      if (locationField) locationField.addEventListener('input', onAnyInputChange);
+    });
+  </script>
+{% endblock %}

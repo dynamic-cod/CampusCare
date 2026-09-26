@@ -1,0 +1,286 @@
+{% extends "core/base_admin_dashboard.html" %}
+{% block admin_content %}
+
+  <!-- Top Console Identity Card -->
+  <section class="bg-white border border-slate-200 rounded-xl p-5 shadow-sm">
+    <div class="flex flex-wrap items-center justify-between gap-4 min-w-0">
+      <div class="min-w-0">
+        <p class="text-xs font-bold uppercase tracking-wider text-emerald-700">{{ role_badge_text|default:"Administrative Portal" }}</p>
+        <h1 class="text-2xl font-bold text-slate-900 mt-1 break-words">{{ console_title }}</h1>
+        <p class="text-sm text-slate-600 mt-0.5 break-words">
+          Operator: <strong>{{ user.get_full_name|default:user.username }}</strong> ({{ user.username }})
+          {% if jurisdiction_label %} · <span>{{ jurisdiction_label }}</span>{% endif %}
+        </p>
+      </div>
+      <div class="flex flex-wrap items-center gap-2 shrink-0">
+        <a href="{% url 'core:complaint_list' %}" class="inline-flex items-center px-3.5 py-2 rounded-lg text-sm font-semibold bg-emerald-800 text-white hover:bg-emerald-900">
+          Open Queue ({{ total_scoped_complaints }})
+        </a>
+        <a href="{% url 'core:complaint_report_csv' %}" class="inline-flex items-center px-3.5 py-2 rounded-lg text-sm font-semibold bg-slate-100 text-slate-800 hover:bg-slate-200 border border-slate-300">
+          Download Scoped CSV
+        </a>
+      </div>
+    </div>
+  </section>
+
+  {% if dashboard_type == "administrator" %}
+    {% if tenant_mode == "registrar" %}
+      <section class="bg-white border border-slate-200 rounded-xl p-5 shadow-sm">
+        <h2 class="text-sm font-bold uppercase tracking-wider text-slate-700 mb-3">🔍 Registrar Master Drill-Down Filter (Inspect Specific Hall or Department)</h2>
+        <form method="get" action="{% url 'core:dashboard' %}" class="grid grid-cols-1 md:grid-cols-3 gap-4 items-end">
+          <div class="min-w-0">
+            <label class="block text-xs font-semibold text-slate-700 mb-1">Hall / Building</label>
+            <select name="building" class="w-full rounded-lg border border-slate-300 px-3 py-2 text-sm bg-white">
+              <option value="">All Campus Buildings ({{ building_count }})</option>
+              {% for b in all_buildings %}
+                <option value="{{ b.code }}" {% if selected_building_code == b.code %}selected{% endif %}>{{ b.name }} ({{ b.code }})</option>
+              {% endfor %}
+            </select>
+          </div>
+          <div class="min-w-0">
+            <label class="block text-xs font-semibold text-slate-700 mb-1">Department</label>
+            <select name="department" class="w-full rounded-lg border border-slate-300 px-3 py-2 text-sm bg-white">
+              <option value="">All Departments</option>
+              {% for d in all_departments %}
+                <option value="{{ d.code }}" {% if selected_department_code == d.code %}selected{% endif %}>{{ d.name }} ({{ d.code }})</option>
+              {% endfor %}
+            </select>
+          </div>
+          <div class="flex items-center gap-2 min-w-0">
+            <button type="submit" class="px-4 py-2 rounded-lg bg-emerald-800 text-white text-sm font-semibold hover:bg-emerald-900">Apply Filter</button>
+            {% if selected_building_code or selected_department_code %}
+              <a href="{% url 'core:dashboard' %}" class="px-3 py-2 rounded-lg bg-slate-100 text-slate-700 text-sm font-medium hover:bg-slate-200">Reset</a>
+            {% endif %}
+          </div>
+        </form>
+      </section>
+    {% endif %}
+
+    <!-- Scoped KPI Grid with min-w-0 (BUG 1 & BUG 3) -->
+    <section class="grid grid-cols-2 sm:grid-cols-4 lg:grid-cols-8 gap-3">
+      <div class="min-w-0 bg-white border border-slate-200 rounded-xl p-4 shadow-sm">
+        <p class="text-xs font-medium text-slate-500 truncate">Total Scoped</p>
+        <p class="text-2xl font-bold text-slate-900 mt-1">{{ total_scoped_complaints }}</p>
+      </div>
+      <div class="min-w-0 bg-white border border-amber-200 rounded-xl p-4 shadow-sm">
+        <p class="text-xs font-medium text-amber-800 truncate">Pending / Assigned</p>
+        <p class="text-2xl font-bold text-amber-700 mt-1">{{ pending_assigned_count }}</p>
+      </div>
+      <div class="min-w-0 bg-white border border-amber-300 rounded-xl p-4 shadow-sm">
+        <p class="text-xs font-medium text-amber-900 truncate">In-Progress</p>
+        <p class="text-2xl font-bold text-amber-600 mt-1">{{ in_progress_count }}</p>
+      </div>
+      <div class="min-w-0 bg-white border border-blue-200 rounded-xl p-4 shadow-sm">
+        <p class="text-xs font-medium text-blue-800 truncate">Pending Verification</p>
+        <p class="text-2xl font-bold text-blue-700 mt-1">{{ pending_verification_count }}</p>
+      </div>
+      <div class="min-w-0 bg-white border border-emerald-200 rounded-xl p-4 shadow-sm">
+        <p class="text-xs font-medium text-emerald-800 truncate">Closed</p>
+        <p class="text-2xl font-bold text-emerald-700 mt-1">{{ closed_count }}</p>
+      </div>
+      <div class="min-w-0 bg-white border border-red-200 rounded-xl p-4 shadow-sm">
+        <p class="text-xs font-medium text-red-800 truncate">Reopened / Disputed</p>
+        <p class="text-2xl font-bold text-red-600 mt-1">{{ reopened_disputed_count }}</p>
+      </div>
+      <div class="min-w-0 bg-white border border-red-300 rounded-xl p-4 shadow-sm">
+        <p class="text-xs font-medium text-red-900 truncate">SLA Breaches</p>
+        <p class="text-2xl font-bold text-red-700 mt-1">{{ sla_breach_count }}</p>
+      </div>
+      <div class="min-w-0 bg-emerald-50 border border-emerald-200 rounded-xl p-4 shadow-sm">
+        <p class="text-xs font-medium text-emerald-900 truncate">Staff Accountability</p>
+        <p class="text-2xl font-bold text-emerald-800 mt-1">{{ avg_accountability_score }}%</p>
+      </div>
+    </section>
+
+    {% if tenant_mode == "provost" %}
+      <div class="grid grid-cols-1 lg:grid-cols-2 gap-6">
+        <section class="min-w-0 bg-white border border-slate-200 rounded-xl p-5 shadow-sm">
+          <h2 class="text-base font-bold text-slate-900 mb-3">🏢 Hostel Floor &amp; Room Breakdown ({{ profile.managed_building.code }})</h2>
+          <div class="w-full overflow-x-auto border rounded-lg">
+            <table class="w-full text-left text-sm">
+              <thead class="bg-slate-50 border-b text-xs uppercase text-slate-600">
+                <tr><th class="p-3">Floor / Room</th><th class="p-3">Open</th><th class="p-3">Total</th></tr>
+              </thead>
+              <tbody class="divide-y">
+                {% for row in hall_room_breakdown %}
+                  <tr>
+                    <td class="p-3 max-w-xs truncate break-words">Floor {{ row.room__floor__number }} · Room {{ row.room__number }} ({{ row.room__name }})</td>
+                    <td class="p-3 font-semibold text-amber-700">{{ row.open_count }}</td>
+                    <td class="p-3 font-semibold">{{ row.total }}</td>
+                  </tr>
+                {% empty %}
+                  <tr><td colspan="3" class="p-3 text-slate-500">No room complaints recorded in {{ profile.managed_building.name }}.</td></tr>
+                {% endfor %}
+              </tbody>
+            </table>
+          </div>
+        </section>
+
+        <section class="min-w-0 bg-white border border-slate-200 rounded-xl p-5 shadow-sm">
+          <h2 class="text-base font-bold text-slate-900 mb-3">👷 Hall Technicians &amp; Accountability Score (Avg: {{ avg_accountability_score }}%)</h2>
+          <div class="w-full overflow-x-auto border rounded-lg">
+            <table class="w-full text-left text-sm">
+              <thead class="bg-slate-50 border-b text-xs uppercase text-slate-600">
+                <tr><th class="p-3">Technician</th><th class="p-3">Active Tasks</th><th class="p-3">Accountability</th></tr>
+              </thead>
+              <tbody class="divide-y">
+                {% for tech in hall_technicians %}
+                  <tr>
+                    <td class="p-3 max-w-xs truncate break-words">{{ tech.get_full_name|default:tech.username }}<div class="text-xs text-slate-500 truncate">{{ tech.profile.department.name|default:"Maintenance" }}</div></td>
+                    <td class="p-3 font-semibold">{{ tech.active_tasks }}</td>
+                    <td class="p-3 font-bold text-emerald-800">{{ tech.profile.accountability_score }}/100</td>
+                  </tr>
+                {% empty %}
+                  <tr><td colspan="3" class="p-3 text-slate-500">No technicians mapped yet.</td></tr>
+                {% endfor %}
+              </tbody>
+            </table>
+          </div>
+        </section>
+      </div>
+    {% elif tenant_mode == "hod" %}
+      <div class="grid grid-cols-1 lg:grid-cols-2 gap-6">
+        <section class="min-w-0 bg-white border border-slate-200 rounded-xl p-5 shadow-sm">
+          <h2 class="text-base font-bold text-slate-900 mb-3">⚡ Departmental Service Workload ({{ profile.managed_department.code }})</h2>
+          <div class="w-full overflow-x-auto border rounded-lg">
+            <table class="w-full text-left text-sm">
+              <thead class="bg-slate-50 border-b text-xs uppercase text-slate-600">
+                <tr><th class="p-3">Category</th><th class="p-3">Active</th><th class="p-3">Total</th></tr>
+              </thead>
+              <tbody class="divide-y">
+                {% for row in dept_category_breakdown %}
+                  <tr>
+                    <td class="p-3 max-w-xs truncate break-words">{{ row.category__name }}</td>
+                    <td class="p-3 font-semibold text-amber-700">{{ row.active }}</td>
+                    <td class="p-3 font-semibold">{{ row.total }}</td>
+                  </tr>
+                {% empty %}
+                  <tr><td colspan="3" class="p-3 text-slate-500">No departmental complaints in queue.</td></tr>
+                {% endfor %}
+              </tbody>
+            </table>
+          </div>
+        </section>
+
+        <section class="min-w-0 bg-white border border-slate-200 rounded-xl p-5 shadow-sm">
+          <h2 class="text-base font-bold text-slate-900 mb-3">🔬 Building / Room Breakdown &amp; Accountability ({{ avg_accountability_score }}%)</h2>
+          <div class="w-full overflow-x-auto border rounded-lg">
+            <table class="w-full text-left text-sm">
+              <thead class="bg-slate-50 border-b text-xs uppercase text-slate-600">
+                <tr><th class="p-3">Building / Room</th><th class="p-3">Complaints</th></tr>
+              </thead>
+              <tbody class="divide-y">
+                {% for row in dept_room_breakdown %}
+                  <tr>
+                    <td class="p-3 max-w-xs truncate break-words">{{ row.room__floor__building__name }} · Room {{ row.room__number }}</td>
+                    <td class="p-3 font-semibold">{{ row.total }}</td>
+                  </tr>
+                {% empty %}
+                  <tr><td colspan="2" class="p-3 text-slate-500">No room breakdowns recorded.</td></tr>
+                {% endfor %}
+              </tbody>
+            </table>
+          </div>
+        </section>
+      </div>
+    {% endif %}
+
+    <!-- Scoped Complaints Table wrapped in overflow-x-auto border rounded-lg (BUG 3 & BUG 4) -->
+    <section class="min-w-0 bg-white border border-slate-200 rounded-xl p-5 shadow-sm">
+      <div class="flex items-center justify-between mb-3">
+        <h2 class="text-base font-bold text-slate-900">📋 Scoped Complaints Register ({{ total_scoped_complaints }})</h2>
+        <span class="text-xs text-slate-500">Showing all {{ recent_complaints|length }} of {{ total_scoped_complaints }} scoped record(s)</span>
+      </div>
+      <div class="w-full overflow-x-auto border rounded-lg">
+        <table class="w-full text-left text-sm">
+          <thead class="bg-slate-50 border-b text-xs uppercase text-slate-600">
+            <tr>
+              <th class="p-3">Reference</th>
+              <th class="p-3 max-w-xs">Title &amp; Description</th>
+              <th class="p-3 max-w-xs">Hall / Room</th>
+              <th class="p-3">Category</th>
+              <th class="p-3">Priority</th>
+              <th class="p-3">Status</th>
+              <th class="p-3 max-w-xs">Assigned Technician &amp; Task Token</th>
+            </tr>
+          </thead>
+          <tbody class="divide-y">
+            {% for c in recent_complaints %}
+              <tr class="hover:bg-slate-50">
+                <td class="p-3 font-mono font-semibold whitespace-nowrap">
+                  <a href="{% url 'core:complaint_detail' c.reference %}" class="text-emerald-800 hover:underline">{{ c.reference }}</a>
+                </td>
+                <td class="p-3 max-w-xs">
+                  <div class="font-semibold text-slate-900 truncate break-words" title="{{ c.title }}">{{ c.title }}</div>
+                  <div class="text-xs text-slate-500 truncate break-words" title="{{ c.description }}">{{ c.description }}</div>
+                </td>
+                <td class="p-3 max-w-xs">
+                  {% if c.room %}
+                    <div class="font-medium text-slate-900 truncate break-words">{{ c.room.floor.building.name }} ({{ c.room.floor.building.code }})</div>
+                    <div class="text-xs text-slate-500 truncate">Room {{ c.room.number }}</div>
+                  {% else %}
+                    <div class="text-xs text-slate-700 truncate break-words">{{ c.location_description }}</div>
+                  {% endif %}
+                </td>
+                <td class="p-3 max-w-xs">
+                  <div class="font-medium truncate break-words">{{ c.category.name }}</div>
+                  <div class="text-xs text-slate-500 truncate">{{ c.category.department.name }}</div>
+                </td>
+                <td class="p-3 whitespace-nowrap">
+                  {% if c.priority == "urgent" %}
+                    <span class="inline-flex items-center px-2.5 py-0.5 rounded-full text-xs font-semibold bg-red-100 text-red-800 border border-red-200">Urgent</span>
+                  {% elif c.priority == "high" %}
+                    <span class="inline-flex items-center px-2.5 py-0.5 rounded-full text-xs font-semibold bg-amber-100 text-amber-800 border border-amber-200">High</span>
+                  {% else %}
+                    <span class="inline-flex items-center px-2.5 py-0.5 rounded-full text-xs font-semibold bg-slate-100 text-slate-800 border border-slate-200">{{ c.get_priority_display }}</span>
+                  {% endif %}
+                </td>
+                <td class="p-3 whitespace-nowrap">
+                  {% if c.status == "reopened" %}
+                    <span class="inline-flex items-center px-2.5 py-0.5 rounded-full text-xs font-semibold bg-red-100 text-red-800 border border-red-200">Reopened</span>
+                  {% elif c.status == "in_progress" or c.status == "assigned" or c.status == "open" %}
+                    <span class="inline-flex items-center px-2.5 py-0.5 rounded-full text-xs font-semibold bg-amber-100 text-amber-800 border border-amber-200">{{ c.get_status_display }}</span>
+                  {% elif c.status == "resolved" %}
+                    <span class="inline-flex items-center px-2.5 py-0.5 rounded-full text-xs font-semibold bg-blue-100 text-blue-800 border border-blue-200">Pending Verification</span>
+                  {% elif c.status == "closed" %}
+                    <span class="inline-flex items-center px-2.5 py-0.5 rounded-full text-xs font-semibold bg-emerald-100 text-emerald-800 border border-emerald-200">Closed</span>
+                  {% else %}
+                    <span class="inline-flex items-center px-2.5 py-0.5 rounded-full text-xs font-semibold bg-slate-100 text-slate-800">{{ c.get_status_display }}</span>
+                  {% endif %}
+                </td>
+                <td class="p-3 max-w-xs">
+                  {% if c.assigned_to %}
+                    <div class="font-semibold text-slate-900 truncate break-words">{{ c.assigned_to.get_full_name|default:c.assigned_to.username }}</div>
+                    <a href="{% url 'core:technician_task_view' c.staff_task_token %}" class="block text-xs font-mono text-emerald-700 hover:underline truncate max-w-xs" title="/task/{{ c.staff_task_token }}/">
+                      Task: {{ c.staff_task_token }}
+                    </a>
+                  {% else %}
+                    <span class="text-xs text-red-600 font-semibold">Unassigned</span>
+                  {% endif %}
+                </td>
+              </tr>
+            {% empty %}
+              <tr><td colspan="7" class="p-6 text-center text-slate-500">No complaints filed in this jurisdiction.</td></tr>
+            {% endfor %}
+          </tbody>
+        </table>
+      </div>
+    </section>
+  {% elif dashboard_type == "staff" %}
+    <section class="bg-white border border-slate-200 rounded-xl p-5 shadow-sm">
+      <p class="text-sm text-slate-700">{% if department %}Assigned Department: <strong>{{ department.name }}</strong>{% endif %}</p>
+      <div class="grid grid-cols-2 gap-4 mt-4">
+        <div class="min-w-0 bg-slate-50 border rounded-lg p-4"><p class="text-xs text-slate-500">Categories Handled</p><p class="text-xl font-bold">{{ category_count }}</p></div>
+        <div class="min-w-0 bg-slate-50 border rounded-lg p-4"><p class="text-xs text-slate-500">Active Assignments</p><p class="text-xl font-bold">{{ assigned_complaints }}</p></div>
+      </div>
+    </section>
+  {% else %}
+    <section class="bg-white border border-slate-200 rounded-xl p-5 shadow-sm">
+      <div class="grid grid-cols-2 gap-4">
+        <div class="min-w-0 bg-slate-50 border rounded-lg p-4"><p class="text-xs text-slate-500">Open Complaints</p><p class="text-xl font-bold">{{ my_open_complaints }}</p></div>
+        <div class="min-w-0 bg-slate-50 border rounded-lg p-4"><p class="text-xs text-slate-500">Resolved Complaints</p><p class="text-xl font-bold">{{ my_resolved_complaints }}</p></div>
+      </div>
+    </section>
+  {% endif %}
+
+{% endblock %}

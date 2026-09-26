@@ -1,0 +1,81 @@
+{% extends "base.html" %}
+{% block title %}Task {{ complaint.reference }} | Technician Portal{% endblock %}
+{% block content %}
+<section class="card" style="max-width:640px; margin:0 auto;">
+  <div style="display:flex; justify-content:space-between; align-items:center; flex-wrap:wrap; gap:8px;">
+    <span style="background:#1e3a8a; color:white; padding:4px 10px; border-radius:4px; font-size:12px; font-weight:600;">
+      🔧 ZERO-LOGIN TECHNICIAN WORKFLOW
+    </span>
+    <span style="font-size:13px; color:#555;">Reference: <strong>{{ complaint.reference }}</strong></span>
+  </div>
+
+  <h1 style="margin-top:12px;">{{ complaint.title }}</h1>
+  <p>
+    <strong>Status:</strong> {{ complaint.get_status_display }} ·
+    <strong>Priority:</strong> {{ complaint.get_priority_display }}
+  </p>
+  <p>
+    <strong>Category:</strong> {{ complaint.category }}<br>
+    <strong>Location:</strong> {% if complaint.room %}{{ complaint.room }}{% else %}{{ complaint.location_description }}{% endif %}
+  </p>
+  <p style="background:#f8fafc; padding:12px; border-radius:6px; border:1px solid #e2e8f0;">
+    {{ complaint.description|linebreaksbr }}
+  </p>
+
+  {% if error_message %}
+    <div style="margin:14px 0; padding:12px; background:#fee2e2; border-left:4px solid #dc2626; color:#991b1b; border-radius:4px;">
+      <strong>Action Blocked:</strong> {{ error_message }}
+    </div>
+  {% endif %}
+
+  {% if complaint.status == "open" or complaint.status == "assigned" or complaint.status == "reopened" %}
+    <form method="post" style="margin-top:18px;">
+      {% csrf_token %}
+      <input type="hidden" name="action" value="start">
+      <button type="submit" style="width:100%; padding:12px; background:#0284c7; color:white; border:none; border-radius:6px; font-size:16px; font-weight:600; cursor:pointer;">
+        ▶ Start Task (Begin 5-Minute Dwell Timer)
+      </button>
+    </form>
+  {% elif complaint.status == "in_progress" %}
+    <div style="margin-top:18px; padding:16px; background:#f0fdf4; border:1px solid #bbf7d0; border-radius:6px;">
+      <h2 style="margin-top:0; font-size:18px; color:#166534;">Submit Resolution &amp; Camera Proof</h2>
+      <p style="font-size:13px; color:#15803d;">
+        Started at: {{ complaint.in_progress_at|date:"j M Y, H:i:s" }}. Minimum 5-minute on-site work time is enforced before resolution.
+      </p>
+      <form method="post" enctype="multipart/form-data">
+        {% csrf_token %}
+        <input type="hidden" name="action" value="resolve">
+        <div style="margin-bottom:14px;">
+          <label for="id_resolution_proof" style="display:block; font-weight:600; margin-bottom:6px;">
+            📷 Live Camera Proof (Required) *
+          </label>
+          <input
+            type="file"
+            id="id_resolution_proof"
+            name="resolution_proof"
+            accept="image/*"
+            capture="environment"
+            required
+          >
+        </div>
+        <div style="margin-bottom:14px;">
+          <label for="id_resolution_note" style="display:block; font-weight:600; margin-bottom:6px;">
+            Resolution Note
+          </label>
+          <textarea id="id_resolution_note" name="resolution_note" rows="3" placeholder="Describe the repair completed..."></textarea>
+        </div>
+        <button type="submit" style="width:100%; padding:12px; background:#16a34a; color:white; border:none; border-radius:6px; font-size:16px; font-weight:600; cursor:pointer;">
+          ✓ Mark Resolved (Pending Student Verification)
+        </button>
+      </form>
+    </div>
+  {% else %}
+    <div style="margin-top:18px; padding:14px; background:#f1f5f9; border-radius:6px;">
+      <strong>Task Status:</strong> {{ complaint.get_status_display }}.
+      {% if complaint.status == "resolved" %}
+        Waiting for student verification before final closure. Technicians cannot mark complaints as Closed.
+      {% endif %}
+    </div>
+  {% endif %}
+</section>
+{% endblock %}

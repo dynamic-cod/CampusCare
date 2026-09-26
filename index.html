@@ -1,0 +1,68 @@
+<!doctype html>
+<html lang="en">
+  <head>
+    <meta charset="UTF-8" />
+    <meta name="viewport" content="width=device-width, initial-scale=1.0" />
+    <title>CampusCare | Maintenance Management</title>
+    <link rel="preconnect" href="https://fonts.googleapis.com" />
+    <link rel="preconnect" href="https://fonts.gstatic.com" crossorigin />
+    <link href="https://fonts.googleapis.com/css2?family=DM+Sans:wght@400;500;600;700&family=Playfair+Display:wght@700&display=swap" rel="stylesheet" />
+    <link rel="stylesheet" href="styles.css" />
+  </head>
+  <body>
+    <div class="app-shell">
+      <aside class="sidebar">
+        <a class="brand" href="#top"><span class="brand-mark">C</span><span>Campus<span>Care</span></span></a>
+        <nav aria-label="Main navigation">
+          <a class="nav-link active" href="#dashboard">⌂ <span>Dashboard</span></a>
+          <a class="nav-link" href="#complaints">▤ <span>My complaints</span></a>
+          <a class="nav-link" href="#report">＋ <span>Report an issue</span></a>
+        </nav>
+        <div class="sidebar-card">
+          <span class="spark">✦</span>
+          <strong>Campus support</strong>
+          <p>For urgent safety issues, call the campus helpdesk.</p>
+          <a href="tel:1800123456">Call helpdesk →</a>
+        </div>
+        <div class="user-chip"><span class="avatar">AK</span><span><strong>Alex Kumar</strong><small>Student · CSE</small></span><button aria-label="Account options">⋮</button></div>
+      </aside>
+
+      <main id="top">
+        <header><div><p class="eyebrow">THURSDAY, AUGUST 28</p><h1>Good morning, Alex.</h1></div><button class="notification" aria-label="Notifications">♧<i></i></button></header>
+
+        <section class="hero" id="dashboard">
+          <div><p class="eyebrow">CAMPUSCARE DASHBOARD</p><h2>Keeping campus working, together.</h2><p>Report an issue in seconds and follow every update through to resolution.</p><a class="button light" href="#report">Report an issue <span>→</span></a></div>
+          <div class="hero-art" aria-hidden="true"><div class="sun"></div><div class="building b1"></div><div class="building b2"></div><div class="tree t1"></div><div class="tree t2"></div></div>
+        </section>
+
+        <section class="stats" aria-label="Complaint statistics">
+          <article><span class="stat-icon gold">▣</span><div><strong id="totalCount">0</strong><p>Total reported</p></div></article>
+          <article><span class="stat-icon blue">◷</span><div><strong id="progressCount">0</strong><p>In progress</p></div></article>
+          <article><span class="stat-icon green">✓</span><div><strong id="resolvedCount">0</strong><p>Resolved</p></div></article>
+        </section>
+
+        <section class="content-grid">
+          <section class="panel complaints" id="complaints">
+            <div class="section-heading"><div><p class="eyebrow">ACTIVITY</p><h2>Recent complaints</h2></div><button class="text-button" id="viewAll">View all</button></div>
+            <div class="filters"><button class="filter active" data-filter="All">All</button><button class="filter" data-filter="Open">Open</button><button class="filter" data-filter="In progress">In progress</button><button class="filter" data-filter="Resolved">Resolved</button></div>
+            <div id="complaintList" class="complaint-list"></div>
+          </section>
+
+          <section class="panel report" id="report">
+            <p class="eyebrow">NEW REQUEST</p><h2>Report an issue</h2>
+            <form id="complaintForm">
+              <label>What needs attention?<input required name="title" maxlength="70" placeholder="e.g. Leaking tap in washroom" /></label>
+              <div class="form-row"><label>Category<select required name="category"><option value="">Select category</option><option>Electrical</option><option>Plumbing</option><option>Cleaning</option><option>Internet & IT</option><option>Furniture</option><option>Other</option></select></label><label>Location<input required name="location" maxlength="50" placeholder="Block, room, area" /></label></div>
+              <label>Priority<select required name="priority"><option>Normal</option><option>High</option><option>Urgent</option></select></label>
+              <label>Describe the issue<textarea required name="description" maxlength="300" placeholder="Share any details that might help the maintenance team."></textarea></label>
+              <button class="button submit" type="submit">Submit complaint <span>→</span></button>
+              <p class="form-note">You’ll receive updates here as the issue progresses.</p>
+            </form>
+          </section>
+        </section>
+      </main>
+    </div>
+    <div class="toast" id="toast" role="status"></div>
+    <script src="app.js"></script>
+  </body>
+</html>

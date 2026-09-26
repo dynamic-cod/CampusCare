@@ -1,0 +1,41 @@
+# Virtual Environments
+.venv/
+venv/
+env/
+ENV/
+
+# Python Cache & Bytecode
+__pycache__/
+*.py[cod]
+*$py.class
+*.so
+.pytest_cache/
+
+# SQLite Database (Exclude binary data; migrations in core/migrations/ are tracked)
+*.sqlite3
+db.sqlite3
+
+# Local Environment & Secrets
+.env
+.env.local
+local_settings.py
+
+# User Uploaded Media Files (Keep folder structure, ignore uploaded files)
+media/*
+!media/.gitkeep
+media/complaint_evidence/*
+!media/complaint_evidence/.gitkeep
+media/resolution_proofs/*
+!media/resolution_proofs/.gitkeep
+media/reopen_proofs/*
+!media/reopen_proofs/.gitkeep
+
+# Static files collection
+staticfiles/
+
+# IDE & OS Files
+.vscode/
+.idea/
+.DS_Store
+Thumbs.db
+.devin/

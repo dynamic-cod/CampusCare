@@ -1,0 +1,1250 @@
+[
+  {
+    "location": "Sir Syed Hall (North & South Blocks)",
+    "name": "Tariq Ahmad Khan",
+    "role": "Resident Electrician",
+    "dept": "Electrical (ELEC)",
+    "username": "elec_sirsye_1",
+    "contact": "+91 98230 11001"
+  },
+  {
+    "location": "Sir Syed Hall (North & South Blocks)",
+    "name": "Nadeem Akhtar",
+    "role": "Resident Plumber & Pump Tech",
+    "dept": "Plumbing (PLUMB)",
+    "username": "plumb_sirsye_1",
+    "contact": "+91 98230 11002"
+  },
+  {
+    "location": "Sir Syed Hall (North & South Blocks)",
+    "name": "Farhan Mirza",
+    "role": "Resident Carpenter & Glazier",
+    "dept": "Civil (CIVIL)",
+    "username": "civil_sirsye_1",
+    "contact": "+91 98230 11003"
+  },
+  {
+    "location": "Sir Syed Hall (North & South Blocks)",
+    "name": "Mohammad Shadab",
+    "role": "Resident IT & Wi-Fi Attendant",
+    "dept": "IT & AV (ITINF)",
+    "username": "itinf_sirsye_1",
+    "contact": "+91 98230 11004"
+  },
+  {
+    "location": "Sir Syed Hall (North & South Blocks)",
+    "name": "Rashid Mansoori",
+    "role": "Senior Sanitation Supervisor",
+    "dept": "Sanitation (CLEAN)",
+    "username": "clean_sirsye_1",
+    "contact": "+91 98230 11005"
+  },
+  {
+    "location": "Sir Syed Hall (North & South Blocks)",
+    "name": "Zubair Alam",
+    "role": "Sanitation Attendant",
+    "dept": "Sanitation (CLEAN)",
+    "username": "clean_sirsye_2",
+    "contact": "+91 98230 11006"
+  },
+  {
+    "location": "Sir Syed Hall (North & South Blocks)",
+    "name": "Kamran Siddiqui",
+    "role": "Sanitation Attendant",
+    "dept": "Sanitation (CLEAN)",
+    "username": "clean_sirsye_3",
+    "contact": "+91 98230 11007"
+  },
+  {
+    "location": "Sir Syed Hall (North & South Blocks)",
+    "name": "Salman Beg",
+    "role": "Sanitation Attendant",
+    "dept": "Sanitation (CLEAN)",
+    "username": "clean_sirsye_4",
+    "contact": "+91 98230 11008"
+  },
+  {
+    "location": "Sir Syed Hall (North & South Blocks)",
+    "name": "Parvez Ahmad",
+    "role": "Sanitation Attendant",
+    "dept": "Sanitation (CLEAN)",
+    "username": "clean_sirsye_5",
+    "contact": "+91 98230 11009"
+  },
+  {
+    "location": "Sir Syed Hall (North & South Blocks)",
+    "name": "Faisal Qureshi",
+    "role": "Sanitation Attendant",
+    "dept": "Sanitation (CLEAN)",
+    "username": "clean_sirsye_6",
+    "contact": "+91 98230 11010"
+  },
+  {
+    "location": "Sir Syed Hall (North & South Blocks)",
+    "name": "Shabbir Husain",
+    "role": "Sanitation Attendant",
+    "dept": "Sanitation (CLEAN)",
+    "username": "clean_sirsye_7",
+    "contact": "+91 98230 11011"
+  },
+  {
+    "location": "Sir Syed Hall (North & South Blocks)",
+    "name": "Mohammad Irfan",
+    "role": "Sanitation Attendant",
+    "dept": "Sanitation (CLEAN)",
+    "username": "clean_sirsye_8",
+    "contact": "+91 98230 11012"
+  },
+  {
+    "location": "Sir Syed Hall (North & South Blocks)",
+    "name": "Saqib Ansari",
+    "role": "Sanitation Attendant",
+    "dept": "Sanitation (CLEAN)",
+    "username": "clean_sirsye_9",
+    "contact": "+91 98230 11013"
+  },
+  {
+    "location": "Sir Syed Hall (North & South Blocks)",
+    "name": "Rizwan Haider",
+    "role": "Waste Disposal Attendant",
+    "dept": "Sanitation (CLEAN)",
+    "username": "clean_sirsye_10",
+    "contact": "+91 98230 11014"
+  },
+  {
+    "location": "Aftab Hall",
+    "name": "Mohammad Asif",
+    "role": "Resident Electrician",
+    "dept": "Electrical (ELEC)",
+    "username": "elec_aftabh_1",
+    "contact": "+91 98230 12001"
+  },
+  {
+    "location": "Aftab Hall",
+    "name": "Shabbir Ahmad",
+    "role": "Resident Plumber",
+    "dept": "Plumbing (PLUMB)",
+    "username": "plumb_aftabh_1",
+    "contact": "+91 98230 12002"
+  },
+  {
+    "location": "Aftab Hall",
+    "name": "Altamash Raza",
+    "role": "Resident Carpenter",
+    "dept": "Civil (CIVIL)",
+    "username": "civil_aftabh_1",
+    "contact": "+91 98230 12003"
+  },
+  {
+    "location": "Aftab Hall",
+    "name": "Danish Iqbal",
+    "role": "Resident IT & LAN Attendant",
+    "dept": "IT & AV (ITINF)",
+    "username": "itinf_aftabh_1",
+    "contact": "+91 98230 12004"
+  },
+  {
+    "location": "Aftab Hall",
+    "name": "Shahnawaz Sheikh",
+    "role": "Sanitation Supervisor",
+    "dept": "Sanitation (CLEAN)",
+    "username": "clean_aftabh_1",
+    "contact": "+91 98230 12005"
+  },
+  {
+    "location": "Aftab Hall",
+    "name": "Akhtar Husain",
+    "role": "Sanitation Attendant",
+    "dept": "Sanitation (CLEAN)",
+    "username": "clean_aftabh_2",
+    "contact": "+91 98230 12006"
+  },
+  {
+    "location": "Aftab Hall",
+    "name": "Junaid Khan",
+    "role": "Sanitation Attendant",
+    "dept": "Sanitation (CLEAN)",
+    "username": "clean_aftabh_3",
+    "contact": "+91 98230 12007"
+  },
+  {
+    "location": "Aftab Hall",
+    "name": "Bilal Ahmad",
+    "role": "Sanitation Attendant",
+    "dept": "Sanitation (CLEAN)",
+    "username": "clean_aftabh_4",
+    "contact": "+91 98230 12008"
+  },
+  {
+    "location": "Aftab Hall",
+    "name": "Sohail Mirza",
+    "role": "Sanitation Attendant",
+    "dept": "Sanitation (CLEAN)",
+    "username": "clean_aftabh_5",
+    "contact": "+91 98230 12009"
+  },
+  {
+    "location": "Aftab Hall",
+    "name": "Hamza Siddiqui",
+    "role": "Sanitation Attendant",
+    "dept": "Sanitation (CLEAN)",
+    "username": "clean_aftabh_6",
+    "contact": "+91 98230 12010"
+  },
+  {
+    "location": "Aftab Hall",
+    "name": "Mustafa Qureshi",
+    "role": "Sanitation Attendant",
+    "dept": "Sanitation (CLEAN)",
+    "username": "clean_aftabh_7",
+    "contact": "+91 98230 12011"
+  },
+  {
+    "location": "Aftab Hall",
+    "name": "Imran Beg",
+    "role": "Sanitation Attendant",
+    "dept": "Sanitation (CLEAN)",
+    "username": "clean_aftabh_8",
+    "contact": "+91 98230 12012"
+  },
+  {
+    "location": "Aftab Hall",
+    "name": "Adnan Ansari",
+    "role": "Sanitation Attendant",
+    "dept": "Sanitation (CLEAN)",
+    "username": "clean_aftabh_9",
+    "contact": "+91 98230 12013"
+  },
+  {
+    "location": "Aftab Hall",
+    "name": "Waseem Malik",
+    "role": "Waste Disposal Attendant",
+    "dept": "Sanitation (CLEAN)",
+    "username": "clean_aftabh_10",
+    "contact": "+91 98230 12014"
+  },
+  {
+    "location": "Mohsin-ul-Mulk Hall",
+    "name": "Zafar Iqbal",
+    "role": "Resident Electrician",
+    "dept": "Electrical (ELEC)",
+    "username": "elec_mohsin_1",
+    "contact": "+91 98230 13001"
+  },
+  {
+    "location": "Mohsin-ul-Mulk Hall",
+    "name": "Munawwar Ali",
+    "role": "Resident Plumber",
+    "dept": "Plumbing (PLUMB)",
+    "username": "plumb_mohsin_1",
+    "contact": "+91 98230 13002"
+  },
+  {
+    "location": "Mohsin-ul-Mulk Hall",
+    "name": "Javed Akhtar",
+    "role": "Resident Carpenter",
+    "dept": "Civil (CIVIL)",
+    "username": "civil_mohsin_1",
+    "contact": "+91 98230 13003"
+  },
+  {
+    "location": "Mohsin-ul-Mulk Hall",
+    "name": "Arshad Farooqi",
+    "role": "Resident IT Technician",
+    "dept": "IT & AV (ITINF)",
+    "username": "itinf_mohsin_1",
+    "contact": "+91 98230 13004"
+  },
+  {
+    "location": "Mohsin-ul-Mulk Hall",
+    "name": "Sameer Usmani",
+    "role": "Sanitation Supervisor",
+    "dept": "Sanitation (CLEAN)",
+    "username": "clean_mohsin_1",
+    "contact": "+91 98230 13005"
+  },
+  {
+    "location": "Mohsin-ul-Mulk Hall",
+    "name": "Tanveer Ahmad",
+    "role": "Sanitation Attendant",
+    "dept": "Sanitation (CLEAN)",
+    "username": "clean_mohsin_2",
+    "contact": "+91 98230 13006"
+  },
+  {
+    "location": "Mohsin-ul-Mulk Hall",
+    "name": "Shahid Khan",
+    "role": "Sanitation Attendant",
+    "dept": "Sanitation (CLEAN)",
+    "username": "clean_mohsin_3",
+    "contact": "+91 98230 13007"
+  },
+  {
+    "location": "Mohsin-ul-Mulk Hall",
+    "name": "Khurram Shah",
+    "role": "Sanitation Attendant",
+    "dept": "Sanitation (CLEAN)",
+    "username": "clean_mohsin_4",
+    "contact": "+91 98230 13008"
+  },
+  {
+    "location": "Mohsin-ul-Mulk Hall",
+    "name": "Majid Hashmi",
+    "role": "Sanitation Attendant",
+    "dept": "Sanitation (CLEAN)",
+    "username": "clean_mohsin_5",
+    "contact": "+91 98230 13009"
+  },
+  {
+    "location": "Mohsin-ul-Mulk Hall",
+    "name": "Shakeel Abbasi",
+    "role": "Sanitation Attendant",
+    "dept": "Sanitation (CLEAN)",
+    "username": "clean_mohsin_6",
+    "contact": "+91 98230 13010"
+  },
+  {
+    "location": "Mohsin-ul-Mulk Hall",
+    "name": "Naeem Chaudhary",
+    "role": "Sanitation Attendant",
+    "dept": "Sanitation (CLEAN)",
+    "username": "clean_mohsin_7",
+    "contact": "+91 98230 13011"
+  },
+  {
+    "location": "Mohsin-ul-Mulk Hall",
+    "name": "Haroon Zaman",
+    "role": "Sanitation Attendant",
+    "dept": "Sanitation (CLEAN)",
+    "username": "clean_mohsin_8",
+    "contact": "+91 98230 13012"
+  },
+  {
+    "location": "Mohsin-ul-Mulk Hall",
+    "name": "Yusuf Akram",
+    "role": "Sanitation Attendant",
+    "dept": "Sanitation (CLEAN)",
+    "username": "clean_mohsin_9",
+    "contact": "+91 98230 13013"
+  },
+  {
+    "location": "Mohsin-ul-Mulk Hall",
+    "name": "Aasif Saifi",
+    "role": "Waste Disposal Attendant",
+    "dept": "Sanitation (CLEAN)",
+    "username": "clean_mohsin_10",
+    "contact": "+91 98230 13014"
+  },
+  {
+    "location": "Viqar-ul-Mulk Hall",
+    "name": "Mansoor Alam",
+    "role": "Resident Electrician",
+    "dept": "Electrical (ELEC)",
+    "username": "elec_viqaru_1",
+    "contact": "+91 98230 14001"
+  },
+  {
+    "location": "Viqar-ul-Mulk Hall",
+    "name": "Shoaib Akhtar",
+    "role": "Resident Plumber",
+    "dept": "Plumbing (PLUMB)",
+    "username": "plumb_viqaru_1",
+    "contact": "+91 98230 14002"
+  },
+  {
+    "location": "Viqar-ul-Mulk Hall",
+    "name": "Noman Khan",
+    "role": "Resident Carpenter",
+    "dept": "Civil (CIVIL)",
+    "username": "civil_viqaru_1",
+    "contact": "+91 98230 14003"
+  },
+  {
+    "location": "Viqar-ul-Mulk Hall",
+    "name": "Nasir Siddiqui",
+    "role": "Resident IT Technician",
+    "dept": "IT & AV (ITINF)",
+    "username": "itinf_viqaru_1",
+    "contact": "+91 98230 14004"
+  },
+  {
+    "location": "Viqar-ul-Mulk Hall",
+    "name": "Anwar Husain",
+    "role": "Sanitation Supervisor",
+    "dept": "Sanitation (CLEAN)",
+    "username": "clean_viqaru_1",
+    "contact": "+91 98230 14005"
+  },
+  {
+    "location": "Viqar-ul-Mulk Hall",
+    "name": "Rehan Mirza",
+    "role": "Sanitation Attendant",
+    "dept": "Sanitation (CLEAN)",
+    "username": "clean_viqaru_2",
+    "contact": "+91 98230 14006"
+  },
+  {
+    "location": "Viqar-ul-Mulk Hall",
+    "name": "Sultan Beg",
+    "role": "Sanitation Attendant",
+    "dept": "Sanitation (CLEAN)",
+    "username": "clean_viqaru_3",
+    "contact": "+91 98230 14007"
+  },
+  {
+    "location": "Viqar-ul-Mulk Hall",
+    "name": "Zia Qureshi",
+    "role": "Sanitation Attendant",
+    "dept": "Sanitation (CLEAN)",
+    "username": "clean_viqaru_4",
+    "contact": "+91 98230 14008"
+  },
+  {
+    "location": "Viqar-ul-Mulk Hall",
+    "name": "Vipin Sharma",
+    "role": "Sanitation Attendant",
+    "dept": "Sanitation (CLEAN)",
+    "username": "clean_viqaru_5",
+    "contact": "+91 98230 14009"
+  },
+  {
+    "location": "Viqar-ul-Mulk Hall",
+    "name": "Sanjay Saxena",
+    "role": "Sanitation Attendant",
+    "dept": "Sanitation (CLEAN)",
+    "username": "clean_viqaru_6",
+    "contact": "+91 98230 14010"
+  },
+  {
+    "location": "Viqar-ul-Mulk Hall",
+    "name": "Amit Verma",
+    "role": "Sanitation Attendant",
+    "dept": "Sanitation (CLEAN)",
+    "username": "clean_viqaru_7",
+    "contact": "+91 98230 14011"
+  },
+  {
+    "location": "Viqar-ul-Mulk Hall",
+    "name": "Rajesh Kumar",
+    "role": "Sanitation Attendant",
+    "dept": "Sanitation (CLEAN)",
+    "username": "clean_viqaru_8",
+    "contact": "+91 98230 14012"
+  },
+  {
+    "location": "Viqar-ul-Mulk Hall",
+    "name": "Deepak Joshi",
+    "role": "Sanitation Attendant",
+    "dept": "Sanitation (CLEAN)",
+    "username": "clean_viqaru_9",
+    "contact": "+91 98230 14013"
+  },
+  {
+    "location": "Viqar-ul-Mulk Hall",
+    "name": "Mohammad Tariq",
+    "role": "Waste Disposal Attendant",
+    "dept": "Sanitation (CLEAN)",
+    "username": "clean_viqaru_10",
+    "contact": "+91 98230 14014"
+  },
+  {
+    "location": "Sulaiman Hall",
+    "name": "Mohammad Haroon",
+    "role": "Resident Electrician",
+    "dept": "Electrical (ELEC)",
+    "username": "elec_sulaim_1",
+    "contact": "+91 98230 15001"
+  },
+  {
+    "location": "Sulaiman Hall",
+    "name": "Parvez Alam",
+    "role": "Resident Plumber",
+    "dept": "Plumbing (PLUMB)",
+    "username": "plumb_sulaim_1",
+    "contact": "+91 98230 15002"
+  },
+  {
+    "location": "Sulaiman Hall",
+    "name": "Saqib Mirza",
+    "role": "Resident Carpenter",
+    "dept": "Civil (CIVIL)",
+    "username": "civil_sulaim_1",
+    "contact": "+91 98230 15003"
+  },
+  {
+    "location": "Sulaiman Hall",
+    "name": "Junaid Farooqi",
+    "role": "Resident IT Technician",
+    "dept": "IT & AV (ITINF)",
+    "username": "itinf_sulaim_1",
+    "contact": "+91 98230 15004"
+  },
+  {
+    "location": "Sulaiman Hall",
+    "name": "Farhan Qureshi",
+    "role": "Sanitation Supervisor",
+    "dept": "Sanitation (CLEAN)",
+    "username": "clean_sulaim_1",
+    "contact": "+91 98230 15005"
+  },
+  {
+    "location": "Sulaiman Hall",
+    "name": "Tariq Mansoori",
+    "role": "Sanitation Attendant",
+    "dept": "Sanitation (CLEAN)",
+    "username": "clean_sulaim_2",
+    "contact": "+91 98230 15006"
+  },
+  {
+    "location": "Sulaiman Hall",
+    "name": "Rashid Beg",
+    "role": "Sanitation Attendant",
+    "dept": "Sanitation (CLEAN)",
+    "username": "clean_sulaim_3",
+    "contact": "+91 98230 15007"
+  },
+  {
+    "location": "Sulaiman Hall",
+    "name": "Nadeem Ansari",
+    "role": "Sanitation Attendant",
+    "dept": "Sanitation (CLEAN)",
+    "username": "clean_sulaim_4",
+    "contact": "+91 98230 15008"
+  },
+  {
+    "location": "Sulaiman Hall",
+    "name": "Faisal Khan",
+    "role": "Sanitation Attendant",
+    "dept": "Sanitation (CLEAN)",
+    "username": "clean_sulaim_5",
+    "contact": "+91 98230 15009"
+  },
+  {
+    "location": "Sulaiman Hall",
+    "name": "Salman Akhtar",
+    "role": "Sanitation Attendant",
+    "dept": "Sanitation (CLEAN)",
+    "username": "clean_sulaim_6",
+    "contact": "+91 98230 15010"
+  },
+  {
+    "location": "Sulaiman Hall",
+    "name": "Zubair Siddiqui",
+    "role": "Sanitation Attendant",
+    "dept": "Sanitation (CLEAN)",
+    "username": "clean_sulaim_7",
+    "contact": "+91 98230 15011"
+  },
+  {
+    "location": "Sulaiman Hall",
+    "name": "Kamran Shah",
+    "role": "Sanitation Attendant",
+    "dept": "Sanitation (CLEAN)",
+    "username": "clean_sulaim_8",
+    "contact": "+91 98230 15012"
+  },
+  {
+    "location": "Sulaiman Hall",
+    "name": "Shabbir Malik",
+    "role": "Sanitation Attendant",
+    "dept": "Sanitation (CLEAN)",
+    "username": "clean_sulaim_9",
+    "contact": "+91 98230 15013"
+  },
+  {
+    "location": "Sulaiman Hall",
+    "name": "Mohammad Bilal",
+    "role": "Waste Disposal Attendant",
+    "dept": "Sanitation (CLEAN)",
+    "username": "clean_sulaim_10",
+    "contact": "+91 98230 15014"
+  },
+  {
+    "location": "Nadeem Tarin Hall",
+    "name": "Rizwan Ansari",
+    "role": "Resident Electrician",
+    "dept": "Electrical (ELEC)",
+    "username": "elec_nadeem_1",
+    "contact": "+91 98230 16001"
+  },
+  {
+    "location": "Nadeem Tarin Hall",
+    "name": "Altamash Beg",
+    "role": "Resident Plumber",
+    "dept": "Plumbing (PLUMB)",
+    "username": "plumb_nadeem_1",
+    "contact": "+91 98230 16002"
+  },
+  {
+    "location": "Nadeem Tarin Hall",
+    "name": "Shahnawaz Khan",
+    "role": "Resident Carpenter",
+    "dept": "Civil (CIVIL)",
+    "username": "civil_nadeem_1",
+    "contact": "+91 98230 16003"
+  },
+  {
+    "location": "Nadeem Tarin Hall",
+    "name": "Shadab Husain",
+    "role": "Resident IT Technician",
+    "dept": "IT & AV (ITINF)",
+    "username": "itinf_nadeem_1",
+    "contact": "+91 98230 16004"
+  },
+  {
+    "location": "Nadeem Tarin Hall",
+    "name": "Danish Siddiqui",
+    "role": "Sanitation Supervisor",
+    "dept": "Sanitation (CLEAN)",
+    "username": "clean_nadeem_1",
+    "contact": "+91 98230 16005"
+  },
+  {
+    "location": "Nadeem Tarin Hall",
+    "name": "Hamza Akhtar",
+    "role": "Sanitation Attendant",
+    "dept": "Sanitation (CLEAN)",
+    "username": "clean_nadeem_2",
+    "contact": "+91 98230 16006"
+  },
+  {
+    "location": "Nadeem Tarin Hall",
+    "name": "Mustafa Alam",
+    "role": "Sanitation Attendant",
+    "dept": "Sanitation (CLEAN)",
+    "username": "clean_nadeem_3",
+    "contact": "+91 98230 16007"
+  },
+  {
+    "location": "Nadeem Tarin Hall",
+    "name": "Imran Mirza",
+    "role": "Sanitation Attendant",
+    "dept": "Sanitation (CLEAN)",
+    "username": "clean_nadeem_4",
+    "contact": "+91 98230 16008"
+  },
+  {
+    "location": "Nadeem Tarin Hall",
+    "name": "Adnan Farooqi",
+    "role": "Sanitation Attendant",
+    "dept": "Sanitation (CLEAN)",
+    "username": "clean_nadeem_5",
+    "contact": "+91 98230 16009"
+  },
+  {
+    "location": "Nadeem Tarin Hall",
+    "name": "Waseem Qureshi",
+    "role": "Sanitation Attendant",
+    "dept": "Sanitation (CLEAN)",
+    "username": "clean_nadeem_6",
+    "contact": "+91 98230 16010"
+  },
+  {
+    "location": "Nadeem Tarin Hall",
+    "name": "Sameer Haider",
+    "role": "Sanitation Attendant",
+    "dept": "Sanitation (CLEAN)",
+    "username": "clean_nadeem_7",
+    "contact": "+91 98230 16011"
+  },
+  {
+    "location": "Nadeem Tarin Hall",
+    "name": "Tanveer Beg",
+    "role": "Sanitation Attendant",
+    "dept": "Sanitation (CLEAN)",
+    "username": "clean_nadeem_8",
+    "contact": "+91 98230 16012"
+  },
+  {
+    "location": "Nadeem Tarin Hall",
+    "name": "Shahid Usmani",
+    "role": "Sanitation Attendant",
+    "dept": "Sanitation (CLEAN)",
+    "username": "clean_nadeem_9",
+    "contact": "+91 98230 16013"
+  },
+  {
+    "location": "Nadeem Tarin Hall",
+    "name": "Khurram Saifi",
+    "role": "Waste Disposal Attendant",
+    "dept": "Sanitation (CLEAN)",
+    "username": "clean_nadeem_10",
+    "contact": "+91 98230 16014"
+  },
+  {
+    "location": "Abdullah Hall (Women's Complex)",
+    "name": "Asif Mohammad Khan",
+    "role": "Resident Senior Electrician",
+    "dept": "Electrical (ELEC)",
+    "username": "elec_abdull_1",
+    "contact": "+91 98230 17001"
+  },
+  {
+    "location": "Abdullah Hall (Women's Complex)",
+    "name": "Shakeel Ahmad",
+    "role": "Resident Master Plumber",
+    "dept": "Plumbing (PLUMB)",
+    "username": "plumb_abdull_1",
+    "contact": "+91 98230 17002"
+  },
+  {
+    "location": "Abdullah Hall (Women's Complex)",
+    "name": "Naeem Akhtar",
+    "role": "Resident Carpenter",
+    "dept": "Civil (CIVIL)",
+    "username": "civil_abdull_1",
+    "contact": "+91 98230 17003"
+  },
+  {
+    "location": "Abdullah Hall (Women's Complex)",
+    "name": "Yusuf Raza",
+    "role": "Resident IT Technician",
+    "dept": "IT & AV (ITINF)",
+    "username": "itinf_abdull_1",
+    "contact": "+91 98230 17004"
+  },
+  {
+    "location": "Abdullah Hall (Women's Complex)",
+    "name": "Aasif Mansoori",
+    "role": "Sanitation Supervisor",
+    "dept": "Sanitation (CLEAN)",
+    "username": "clean_abdull_1",
+    "contact": "+91 98230 17005"
+  },
+  {
+    "location": "Abdullah Hall (Women's Complex)",
+    "name": "Munawwar Husain",
+    "role": "Sanitation Attendant",
+    "dept": "Sanitation (CLEAN)",
+    "username": "clean_abdull_2",
+    "contact": "+91 98230 17006"
+  },
+  {
+    "location": "Abdullah Hall (Women's Complex)",
+    "name": "Javed Qureshi",
+    "role": "Sanitation Attendant",
+    "dept": "Sanitation (CLEAN)",
+    "username": "clean_abdull_3",
+    "contact": "+91 98230 17007"
+  },
+  {
+    "location": "Abdullah Hall (Women's Complex)",
+    "name": "Anwar Khan",
+    "role": "Sanitation Attendant",
+    "dept": "Sanitation (CLEAN)",
+    "username": "clean_abdull_4",
+    "contact": "+91 98230 17008"
+  },
+  {
+    "location": "Abdullah Hall (Women's Complex)",
+    "name": "Rehan Siddiqui",
+    "role": "Sanitation Attendant",
+    "dept": "Sanitation (CLEAN)",
+    "username": "clean_abdull_5",
+    "contact": "+91 98230 17009"
+  },
+  {
+    "location": "Abdullah Hall (Women's Complex)",
+    "name": "Sultan Alam",
+    "role": "Sanitation Attendant",
+    "dept": "Sanitation (CLEAN)",
+    "username": "clean_abdull_6",
+    "contact": "+91 98230 17010"
+  },
+  {
+    "location": "Abdullah Hall (Women's Complex)",
+    "name": "Zia Mirza",
+    "role": "Sanitation Attendant",
+    "dept": "Sanitation (CLEAN)",
+    "username": "clean_abdull_7",
+    "contact": "+91 98230 17011"
+  },
+  {
+    "location": "Abdullah Hall (Women's Complex)",
+    "name": "Mansoor Beg",
+    "role": "Sanitation Attendant",
+    "dept": "Sanitation (CLEAN)",
+    "username": "clean_abdull_8",
+    "contact": "+91 98230 17012"
+  },
+  {
+    "location": "Abdullah Hall (Women's Complex)",
+    "name": "Shoaib Farooqi",
+    "role": "Sanitation Attendant",
+    "dept": "Sanitation (CLEAN)",
+    "username": "clean_abdull_9",
+    "contact": "+91 98230 17013"
+  },
+  {
+    "location": "Abdullah Hall (Women's Complex)",
+    "name": "Noman Ansari",
+    "role": "Waste Disposal Attendant",
+    "dept": "Sanitation (CLEAN)",
+    "username": "clean_abdull_10",
+    "contact": "+91 98230 17014"
+  },
+  {
+    "location": "Sarojini Naidu Hall",
+    "name": "Irfan Mohammad",
+    "role": "Resident Electrician",
+    "dept": "Electrical (ELEC)",
+    "username": "elec_saroji_1",
+    "contact": "+91 98230 18001"
+  },
+  {
+    "location": "Sarojini Naidu Hall",
+    "name": "Arshad Beg",
+    "role": "Resident Plumber",
+    "dept": "Plumbing (PLUMB)",
+    "username": "plumb_saroji_1",
+    "contact": "+91 98230 18002"
+  },
+  {
+    "location": "Sarojini Naidu Hall",
+    "name": "Nasir Usmani",
+    "role": "Resident Carpenter",
+    "dept": "Civil (CIVIL)",
+    "username": "civil_saroji_1",
+    "contact": "+91 98230 18003"
+  },
+  {
+    "location": "Sarojini Naidu Hall",
+    "name": "Bilal Haider",
+    "role": "Resident IT Support",
+    "dept": "IT & AV (ITINF)",
+    "username": "itinf_saroji_1",
+    "contact": "+91 98230 18004"
+  },
+  {
+    "location": "Sarojini Naidu Hall",
+    "name": "Sohail Qureshi",
+    "role": "Sanitation Supervisor",
+    "dept": "Sanitation (CLEAN)",
+    "username": "clean_saroji_1",
+    "contact": "+91 98230 18005"
+  },
+  {
+    "location": "Sarojini Naidu Hall",
+    "name": "Majid Khan",
+    "role": "Sanitation Attendant",
+    "dept": "Sanitation (CLEAN)",
+    "username": "clean_saroji_2",
+    "contact": "+91 98230 18006"
+  },
+  {
+    "location": "Sarojini Naidu Hall",
+    "name": "Haroon Akhtar",
+    "role": "Sanitation Attendant",
+    "dept": "Sanitation (CLEAN)",
+    "username": "clean_saroji_3",
+    "contact": "+91 98230 18007"
+  },
+  {
+    "location": "Sarojini Naidu Hall",
+    "name": "Yusuf Siddiqui",
+    "role": "Sanitation Attendant",
+    "dept": "Sanitation (CLEAN)",
+    "username": "clean_saroji_4",
+    "contact": "+91 98230 18008"
+  },
+  {
+    "location": "Sarojini Naidu Hall",
+    "name": "Mohammad Saifi",
+    "role": "Sanitation Attendant",
+    "dept": "Sanitation (CLEAN)",
+    "username": "clean_saroji_5",
+    "contact": "+91 98230 18009"
+  },
+  {
+    "location": "Sarojini Naidu Hall",
+    "name": "Zafar Abbasi",
+    "role": "Sanitation Attendant",
+    "dept": "Sanitation (CLEAN)",
+    "username": "clean_saroji_6",
+    "contact": "+91 98230 18010"
+  },
+  {
+    "location": "Sarojini Naidu Hall",
+    "name": "Adnan Shah",
+    "role": "Sanitation Attendant",
+    "dept": "Sanitation (CLEAN)",
+    "username": "clean_saroji_7",
+    "contact": "+91 98230 18011"
+  },
+  {
+    "location": "Sarojini Naidu Hall",
+    "name": "Waseem Ansari",
+    "role": "Sanitation Attendant",
+    "dept": "Sanitation (CLEAN)",
+    "username": "clean_saroji_8",
+    "contact": "+91 98230 18012"
+  },
+  {
+    "location": "Sarojini Naidu Hall",
+    "name": "Sameer Mirza",
+    "role": "Sanitation Attendant",
+    "dept": "Sanitation (CLEAN)",
+    "username": "clean_saroji_9",
+    "contact": "+91 98230 18013"
+  },
+  {
+    "location": "Sarojini Naidu Hall",
+    "name": "Tanveer Alam",
+    "role": "Waste Disposal Attendant",
+    "dept": "Sanitation (CLEAN)",
+    "username": "clean_saroji_10",
+    "contact": "+91 98230 18014"
+  },
+  {
+    "location": "Faculty of Engineering & Technology (Z.H. College of Engg)",
+    "name": "Tariq Siddiqui",
+    "role": "Faculty Shift Electrician",
+    "dept": "Electrical (ELEC)",
+    "username": "elec_facult_1",
+    "contact": "+91 98230 21001"
+  },
+  {
+    "location": "Faculty of Engineering & Technology (Z.H. College of Engg)",
+    "name": "Nadeem Mirza",
+    "role": "Lab & Plumbing Tech",
+    "dept": "Plumbing (PLUMB)",
+    "username": "plumb_facult_1",
+    "contact": "+91 98230 21002"
+  },
+  {
+    "location": "Faculty of Engineering & Technology (Z.H. College of Engg)",
+    "name": "Farhan Ansari",
+    "role": "Workshop Carpenter",
+    "dept": "Civil (CIVIL)",
+    "username": "civil_facult_1",
+    "contact": "+91 98230 21003"
+  },
+  {
+    "location": "Faculty of Engineering & Technology (Z.H. College of Engg)",
+    "name": "Mohammad Danish",
+    "role": "Smart Class & Projector Tech",
+    "dept": "IT & AV (ITINF)",
+    "username": "itinf_facult_1",
+    "contact": "+91 98230 21004"
+  },
+  {
+    "location": "Faculty of Engineering & Technology (Z.H. College of Engg)",
+    "name": "Rashid Usmani",
+    "role": "Floor Sweeper & Sanitation",
+    "dept": "Sanitation (CLEAN)",
+    "username": "clean_facult_1",
+    "contact": "+91 98230 21005"
+  },
+  {
+    "location": "Faculty of Engineering & Technology (Z.H. College of Engg)",
+    "name": "Zubair Khan",
+    "role": "Floor Sweeper & Sanitation",
+    "dept": "Sanitation (CLEAN)",
+    "username": "clean_facult_2",
+    "contact": "+91 98230 21006"
+  },
+  {
+    "location": "Faculty of Science",
+    "name": "Kamran Alam",
+    "role": "Lab Power Electrician",
+    "dept": "Electrical (ELEC)",
+    "username": "elec_scienc_1",
+    "contact": "+91 98230 22001"
+  },
+  {
+    "location": "Faculty of Science",
+    "name": "Salman Akhtar",
+    "role": "Lab Water & Gas Line Tech",
+    "dept": "Plumbing (PLUMB)",
+    "username": "plumb_scienc_1",
+    "contact": "+91 98230 22002"
+  },
+  {
+    "location": "Faculty of Science",
+    "name": "Parvez Beg",
+    "role": "Glazing & Lab Furniture Tech",
+    "dept": "Civil (CIVIL)",
+    "username": "civil_scienc_1",
+    "contact": "+91 98230 22003"
+  },
+  {
+    "location": "Faculty of Science",
+    "name": "Faisal Siddiqui",
+    "role": "Lab AV & LAN Engineer",
+    "dept": "IT & AV (ITINF)",
+    "username": "itinf_scienc_1",
+    "contact": "+91 98230 22004"
+  },
+  {
+    "location": "Faculty of Science",
+    "name": "Shabbir Qureshi",
+    "role": "Department Sanitation Worker",
+    "dept": "Sanitation (CLEAN)",
+    "username": "clean_scienc_1",
+    "contact": "+91 98230 22005"
+  },
+  {
+    "location": "Faculty of Science",
+    "name": "Mohammad Saifi",
+    "role": "Department Sanitation Worker",
+    "dept": "Sanitation (CLEAN)",
+    "username": "clean_scienc_2",
+    "contact": "+91 98230 22006"
+  },
+  {
+    "location": "Faculty of Arts & Humanities",
+    "name": "Saqib Farooqi",
+    "role": "Lecture Hall Electrician",
+    "dept": "Electrical (ELEC)",
+    "username": "elec_artsha_1",
+    "contact": "+91 98230 23001"
+  },
+  {
+    "location": "Faculty of Arts & Humanities",
+    "name": "Rizwan Malik",
+    "role": "Corridor & Washroom Plumber",
+    "dept": "Plumbing (PLUMB)",
+    "username": "plumb_artsha_1",
+    "contact": "+91 98230 23002"
+  },
+  {
+    "location": "Faculty of Arts & Humanities",
+    "name": "Altamash Khan",
+    "role": "Desk & Bench Carpenter",
+    "dept": "Civil (CIVIL)",
+    "username": "civil_artsha_1",
+    "contact": "+91 98230 23003"
+  },
+  {
+    "location": "Faculty of Arts & Humanities",
+    "name": "Shadab Raza",
+    "role": "PA System & Mic Technician",
+    "dept": "IT & AV (ITINF)",
+    "username": "itinf_artsha_1",
+    "contact": "+91 98230 23004"
+  },
+  {
+    "location": "Faculty of Arts & Humanities",
+    "name": "Shahnawaz Beg",
+    "role": "Lecture Theatre Cleaner",
+    "dept": "Sanitation (CLEAN)",
+    "username": "clean_artsha_1",
+    "contact": "+91 98230 23005"
+  },
+  {
+    "location": "Faculty of Arts & Humanities",
+    "name": "Junaid Ansari",
+    "role": "Corridor Sanitation Worker",
+    "dept": "Sanitation (CLEAN)",
+    "username": "clean_artsha_2",
+    "contact": "+91 98230 23006"
+  },
+  {
+    "location": "Faculty of Commerce & Management",
+    "name": "Akhtar Farooqi",
+    "role": "Block Electrician",
+    "dept": "Electrical (ELEC)",
+    "username": "elec_commer_1",
+    "contact": "+91 98230 24001"
+  },
+  {
+    "location": "Faculty of Commerce & Management",
+    "name": "Bilal Qureshi",
+    "role": "Washroom Maintenance Plumber",
+    "dept": "Plumbing (PLUMB)",
+    "username": "plumb_commer_1",
+    "contact": "+91 98230 24002"
+  },
+  {
+    "location": "Faculty of Commerce & Management",
+    "name": "Sohail Haider",
+    "role": "Furniture & Locksmith",
+    "dept": "Civil (CIVIL)",
+    "username": "civil_commer_1",
+    "contact": "+91 98230 24003"
+  },
+  {
+    "location": "Faculty of Commerce & Management",
+    "name": "Hamza Usmani",
+    "role": "Seminar Room AV Tech",
+    "dept": "IT & AV (ITINF)",
+    "username": "itinf_commer_1",
+    "contact": "+91 98230 24004"
+  },
+  {
+    "location": "Faculty of Commerce & Management",
+    "name": "Mustafa Shah",
+    "role": "Building Sweeper",
+    "dept": "Sanitation (CLEAN)",
+    "username": "clean_commer_1",
+    "contact": "+91 98230 24005"
+  },
+  {
+    "location": "Faculty of Commerce & Management",
+    "name": "Imran Abbasi",
+    "role": "Building Sweeper",
+    "dept": "Sanitation (CLEAN)",
+    "username": "clean_commer_2",
+    "contact": "+91 98230 24006"
+  },
+  {
+    "location": "Faculty of Life Sciences",
+    "name": "Adnan Mansoori",
+    "role": "Greenhouse & Lab Electrician",
+    "dept": "Electrical (ELEC)",
+    "username": "elec_lifesc_1",
+    "contact": "+91 98230 25001"
+  },
+  {
+    "location": "Faculty of Life Sciences",
+    "name": "Waseem Beg",
+    "role": "Continuous Water Supply Tech",
+    "dept": "Plumbing (PLUMB)",
+    "username": "plumb_lifesc_1",
+    "contact": "+91 98230 25002"
+  },
+  {
+    "location": "Faculty of Life Sciences",
+    "name": "Sameer Alam",
+    "role": "Lab Fixtures Carpenter",
+    "dept": "Civil (CIVIL)",
+    "username": "civil_lifesc_1",
+    "contact": "+91 98230 25003"
+  },
+  {
+    "location": "Faculty of Life Sciences",
+    "name": "Tanveer Husain",
+    "role": "Projection & Screen Tech",
+    "dept": "IT & AV (ITINF)",
+    "username": "itinf_lifesc_1",
+    "contact": "+91 98230 25004"
+  },
+  {
+    "location": "Faculty of Life Sciences",
+    "name": "Shahid Mirza",
+    "role": "Hazardous Waste Cleaner",
+    "dept": "Sanitation (CLEAN)",
+    "username": "clean_lifesc_1",
+    "contact": "+91 98230 25005"
+  },
+  {
+    "location": "Faculty of Life Sciences",
+    "name": "Khurram Ansari",
+    "role": "Lab Corridor Cleaner",
+    "dept": "Sanitation (CLEAN)",
+    "username": "clean_lifesc_2",
+    "contact": "+91 98230 25006"
+  },
+  {
+    "location": "Administrative & Examination Block",
+    "name": "Majid Qureshi",
+    "role": "Main Switchgear Electrician",
+    "dept": "Electrical (ELEC)",
+    "username": "elec_admini_1",
+    "contact": "+91 98230 26001"
+  },
+  {
+    "location": "Administrative & Examination Block",
+    "name": "Shakeel Farooqi",
+    "role": "Admin Washroom Plumber",
+    "dept": "Plumbing (PLUMB)",
+    "username": "plumb_admini_1",
+    "contact": "+91 98230 26002"
+  },
+  {
+    "location": "Administrative & Examination Block",
+    "name": "Naeem Siddiqui",
+    "role": "Executive Office Carpenter",
+    "dept": "Civil (CIVIL)",
+    "username": "civil_admini_1",
+    "contact": "+91 98230 26003"
+  },
+  {
+    "location": "Administrative & Examination Block",
+    "name": "Haroon Beg",
+    "role": "Boardroom Conference Tech",
+    "dept": "IT & AV (ITINF)",
+    "username": "itinf_admini_1",
+    "contact": "+91 98230 26004"
+  },
+  {
+    "location": "Administrative & Examination Block",
+    "name": "Yusuf Usmani",
+    "role": "Administrative Floor Cleaner",
+    "dept": "Sanitation (CLEAN)",
+    "username": "clean_admini_1",
+    "contact": "+91 98230 26005"
+  },
+  {
+    "location": "Administrative & Examination Block",
+    "name": "Aasif Khan",
+    "role": "Record Room Cleaner",
+    "dept": "Sanitation (CLEAN)",
+    "username": "clean_admini_2",
+    "contact": "+91 98230 26006"
+  },
+  {
+    "location": "Central Mobile & Heavy Equipment Reserve",
+    "name": "Mansoor Haider",
+    "role": "11kV Substation & Transformer Electrician",
+    "dept": "Electrical (ELEC)",
+    "username": "elec_centra_1",
+    "contact": "+91 98230 30001"
+  },
+  {
+    "location": "Central Mobile & Heavy Equipment Reserve",
+    "name": "Shoaib Qureshi",
+    "role": "Central Street Lighting & Generator Tech",
+    "dept": "Electrical (ELEC)",
+    "username": "elec_centra_2",
+    "contact": "+91 98230 30002"
+  },
+  {
+    "location": "Central Mobile & Heavy Equipment Reserve",
+    "name": "Noman Ansari",
+    "role": "Central Tube-Well & Reservoir Operator",
+    "dept": "Plumbing (PLUMB)",
+    "username": "plumb_centra_1",
+    "contact": "+91 98230 30003"
+  },
+  {
+    "location": "Central Mobile & Heavy Equipment Reserve",
+    "name": "Munawwar Beg",
+    "role": "Hydraulic Sewer Jetting Machine Operator",
+    "dept": "Plumbing (PLUMB)",
+    "username": "plumb_centra_2",
+    "contact": "+91 98230 30004"
+  },
+  {
+    "location": "Central Mobile & Heavy Equipment Reserve",
+    "name": "Javed Mirza",
+    "role": "Structural Arc Welder & Metal Fabricator",
+    "dept": "Civil (CIVIL)",
+    "username": "civil_centra_1",
+    "contact": "+91 98230 30005"
+  },
+  {
+    "location": "Central Mobile & Heavy Equipment Reserve",
+    "name": "Anwar Farooqi",
+    "role": "Central Chiller Plant & Central AC Tech",
+    "dept": "Civil (CIVIL)",
+    "username": "civil_centra_2",
+    "contact": "+91 98230 30006"
+  },
+  {
+    "location": "Central Mobile & Heavy Equipment Reserve",
+    "name": "Rehan Siddiqui",
+    "role": "Campus Optical Fiber Splicing Specialist",
+    "dept": "IT & AV (ITINF)",
+    "username": "itinf_centra_1",
+    "contact": "+91 98230 30007"
+  },
+  {
+    "location": "Central Mobile & Heavy Equipment Reserve",
+    "name": "Sultan Khan",
+    "role": "Central Waste Tractor & Compactor Driver",
+    "dept": "Sanitation (CLEAN)",
+    "username": "clean_centra_1",
+    "contact": "+91 98230 30008"
+  }
+]

@@ -1,0 +1,18 @@
+{% extends "base.html" %}
+{% block title %}Campus directory | CampusCare{% endblock %}
+{% block content %}
+  <section class="card">
+    <h1>Campus directory</h1>
+    <p>Operational view of active reporting locations and maintenance categories.</p>
+    <div class="directory">
+      <h2>Locations</h2>
+      {% for campus in campuses %}
+        <details open><summary>{{ campus.name }} ({{ campus.code }})</summary>
+          {% if campus.buildings.all %}<ul>{% for building in campus.buildings.all %}<li><strong>{{ building.name }}</strong> ({{ building.code }})<ul>{% for floor in building.floors.all %}<li>{{ floor.label|default:"Floor " }}{% if not floor.label %}{{ floor.number }}{% endif %}: {% for room in floor.rooms.all %}{{ room.number }}{% if room.name %} — {{ room.name }}{% endif %}{% if not forloop.last %}; {% endif %}{% empty %}No rooms yet{% endfor %}</li>{% endfor %}</ul></li>{% endfor %}</ul>{% else %}<p>No buildings added yet.</p>{% endif %}
+        </details>
+      {% empty %}<p>No active campuses have been added yet.</p>{% endfor %}
+      <h2>Maintenance categories</h2>
+      {% for department in departments %}<details><summary>{{ department.name }}</summary><ul>{% for category in department.complaint_categories.all %}{% if category.is_active %}<li>{{ category.name }} — target: {{ category.default_sla_hours }} hours</li>{% endif %}{% empty %}<li>No categories assigned.</li>{% endfor %}</ul></details>{% empty %}<p>No departments have been added yet.</p>{% endfor %}
+    </div>
+  </section>
+{% endblock %}

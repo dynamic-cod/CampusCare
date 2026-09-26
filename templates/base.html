@@ -1,0 +1,22 @@
+<!doctype html>
+<html lang="en">
+  <head>
+    <meta charset="utf-8">
+    <meta name="viewport" content="width=device-width, initial-scale=1">
+    <title>{% block title %}AMU Care - Aligarh Muslim University{% endblock %}</title>
+    <style>
+      :root { color-scheme: light; --navy: #1a5490; --gold: #d4a017; --green: #2e7d32; --pale: #f5f7f6; }
+      * { box-sizing: border-box; } body { margin: 0; font: 16px system-ui, sans-serif; background: var(--pale); color: #1c3346; }
+      nav { padding: 1rem max(5vw, 1.5rem); background: white; display: flex; justify-content: space-between; align-items: center; border-bottom: 1px solid #e6e9e8; }
+      .brand { font-weight: 800; color: var(--navy); text-decoration: none; font-size: 1.2rem; } .brand span { color: var(--gold); }
+      nav a { color: var(--navy); margin-left: 1rem; text-decoration: none; font-weight: 600; } nav form { display: inline; } nav form button { margin: 0 0 0 1rem; padding: 0; color: var(--navy); background: transparent; font: inherit; } main { max-width: 1000px; margin: 4rem auto; padding: 0 1.5rem; }
+      .card { background: white; padding: 2rem; border-radius: 14px; border: 1px solid #e6e9e8; } h1 { color: var(--navy); } label { display: block; margin-top: 1rem; font-weight: 650; }
+      input { display: block; margin-top: .4rem; width: 100%; padding: .65rem; border: 1px solid #bfcad0; border-radius: 6px; } button { margin-top: 1.4rem; background: var(--navy); color: white; border: 0; padding: .7rem 1rem; border-radius: 6px; font-weight: 700; cursor: pointer; }
+      .helptext, .errorlist { font-size: .85rem; color: #6b7680; padding-left: 0; list-style: none; } .errorlist { color: #ac3131; } .message { background: #e4f5ec; color: #26734d; padding: .8rem 1rem; border-radius: 6px; } .grid { display: grid; grid-template-columns: repeat(4, 1fr); gap: 1rem; margin: 1.5rem 0; } .metric { background: white; border: 1px solid #e6e9e8; padding: 1.25rem; border-radius: 10px; } .metric strong { display: block; font-size: 1.8rem; color: var(--navy); } .metric span { color: #6b7680; font-size: .9rem; } .actions a { display: inline-block; margin: .4rem .8rem .4rem 0; } .directory { margin-top: 1.5rem; } .directory details { background: white; border: 1px solid #e6e9e8; border-radius: 8px; padding: 1rem; margin: .7rem 0; } .directory summary { cursor: pointer; color: var(--navy); font-weight: 700; } .directory ul { line-height: 1.65; } table th, table td { padding:.7rem; white-space:nowrap; } @media (max-width: 700px) { .grid { grid-template-columns: repeat(2, 1fr); } } 
+    </style>
+  </head>
+  <body>
+    <nav><a class="brand" href="{% url 'core:home' %}">AMU<span>Care</span></a><div>{% if user.is_authenticated %}<a href="{% url 'core:dashboard' %}">Dashboard</a><a href="{% url 'core:complaint_list' %}">Complaints</a>{% if user.profile.role == 'staff' or user.profile.role == 'admin' or user.is_staff %}<a href="{% url 'core:analytics_dashboard' %}">Analytics</a><a href="{% url 'core:campus_directory' %}">Campus directory</a>{% endif %}{% if user.is_staff %}<a href="/admin/">Admin</a>{% endif %}<form action="{% url 'core:logout' %}" method="post">{% csrf_token %}<button type="submit">Log out</button></form>{% else %}<a href="{% url 'core:complaint_create' %}">Report an issue</a><a href="{% url 'core:tracking_form' %}">Track complaint</a><a href="{% url 'core:login' %}">Staff log in</a>{% endif %}</div></nav>
+    <main>{% for message in messages %}<p class="message">{{ message }}</p>{% endfor %}{% block content %}{% endblock %}</main>
+  </body>
+</html>

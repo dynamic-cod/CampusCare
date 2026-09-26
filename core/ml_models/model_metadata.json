@@ -1,0 +1,19 @@
+{
+  "model_name": "TFIDF_LogisticRegression_Urgency_Classifier",
+  "features": [
+    "title",
+    "description",
+    "location",
+    "category"
+  ],
+  "trained_at": "2026-09-24T22:07:34.972321",
+  "training_samples": 1520,
+  "test_samples": 380,
+  "test_accuracy": 1.0,
+  "classes": [
+    "high",
+    "low",
+    "normal",
+    "urgent"
+  ]
+}

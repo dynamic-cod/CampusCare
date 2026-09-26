@@ -1,0 +1,50 @@
+<!DOCTYPE html>
+<html lang="en">
+<head>
+  <meta charset="utf-8">
+  <meta name="viewport" content="width=device-width, initial-scale=1">
+  <title>{% block title %}{{ console_title|default:"Admin Dashboard" }} | CampusCare{% endblock %}</title>
+  <script src="https://cdn.tailwindcss.com"></script>
+</head>
+<body class="bg-slate-50 text-slate-900 min-h-screen flex flex-col">
+  <!-- Unified Shared Admin Header (BUG 4) -->
+  <header class="bg-emerald-950 text-white shadow-sm border-b border-emerald-900">
+    <div class="max-w-7xl mx-auto px-4 sm:px-6 lg:px-8 py-3.5 flex flex-wrap items-center justify-between gap-4">
+      <div class="flex items-center gap-4 min-w-0">
+        <a href="{% url 'core:home' %}" class="text-lg font-bold tracking-tight text-white hover:text-emerald-200 shrink-0">
+          AMU CampusCare
+        </a>
+        <span class="text-emerald-700">|</span>
+        <span class="inline-flex items-center px-3 py-1 rounded-full text-xs font-semibold bg-emerald-800 text-emerald-100 border border-emerald-700 truncate max-w-xs">
+          {% if role_badge_text %}{{ role_badge_text }}{% elif profile.role == "provost" and profile.managed_building %}Provost - {{ profile.managed_building.name }}{% elif profile.role == "hod" and profile.managed_department %}HOD - {{ profile.managed_department.name }}{% else %}Registrar{% endif %}
+        </span>
+      </div>
+      <div class="flex items-center gap-4 text-sm min-w-0">
+        <a href="{% url 'core:dashboard' %}" class="text-emerald-100 hover:text-white font-medium">Dashboard</a>
+        <a href="{% url 'core:complaint_list' %}" class="text-emerald-100 hover:text-white font-medium">Queue</a>
+        <a href="{% url 'core:complaint_report_csv' %}" class="text-emerald-100 hover:text-white font-medium">Export CSV</a>
+        <div class="flex items-center gap-2 pl-2 border-l border-emerald-800 min-w-0">
+          <span class="font-semibold text-white truncate max-w-[180px]" title="{{ user.get_full_name|default:user.username }}">
+            {{ user.get_full_name|default:user.username }}
+          </span>
+          <a href="{% url 'core:logout' %}" class="inline-flex items-center px-3 py-1.5 rounded-md text-xs font-semibold bg-red-600 hover:bg-red-700 text-white transition">
+            Logout
+          </a>
+        </div>
+      </div>
+    </div>
+  </header>
+
+  {% if messages %}
+    <div class="max-w-7xl mx-auto w-full px-4 sm:px-6 lg:px-8 mt-4 space-y-2">
+      {% for message in messages %}
+        <div class="p-3 rounded-lg bg-emerald-50 border border-emerald-200 text-emerald-900 text-sm break-words">{{ message }}</div>
+      {% endfor %}
+    </div>
+  {% endif %}
+
+  <main class="max-w-7xl mx-auto w-full px-4 sm:px-6 lg:px-8 py-6 flex-1 space-y-6">
+    {% block admin_content %}{% block content %}{% endblock %}{% endblock %}
+  </main>
+</body>
+</html>

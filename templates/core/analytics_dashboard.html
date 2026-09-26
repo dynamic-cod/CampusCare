@@ -1,0 +1,41 @@
+{% extends "base.html" %}
+{% block title %}Analytics | CampusCare{% endblock %}
+{% block content %}
+  <section class="card">
+    <h1>Maintenance analytics</h1>
+    <p>Operational view for the last {{ days }} days. <a href="?days=7">7 days</a> · <a href="?days=30">30 days</a> · <a href="?days=90">90 days</a> · <a href="{% url 'core:complaint_report_csv' %}">Download full CSV report</a></p>
+    <div class="grid">
+      <div class="metric"><strong>{{ period_complaints }}</strong><span>Reported in period</span></div>
+      <div class="metric"><strong>{{ period_resolved }}</strong><span>Resolved in period</span></div>
+      <div class="metric"><strong>{{ currently_overdue }}</strong><span>Currently overdue</span></div>
+      <div class="metric"><strong>{% if average_resolution_hours %}{{ average_resolution_hours }}h{% else %}—{% endif %}</strong><span>Average resolution</span></div>
+      <div class="metric"><strong>{% if average_rating %}{{ average_rating }}/5{% else %}—{% endif %}</strong><span>Average rating</span></div>
+    </div>
+  </section>
+
+  <section class="card" style="margin-top:1.5rem">
+    <h2>Complaint trend</h2><p>Reported and resolved maintenance requests over time.</p>
+    <div style="display:flex;align-items:end;gap:4px;height:180px;border-bottom:1px solid #dbe1e3;padding:0 3px">
+      {% for row in trends %}<div title="{{ row.date }}: {{ row.reported }} reported, {{ row.resolved }} resolved" style="flex:1;min-width:3px;display:flex;gap:1px;align-items:end;height:100%"><span style="display:block;flex:1;background:#d89e32;height:{% widthratio row.reported max_trend_value 100 %}%"></span><span style="display:block;flex:1;background:#123250;height:{% widthratio row.resolved max_trend_value 100 %}%"></span></div>{% endfor %}
+    </div><p><small><span style="color:#d89e32">■</span> Reported &nbsp; <span style="color:#123250">■</span> Resolved</small></p>
+  </section>
+
+  <section class="card" style="margin-top:1.5rem">
+    <h2>Department performance</h2>
+    <div style="overflow:auto"><table style="width:100%;border-collapse:collapse;text-align:left"><thead><tr><th>Department</th><th>Reported</th><th>Resolved</th><th>Overdue</th><th>Avg. resolution</th><th>Rating</th></tr></thead><tbody>{% for row in departments %}<tr style="border-top:1px solid #e6e9e8"><td>{{ row.name }}</td><td>{{ row.total }}</td><td>{{ row.resolved }}</td><td>{{ row.overdue }}</td><td>{% if row.average_hours %}{{ row.average_hours }}h{% else %}—{% endif %}</td><td>{% if row.average_rating %}{{ row.average_rating }}/5{% else %}—{% endif %}</td></tr>{% empty %}<tr><td colspan="6">No active departments configured.</td></tr>{% endfor %}</tbody></table></div>
+  </section>
+
+  <section class="card" style="margin-top:1.5rem">
+    <h2>Recurring issue detection</h2><p>Locations with two or more reports for the same category in this period.</p>
+    <div class="directory">{% for row in recurring %}<details><summary>{{ row.category__name }} — {{ row.room__floor__building__name }}, room {{ row.room__number }}{% if row.room__name %} ({{ row.room__name }}){% endif %}</summary><p>{{ row.total }} reports · {{ row.open_total }} still open</p></details>{% empty %}<p>No recurring patterns detected for this period.</p>{% endfor %}</div>
+  </section>
+
+  <section class="card" style="margin-top:1.5rem">
+    <h2>Location heatmap</h2><p>Rooms ranked by number of reports. Darker bars represent more maintenance demand.</p>
+    {% for row in heatmap %}<div style="display:grid;grid-template-columns:minmax(150px,1fr) 3fr auto;gap:.7rem;align-items:center;margin:.7rem 0"><span>{{ row.floor__building__name }} · {{ row.number }}{% if row.name %} — {{ row.name }}{% endif %}</span><span style="height:14px;background:#eef1f1;border-radius:8px;overflow:hidden"><i style="display:block;background:#456f89;width:{% widthratio row.total max_heat 100 %}%;height:100%"></i></span><strong>{{ row.total }} <small>({{ row.open_total }} open)</small></strong></div>{% empty %}<p>No room-based complaints were reported in this period.</p>{% endfor %}
+  </section>
+
+  <section class="card" style="margin-top:1.5rem">
+    <h2>Maintenance history</h2><div class="directory">{% for complaint in history %}<details><summary>{{ complaint.reference }} — {{ complaint.title }}</summary><p>{{ complaint.category.department }} · {{ complaint.category }} · resolved {{ complaint.resolved_at|date:"j M Y" }}{% if complaint.room %} · {{ complaint.room }}{% endif %}</p></details>{% empty %}<p>No completed maintenance history yet.</p>{% endfor %}</div>
+  </section>
+{% endblock %}

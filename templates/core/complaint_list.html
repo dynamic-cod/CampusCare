@@ -1,0 +1,73 @@
+{% extends "base.html" %}
+{% block title %}Complaints | CampusCare{% endblock %}
+{% block content %}
+  <section class="card">
+    <h1>Complaints</h1>
+    <p>{% if user.profile.role == 'student' %}View campus maintenance issues and show your support for issues affecting you.{% else %}Campus maintenance complaint queue.{% endif %}</p>
+    <p class="actions"><a href="?">All</a>{% for value, label in status_choices %}<a href="?status={{ value }}" {% if selected_status == value %}style="font-weight: bold; text-decoration: underline;"{% endif %}>{{ label }}</a>{% endfor %}</p>
+    
+    {% if user.profile.role == 'student' %}
+      <div style="background-color: #e3f2fd; border-left: 4px solid #2196F3; padding: 12px; margin-bottom: 20px; border-radius: 4px;">
+        <strong>💡 Pro Tip:</strong> Find an issue affecting you? Click the 👍 button to show your support. Admins use support counts to prioritize maintenance work!
+      </div>
+    {% endif %}
+    
+    <div class="directory">
+      {% for complaint in complaints %}
+        <div style="border: 1px solid #e0e0e0; border-radius: 8px; padding: 16px; margin-bottom: 12px; background: white;">
+          <div style="display: flex; justify-content: space-between; align-items: start; gap: 12px;">
+            <div style="flex: 1;">
+              <h3 style="margin: 0 0 8px 0;">
+                <a href="{% url 'core:complaint_detail' complaint.reference %}" style="text-decoration: none; color: #1a73e8;">{{ complaint.reference }}</a> — {{ complaint.title }}
+              </h3>
+              <p style="margin: 0 0 8px 0; color: #666; font-size: 14px;">
+                <strong>{{ complaint.category }}</strong> 
+                {% if complaint.get_priority_display %} • {{ complaint.get_priority_display }} priority{% endif %}
+                • {{ complaint.get_status_display }}
+                {% if complaint.assigned_to %} • Assigned to {{ complaint.assigned_to.get_full_name|default:complaint.assigned_to.username }}{% endif %}
+              </p>
+              <p style="margin: 0; color: #555; font-size: 14px;">{{ complaint.description|truncatechars:200 }}</p>
+            </div>
+            
+            <div style="display: flex; flex-direction: column; align-items: center; gap: 8px; min-width: 80px;">
+              {% if complaint.is_public and user.is_authenticated %}
+                <form method="post" action="{% url 'core:complaint_toggle_support' complaint.reference %}" style="margin: 0;">
+                  {% csrf_token %}
+                  <button type="submit" title="{% if complaint.id in user_supported_ids %}Remove support{% else %}Show support for this issue{% endif %}" style="
+                    background: none;
+                    border: 2px solid {% if complaint.id in user_supported_ids %}#FFD700{% else %}#ccc{% endif %};
+                    color: {% if complaint.id in user_supported_ids %}#FFD700{% else %}#999{% endif %};
+                    padding: 8px 12px;
+                    border-radius: 20px;
+                    cursor: pointer;
+                    font-size: 18px;
+                    font-weight: bold;
+                    transition: all 0.2s;
+                  " onmouseover="this.style.background='{% if complaint.id in user_supported_ids %}#fffbea{% else %}#f5f5f5{% endif %}'; this.style.borderColor='{% if complaint.id in user_supported_ids %}#FFD700{% else %}#999{% endif %}'" onmouseout="this.style.background='none'; this.style.borderColor='{% if complaint.id in user_supported_ids %}#FFD700{% else %}#ccc{% endif %}'" >
+                    👍
+                  </button>
+                </form>
+              {% endif %}
+              
+              <div style="text-align: center; font-size: 12px; color: #666;">
+                <strong style="font-size: 18px; color: #ff9800; display: block;">{{ complaint.support_count }}</strong>
+                <span>support{{ complaint.support_count|pluralize }}</span>
+              </div>
+            </div>
+          </div>
+          
+          <div style="margin-top: 12px; padding-top: 12px; border-top: 1px solid #f0f0f0; font-size: 12px; color: #999;">
+            Reported {{ complaint.created_at|date:"M j, Y" }} {% if complaint.reporter_name %} by {{ complaint.reporter_name }}{% endif %}
+          </div>
+        </div>
+      {% empty %}
+        <p style="text-align: center; padding: 40px; color: #666;">
+          <strong>No complaints found</strong><br>
+          {% if selected_status == 'open' %}
+            <small>No open complaints at this time. Great news! 🎉</small>
+          {% endif %}
+        </p>
+      {% endfor %}
+    </div>
+  </section>
+{% endblock %}
