@@ -24,7 +24,7 @@ def get_scoped_complaints_for_user(user):
     if getattr(user, "is_superuser", False) or role_upper in ("REGISTRAR", "ADMIN"):
         return base_qs.all()
 
-    if role_upper == "PROVOST":
+    if role_upper == "PROVOST" or (profile and profile.managed_building_id and role_upper in ("STAFF", "CARETAKER")):
         if profile and profile.managed_building_id:
             return base_qs.filter(
                 models.Q(room__floor__building=profile.managed_building)

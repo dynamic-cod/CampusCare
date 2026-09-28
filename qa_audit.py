@@ -238,7 +238,7 @@ def audit_model_relationships():
 
     # Check if any Room.qr_code_token duplicate issues exist
     from django.db.models import Count
-    dup_qr = Room.objects.values('qr_code_token').annotate(c=Count('id')).filter(c__gt=1).count()
+    dup_qr = Room.objects.filter(qr_code_token__isnull=False).values('qr_code_token').annotate(c=Count('id')).filter(c__gt=1).count()
     if dup_qr > 0:
         issues.append(f"CRITICAL: {dup_qr} duplicate qr_code_tokens found in Room table")
         print(f"  ❌ CRITICAL: {dup_qr} duplicate qr_code_tokens in Room")
@@ -322,7 +322,7 @@ def audit_lifecycle():
     before_count = Complaint.objects.count()
     post_data = {
         "reporter_name": "QA Test User",
-        "reporter_enrollment_number": "QA-2026-001",
+        "reporter_enrollment_number": "gq2001",
         "title": "WiFi not working in Sir Syed North Hall Room 101",
         "description": "The WiFi router in the room shows red light and no internet. Need immediate inspection.",
         "category": category.id,
@@ -333,7 +333,7 @@ def audit_lifecycle():
     
     after_count = Complaint.objects.count()
     if after_count == before_count + 1:
-        complaint = Complaint.objects.filter(reporter_enrollment_number="QA-2026-001").last()
+        complaint = Complaint.objects.filter(reporter_enrollment_number="GQ2001").last()
         created_complaint_refs.append(complaint.reference)
         CREATED_REFERENCES.append(complaint.reference)
         print(f"  ✅ Complaint created: {complaint.reference}, status={complaint.status}")

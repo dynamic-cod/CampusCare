@@ -1,29 +1,63 @@
 {% extends "base.html" %}
 {% block title %}Report an issue | CampusCare{% endblock %}
 {% block content %}
-  <section class="card">
-    <h1>Report a maintenance issue</h1>
-    <p>No account is needed. Enter your full name and university enrollment number, then give the maintenance team a clear description and location. Save your private tracking link after submission.</p>
-    <form method="post" enctype="multipart/form-data" id="complaint-form">
+  <section class="card" style="max-width: 820px; margin: 0 auto; border-top: 5px solid var(--amu-emerald-700);">
+    <div style="margin-bottom: 22px;">
+      <div style="font-size: 11px; font-weight: 700; color: var(--amu-emerald-800); text-transform: uppercase; letter-spacing: 0.5px;">
+        🏛️ ALIGARH MUSLIM UNIVERSITY · FACILITY DISPATCH HELPDESK
+      </div>
+      <h1 style="margin: 4px 0 6px 0; font-size: 1.65rem; color: var(--amu-navy-950);">Report a Maintenance Issue</h1>
+      <p style="margin: 0; color: var(--amu-text-muted); font-size: 0.95rem;">
+        No account or password needed. Enter your university enrollment number, location, and clear issue description. Save your private zero-login receipt after submission.
+      </p>
+    </div>
+    <form method="post" enctype="multipart/form-data" id="complaint-form" novalidate>
       {% csrf_token %}
       
+      {# Real-Time Validation Alert Banner #}
+      <div id="enrollment-error-banner" style="display: none; margin-bottom: 20px; padding: 14px 16px; background-color: #fef2f2; border: 1px solid #fecaca; border-left: 4px solid #ef4444; border-radius: 6px; color: #991b1b; font-size: 14px; font-weight: 500;">
+      </div>
+
+      {% if form.non_field_errors %}
+        <div style="margin-bottom: 20px; padding: 14px 16px; background-color: #fef2f2; border: 1px solid #fecaca; border-left: 4px solid #ef4444; border-radius: 6px; color: #991b1b; font-size: 14px; font-weight: 500;">
+          {{ form.non_field_errors }}
+        </div>
+      {% endif %}
+
       <div style="margin-bottom: 20px;">
-        <label for="{{ form.reporter_name.id_for_label }}">{{ form.reporter_name.label }} *</label>
+        <label for="{{ form.reporter_name.id_for_label }}" style="font-weight: 600; display: block; margin-bottom: 6px; color: #1e293b;">
+          {{ form.reporter_name.label }} <span style="color: #dc2626;">*</span>
+        </label>
         {{ form.reporter_name }}
         {% if form.reporter_name.errors %}
-          <div style="color: red; font-size: 12px;">{{ form.reporter_name.errors.0 }}</div>
+          <div style="color: #dc2626; font-size: 13px; margin-top: 4px; font-weight: 500;" id="reporter_name_server_error">{{ form.reporter_name.errors.0 }}</div>
         {% endif %}
       </div>
 
       <div style="margin-bottom: 20px;">
-        <label for="{{ form.reporter_enrollment_number.id_for_label }}">{{ form.reporter_enrollment_number.label }} *</label>
+        <label for="{{ form.reporter_enrollment_number.id_for_label }}" style="font-weight: 600; display: block; margin-bottom: 6px; color: #1e293b;">
+          {{ form.reporter_enrollment_number.label }} <span style="color: #dc2626;">*</span>
+        </label>
         {{ form.reporter_enrollment_number }}
         {% if form.reporter_enrollment_number.help_text %}
-          <small style="display: block; color: #666; margin-top: 4px;">{{ form.reporter_enrollment_number.help_text }}</small>
+          <small style="display: block; color: #64748b; margin-top: 4px;">{{ form.reporter_enrollment_number.help_text }}</small>
         {% endif %}
         {% if form.reporter_enrollment_number.errors %}
-          <div style="color: red; font-size: 12px;">{{ form.reporter_enrollment_number.errors.0 }}</div>
+          <div style="color: #dc2626; font-size: 13px; margin-top: 4px; font-weight: 500;" id="reporter_enrollment_server_error">{{ form.reporter_enrollment_number.errors.0 }}</div>
         {% endif %}
+      </div>
+
+      <div id="student-remember-card" style="margin-bottom: 22px; display: flex; align-items: center; justify-content: space-between; flex-wrap: wrap; gap: 8px; background: #f8fafc; padding: 10px 14px; border-radius: 6px; border: 1px solid #e2e8f0;">
+        <label style="font-size: 13px; color: #334155; display: inline-flex; align-items: center; gap: 8px; cursor: pointer; margin: 0; font-weight: 500;">
+          <input type="checkbox" id="remember-student-details" checked style="accent-color: #2563eb; width: 16px; height: 16px; cursor: pointer;">
+          <span>Remember my Name &amp; Enrollment on this device</span>
+        </label>
+        <span id="autofill-badge" style="display: none; font-size: 12px; color: #059669; font-weight: 600; align-items: center; gap: 4px;">
+          ✓ Auto-filled
+          <button type="button" id="clear-saved-student-btn" style="background: none; border: none; color: #dc2626; font-size: 12px; cursor: pointer; text-decoration: underline; margin-left: 6px; padding: 0;">
+            Clear saved
+          </button>
+        </span>
       </div>
 
       <div style="margin-bottom: 20px;">
@@ -146,16 +180,22 @@
         {% endif %}
       </div>
 
-      <div style="margin-bottom: 20px;">
-        <label for="{{ form.is_public.id_for_label }}">
-          {{ form.is_public }} {{ form.is_public.label }}
+      <div style="margin-bottom: 20px; background: #f8fafc; padding: 12px 16px; border-radius: 8px; border: 1px solid #e2e8f0;">
+        <input type="hidden" name="_has_is_public" value="1">
+        <label for="{{ form.is_public.id_for_label }}" style="display: flex; align-items: center; gap: 10px; cursor: pointer; font-size: 14px; color: var(--amu-navy-900); font-weight: 500; margin: 0;">
+          {{ form.is_public }} 
+          <span>🌐 Visible on the Campus Public Board (allows fellow students to endorse this report)</span>
         </label>
         {% if form.is_public.errors %}
-          <div style="color: red; font-size: 12px;">{{ form.is_public.errors.0 }}</div>
+          <div style="color: red; font-size: 12px; margin-top: 4px;">{{ form.is_public.errors.0 }}</div>
         {% endif %}
       </div>
 
-      <button type="submit">Submit complaint</button>
+      <div style="margin-top: 24px;">
+        <button type="submit" class="btn-unified btn-unified-emerald" style="height: 46px; min-height: 46px; font-size: 1rem; padding: 0 32px; width: 100%; max-width: 320px;">
+          <span>✍️</span> Submit Complaint Ticket
+        </button>
+      </div>
     </form>
   </section>
 
@@ -414,6 +454,167 @@
         roomField.addEventListener('blur', handleRoomLookup);
       }
       if (locationField) locationField.addEventListener('input', onAnyInputChange);
+
+      // ── Strict Student Enrollment & Name Validation ──
+      const complaintForm = document.getElementById('complaint-form');
+      const nameInput = document.getElementById('id_reporter_name');
+      const enrollmentInput = document.getElementById('id_reporter_enrollment_number');
+      const errorBanner = document.getElementById('enrollment-error-banner');
+      const rememberCheckbox = document.getElementById('remember-student-details');
+      const autofillBadge = document.getElementById('autofill-badge');
+      const clearSavedBtn = document.getElementById('clear-saved-student-btn');
+
+      // ── Student LocalStorage Auto-Fill Initialization ──
+      const isRememberEnabled = localStorage.getItem('amu_remember_student') !== 'false';
+      if (rememberCheckbox) rememberCheckbox.checked = isRememberEnabled;
+
+      const savedStudentName = localStorage.getItem('amu_student_name');
+      const savedStudentEnroll = localStorage.getItem('amu_student_enrollment');
+
+      if (isRememberEnabled) {
+        let filled = false;
+        if (nameInput && !nameInput.value.trim() && savedStudentName) {
+          nameInput.value = savedStudentName;
+          filled = true;
+        }
+        if (enrollmentInput && !enrollmentInput.value.trim() && savedStudentEnroll) {
+          enrollmentInput.value = savedStudentEnroll;
+          if (isValidEnrollment(savedStudentEnroll)) {
+            enrollmentInput.style.borderColor = '#10b981';
+          }
+          filled = true;
+        }
+        if (filled && autofillBadge) {
+          autofillBadge.style.display = 'inline-flex';
+        }
+      }
+
+      if (rememberCheckbox) {
+        rememberCheckbox.addEventListener('change', function() {
+          localStorage.setItem('amu_remember_student', this.checked ? 'true' : 'false');
+          if (!this.checked) {
+            localStorage.removeItem('amu_student_name');
+            localStorage.removeItem('amu_student_enrollment');
+            if (autofillBadge) autofillBadge.style.display = 'none';
+          }
+        });
+      }
+
+      if (clearSavedBtn) {
+        clearSavedBtn.addEventListener('click', function(e) {
+          e.preventDefault();
+          localStorage.removeItem('amu_student_name');
+          localStorage.removeItem('amu_student_enrollment');
+          if (nameInput) nameInput.value = '';
+          if (enrollmentInput) {
+            enrollmentInput.value = '';
+            enrollmentInput.style.borderColor = '';
+          }
+          if (autofillBadge) autofillBadge.style.display = 'none';
+        });
+      }
+
+      function validateEnrollmentForm() {
+        const nameVal = nameInput ? nameInput.value.trim() : '';
+        const enrollVal = enrollmentInput ? enrollmentInput.value.trim() : '';
+
+        // Reset styles and error banner
+        if (nameInput) nameInput.style.borderColor = '';
+        if (enrollmentInput) enrollmentInput.style.borderColor = '';
+        if (errorBanner) {
+          errorBanner.style.display = 'none';
+          errorBanner.innerHTML = '';
+        }
+
+        const isNameEmpty = !nameVal;
+        const isEnrollEmpty = !enrollVal;
+
+        if (isNameEmpty || isEnrollEmpty) {
+          showEnrollmentError('Both Name and Enrollment Number are required.');
+          if (isNameEmpty && nameInput) nameInput.style.borderColor = '#ef4444';
+          if (isEnrollEmpty && enrollmentInput) enrollmentInput.style.borderColor = '#ef4444';
+          if (isNameEmpty && nameInput) {
+            nameInput.focus();
+          } else if (isEnrollEmpty && enrollmentInput) {
+            enrollmentInput.focus();
+          }
+          return false;
+        }
+
+        // Enrollment format: Exactly 6 characters (first 2 letters, remaining 4 digits)
+        const enrollmentRegex = /^[a-zA-Z]{2}\d{4}$/;
+        if (!enrollmentRegex.test(enrollVal)) {
+          showEnrollmentError("Invalid Enrollment Number. It must be exactly 6 characters: 2 letters followed by 4 digits (e.g., gq1234 or AA0001).");
+          if (enrollmentInput) {
+            enrollmentInput.style.borderColor = '#ef4444';
+            enrollmentInput.focus();
+          }
+          return false;
+        }
+
+        return true;
+      }
+
+      function showEnrollmentError(msg) {
+        if (errorBanner) {
+          errorBanner.innerHTML = `<strong>⚠️ Validation Error:</strong> ${msg}`;
+          errorBanner.style.display = 'block';
+          errorBanner.scrollIntoView({ behavior: 'smooth', block: 'center' });
+        }
+      }
+
+      if (complaintForm) {
+        complaintForm.addEventListener('submit', function(e) {
+          if (!validateEnrollmentForm()) {
+            e.preventDefault();
+            e.stopPropagation();
+            return false;
+          }
+          // Save verified student details on submit if remember is checked
+          if (rememberCheckbox && rememberCheckbox.checked) {
+            const nameVal = nameInput ? nameInput.value.trim() : '';
+            const enrollVal = enrollmentInput ? enrollmentInput.value.trim() : '';
+            if (nameVal) localStorage.setItem('amu_student_name', nameVal);
+            if (enrollVal) localStorage.setItem('amu_student_enrollment', enrollVal);
+          }
+        });
+      }
+
+      function isValidEnrollment(v) {
+        return /^[a-zA-Z]{2}\d{4}$/.test(v);
+      }
+
+      if (enrollmentInput) {
+        enrollmentInput.addEventListener('input', function() {
+          const val = this.value.trim();
+          if (isValidEnrollment(val)) {
+            this.style.borderColor = '#10b981';
+            if (errorBanner) errorBanner.style.display = 'none';
+          } else if (val.length >= 6 && !isValidEnrollment(val)) {
+            this.style.borderColor = '#ef4444';
+          } else {
+            this.style.borderColor = '';
+          }
+        });
+        enrollmentInput.addEventListener('blur', function() {
+          const val = this.value.trim();
+          if (val && !isValidEnrollment(val)) {
+            this.style.borderColor = '#ef4444';
+            showEnrollmentError("Invalid Enrollment Number. It must be exactly 6 characters: 2 letters followed by 4 digits (e.g., gq1234 or AA0001).");
+          }
+        });
+      }
+
+      if (nameInput) {
+        nameInput.addEventListener('input', function() {
+          if (this.value.trim()) {
+            this.style.borderColor = '';
+            if (errorBanner && errorBanner.textContent.includes('Name')) {
+              errorBanner.style.display = 'none';
+            }
+          }
+        });
+      }
     });
   </script>
 {% endblock %}

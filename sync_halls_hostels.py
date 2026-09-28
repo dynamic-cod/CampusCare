@@ -175,17 +175,19 @@ def ingest_halls_and_hostels(csv_path=None):
             used_codes.add(child_code)
             hostel_records.append(child_bldg)
 
-            # Ensure child hostel has at least 1 floor and default room for student bookings
-            floor, _ = Floor.objects.get_or_create(
-                building=child_bldg,
-                number=1,
-                defaults={"label": "Floor 1"}
-            )
-            Room.objects.get_or_create(
-                floor=floor,
-                number="101",
-                defaults={"name": f"{hostel_name} Room 101", "is_active": True}
-            )
+            # Ensure child hostel has floors and rooms 001 to 150
+            f1, _ = Floor.objects.get_or_create(building=child_bldg, number=1, defaults={"label": "Floor 1"})
+            f2, _ = Floor.objects.get_or_create(building=child_bldg, number=2, defaults={"label": "Floor 2"})
+            f3, _ = Floor.objects.get_or_create(building=child_bldg, number=3, defaults={"label": "Floor 3"})
+            hostel_floors = [f1, f2, f3]
+            for r_i in range(1, 151):
+                r_num = f"{r_i:03d}"
+                r_floor = hostel_floors[(r_i - 1) // 50]
+                Room.objects.get_or_create(
+                    floor=r_floor,
+                    number=r_num,
+                    defaults={"name": f"{hostel_name} Room {r_num}", "qr_code_token": f"QR-{child_code}-{r_num}", "is_active": True}
+                )
 
             status = "Created" if child_created else "Updated"
             print(f"  ✓ [{child_code:12}] {parent_hall.code} -> {hostel_name[:35]:35} ({status})")

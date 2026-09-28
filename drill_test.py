@@ -18,6 +18,7 @@ import io
 from datetime import datetime
 
 os.environ.setdefault("DJANGO_SETTINGS_MODULE", "campuscare.settings")
+os.environ.setdefault("DISABLE_RATE_LIMITING", "true")
 import django
 django.setup()
 
@@ -176,7 +177,7 @@ def run_hall_drill():
         )
         title, description = scenario
 
-        provosts = list(hall.managing_provosts.all())
+        provosts = list(hall.managing_provosts.filter(role=UserProfile.Role.PROVOST))
         provost_user = provosts[0].user if provosts else None
 
         complaint, http_status = lodge_complaint(

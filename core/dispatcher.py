@@ -1,4 +1,4 @@
-# Auto-dispatch engine for CampusCare complaints (156-person staff roster + campus reserve fallback).
+import time
 import uuid
 from django.contrib.auth.models import User
 from django.db.models import Count, Q
@@ -9,6 +9,50 @@ from .staff_matcher import suggest_staff
 # Department codes that route exclusively to the hall's Dining Incharge
 MESS_DEPT_CODES = frozenset({"MESS", "DINING"})
 
+_ACTIVE_LOAD_CACHE = None
+_ACTIVE_LOAD_TIMESTAMP = 0.0
+
+
+def get_active_staff_loads(force_refresh: bool = False) -> dict:
+    """Return a dictionary of {staff_user_id: active_complaints_count} cached with 2-second TTL."""
+    global _ACTIVE_LOAD_CACHE, _ACTIVE_LOAD_TIMESTAMP
+    now = time.time()
+    if force_refresh or _ACTIVE_LOAD_CACHE is None or (now - _ACTIVE_LOAD_TIMESTAMP) > 2.0:
+        _ACTIVE_LOAD_CACHE = dict(
+            Complaint.objects.exclude(status__in=[Complaint.Status.RESOLVED, Complaint.Status.CLOSED])
+            .filter(assigned_to__isnull=False)
+            .values("assigned_to_id")
+            .annotate(cnt=Count("id"))
+            .values_list("assigned_to_id", "cnt")
+        )
+        _ACTIVE_LOAD_TIMESTAMP = now
+    return _ACTIVE_LOAD_CACHE
+
+
+def record_staff_assignment(user_id: int):
+    """Increment local cached active count for immediate accurate least-load sorting."""
+    global _ACTIVE_LOAD_CACHE
+    if _ACTIVE_LOAD_CACHE is not None:
+        _ACTIVE_LOAD_CACHE[user_id] = _ACTIVE_LOAD_CACHE.get(user_id, 0) + 1
+
+
+def record_staff_release(user_id: int):
+    """Decrement local cached active count when a complaint is resolved or closed."""
+    global _ACTIVE_LOAD_CACHE
+    if _ACTIVE_LOAD_CACHE is not None and user_id in _ACTIVE_LOAD_CACHE:
+        _ACTIVE_LOAD_CACHE[user_id] = max(0, _ACTIVE_LOAD_CACHE[user_id] - 1)
+
+
+def pick_least_loaded_staff(users):
+    """Pick the least-loaded technician from an iterable or queryset of users."""
+    user_list = list(users)
+    if not user_list:
+        return None
+    if len(user_list) == 1:
+        return user_list[0]
+    loads = get_active_staff_loads()
+    return min(user_list, key=lambda u: (loads.get(u.id, 0), u.id))
+
 
 def select_best_technician(complaint: Complaint):
     """
@@ -18,11 +62,7 @@ def select_best_technician(complaint: Complaint):
     For MESS / DINING complaints the hall's dedicated Dining Incharge is always preferred
     before the generic AI roster matcher is consulted.
     """
-    active_filter = ~Q(assigned_complaints__status__in=[Complaint.Status.RESOLVED, Complaint.Status.CLOSED])
-    staff_qs = (
-        User.objects.filter(is_active=True, profile__role=UserProfile.Role.STAFF)
-        .annotate(active_load=Count("assigned_complaints", filter=active_filter))
-    )
+    staff_base = User.objects.filter(is_active=True, profile__role=UserProfile.Role.STAFF)
 
     building = complaint.room.floor.building if (complaint.room_id and complaint.room) else None
     dept = complaint.category.department if (complaint.category_id and complaint.category) else None
@@ -30,25 +70,38 @@ def select_best_technician(complaint: Complaint):
     b_name = building.name if building else ""
     loc_text = f"{b_name} {complaint.location_description or ''}".strip()
 
+    # Build target buildings list including constituent hostel and its parent hall
+    target_buildings = []
+    if building:
+        target_buildings.append(building)
+        if building.parent and building.parent not in target_buildings:
+            target_buildings.append(building.parent)
+    else:
+        try:
+            from .ai_triage import extract_building_and_department
+            extracted_bldg, _ = extract_building_and_department(
+                location_text=loc_text, title=complaint.title or "", description=complaint.description or ""
+            )
+            if extracted_bldg:
+                target_buildings.append(extracted_bldg)
+                if extracted_bldg.parent and extracted_bldg.parent not in target_buildings:
+                    target_buildings.append(extracted_bldg.parent)
+        except Exception:
+            pass
+
     # 0. MESS / DINING fast-path — route directly to the hall's Dining Incharge
     if dept and dept.code in MESS_DEPT_CODES:
-        if building:
-            dining_user = (
-                staff_qs.filter(
-                    profile__managed_building=building,
+        if target_buildings:
+            dining_user = pick_least_loaded_staff(
+                staff_base.filter(
+                    profile__managed_building__in=target_buildings,
                     username__startswith="dining_",
                 )
-                .order_by("active_load", "id")
-                .first()
             )
             if dining_user:
                 return dining_user
         # Hall not resolved — pick the least-loaded Dining Incharge across campus
-        dining_any = (
-            staff_qs.filter(username__startswith="dining_")
-            .order_by("active_load", "id")
-            .first()
-        )
+        dining_any = pick_least_loaded_staff(staff_base.filter(username__startswith="dining_"))
         if dining_any:
             return dining_any
 
@@ -62,35 +115,47 @@ def select_best_technician(complaint: Complaint):
     )
     if matches:
         usernames = [m["username"] for m in matches if m.get("username")]
-        matched_users = list(staff_qs.filter(username__in=usernames).order_by("active_load", "id"))
-        if matched_users:
-            return matched_users[0]
+        matched_user = pick_least_loaded_staff(staff_base.filter(username__in=usernames))
+        if matched_user:
+            return matched_user
 
-    # 2. Match building + department directly in DB
-    if building and dept:
-        b_dept_staff = staff_qs.filter(
-            Q(profile__hall_location__icontains=building.name) | Q(profile__managed_building=building),
-            profile__department=dept,
-        ).order_by("active_load", "id").first()
+    # 2. Match building + department directly in DB (checking building, parent hall, and short_name)
+    if target_buildings and dept:
+        b_names_q = Q()
+        for tb in target_buildings:
+            b_names_q |= Q(profile__hall_location__icontains=tb.name)
+            if tb.short_name:
+                b_names_q |= Q(profile__hall_location__icontains=tb.short_name)
+        b_dept_staff = pick_least_loaded_staff(
+            staff_base.filter(
+                (b_names_q | Q(profile__managed_building__in=target_buildings)),
+                profile__department=dept,
+            )
+        )
         if b_dept_staff:
             return b_dept_staff
 
     # 3. Match building staff
-    if building:
-        b_staff = staff_qs.filter(
-            Q(profile__hall_location__icontains=building.name) | Q(profile__managed_building=building)
-        ).order_by("active_load", "id").first()
+    if target_buildings:
+        b_names_q = Q()
+        for tb in target_buildings:
+            b_names_q |= Q(profile__hall_location__icontains=tb.name)
+            if tb.short_name:
+                b_names_q |= Q(profile__hall_location__icontains=tb.short_name)
+        b_staff = pick_least_loaded_staff(
+            staff_base.filter(b_names_q | Q(profile__managed_building__in=target_buildings))
+        )
         if b_staff:
             return b_staff
 
     # 4. Match department staff
     if dept:
-        d_staff = staff_qs.filter(profile__department=dept).order_by("active_load", "id").first()
+        d_staff = pick_least_loaded_staff(staff_base.filter(profile__department=dept))
         if d_staff:
             return d_staff
 
     # 5. Fallback — least-loaded active technician across the entire campus
-    return staff_qs.order_by("active_load", "id").first()
+    return pick_least_loaded_staff(staff_base)
 
 
 def auto_dispatch_complaint(complaint: Complaint, save: bool = True) -> Complaint:
@@ -105,11 +170,13 @@ def auto_dispatch_complaint(complaint: Complaint, save: bool = True) -> Complain
         if tech:
             complaint.assigned_to = tech
             complaint.assigned_at = timezone.now()
+            record_staff_assignment(tech.id)
             if complaint.status == Complaint.Status.OPEN:
                 complaint.status = Complaint.Status.ASSIGNED
             if save and complaint.pk:
                 complaint.save(update_fields=["assigned_to", "assigned_at", "status", "staff_task_token", "updated_at"])
     return complaint
+
 
 
 def backfill_unassigned_complaints() -> int:

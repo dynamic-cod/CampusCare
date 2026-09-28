@@ -1,6 +1,7 @@
 """Image compression and multi-tenant scoping utilities for CampusCare."""
 import io
 import os
+import re
 import sys
 from PIL import Image, ImageOps
 from django.core.files.uploadedfile import InMemoryUploadedFile
@@ -9,6 +10,7 @@ from django.core.files.uploadedfile import InMemoryUploadedFile
 def compress_uploaded_image(uploaded_file, max_dimension=1280, quality=75):
     """
     Compress and normalize an uploaded image in-memory using Pillow.
+    - Validates image integrity and format (rejects non-images by returning None)
     - Applies EXIF orientation via ImageOps.exif_transpose
     - Converts RGBA/P/other modes to RGB
     - Resizes down to max_dimension using LANCZOS while preserving aspect ratio
@@ -20,9 +22,13 @@ def compress_uploaded_image(uploaded_file, max_dimension=1280, quality=75):
     try:
         uploaded_file.seek(0)
         img = Image.open(uploaded_file)
+        # Strictly verify format is an accepted raster image type
+        if getattr(img, "format", None) not in ("JPEG", "PNG", "WEBP", "MPO", "GIF", "BMP", "TIFF"):
+            return None
+        # Load pixel data to verify image integrity
+        img.load()
     except Exception:
-        uploaded_file.seek(0)
-        return uploaded_file
+        return None
 
     # 1. Handle EXIF orientation
     try:
@@ -49,10 +55,11 @@ def compress_uploaded_image(uploaded_file, max_dimension=1280, quality=75):
     img.save(output, format="JPEG", quality=quality, optimize=True)
     output.seek(0)
 
-    # Build .jpg filename
+    # Build sanitized .jpg filename (strip path traversal and unsafe characters)
     original_name = getattr(uploaded_file, "name", "upload.jpg") or "upload.jpg"
     base_name = os.path.splitext(os.path.basename(original_name))[0]
-    new_filename = f"{base_name}.jpg"
+    safe_base = re.sub(r"[^a-zA-Z0-9_-]", "_", base_name).strip("_") or "upload"
+    new_filename = f"{safe_base}.jpg"
 
     field_name = getattr(uploaded_file, "field_name", "image")
     return InMemoryUploadedFile(

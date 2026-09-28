@@ -83,7 +83,7 @@ def run_system_flows_tests():
 
         post_data = {
             "reporter_name": "Rahil Khan",
-            "reporter_enrollment_number": "GJ20249876",
+            "reporter_enrollment_number": "GJ9876",
             "title": "Broken water pipe in bathroom",
             "category": best_sugg["id"],
             "description": "Pipe is leaking and water is flooding bathroom floor at Sir Syed Hall North.",
@@ -94,7 +94,7 @@ def run_system_flows_tests():
         resp_submit = client.post("/complaints/new/", data=post_data, follow=True)
         print(f"  - POST /complaints/new/ status: {resp_submit.status_code}")
 
-        complaint_a = Complaint.objects.filter(reporter_enrollment_number="GJ20249876").order_by("-created_at").first()
+        complaint_a = Complaint.objects.filter(reporter_enrollment_number="GJ9876").order_by("-created_at").first()
         if not complaint_a:
             print("  ❌ FAIL: Complaint was not created in database.")
             all_passed = False

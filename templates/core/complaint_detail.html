@@ -1,109 +1,767 @@
 {% extends "base.html" %}
 {% block title %}{{ complaint.reference }} | AMU Care{% endblock %}
 {% block content %}
+
+<style>
+  /* ── Unified Button & Action Design System ── */
+  .btn-row {
+    display: flex;
+    flex-wrap: wrap;
+    gap: 12px;
+    align-items: center;
+  }
+  .btn-unified {
+    display: inline-flex;
+    align-items: center;
+    justify-content: center;
+    gap: 8px;
+    min-height: 44px;
+    height: 44px;
+    padding: 0 20px;
+    font-size: 0.95rem;
+    font-weight: 600;
+    border-radius: 8px;
+    border: 1px solid transparent;
+    cursor: pointer;
+    text-decoration: none;
+    line-height: 1;
+    white-space: nowrap;
+    box-sizing: border-box;
+    vertical-align: middle;
+    margin: 0;
+    transition: all 0.2s cubic-bezier(0.4, 0, 0.2, 1);
+    font-family: inherit;
+  }
+  .btn-unified:hover {
+    transform: translateY(-1px);
+    box-shadow: 0 4px 12px rgba(0, 0, 0, 0.12);
+  }
+  .btn-unified:active {
+    transform: translateY(0);
+  }
+  .btn-unified-primary {
+    background: #2563eb;
+    color: #ffffff !important;
+    border-color: #2563eb;
+  }
+  .btn-unified-primary:hover {
+    background: #1d4ed8;
+    border-color: #1d4ed8;
+  }
+  .btn-unified-success {
+    background: #16a34a;
+    color: #ffffff !important;
+    border-color: #16a34a;
+  }
+  .btn-unified-success:hover {
+    background: #15803d;
+    border-color: #15803d;
+  }
+  .btn-unified-danger {
+    background: #dc2626;
+    color: #ffffff !important;
+    border-color: #dc2626;
+  }
+  .btn-unified-danger:hover {
+    background: #b91c1c;
+    border-color: #b91c1c;
+  }
+  .btn-unified-danger-outline {
+    background: #fef2f2;
+    color: #dc2626 !important;
+    border: 1.5px solid #f87171;
+  }
+  .btn-unified-danger-outline:hover {
+    background: #fee2e2;
+    color: #b91c1c !important;
+    border-color: #ef4444;
+  }
+  .btn-unified-secondary {
+    background: #f1f5f9;
+    color: #334155 !important;
+    border-color: #cbd5e1;
+  }
+  .btn-unified-secondary:hover {
+    background: #e2e8f0;
+    color: #0f172a !important;
+  }
+
+  /* ── Status Pills & Badges ── */
+  .status-strip {
+    display: flex;
+    align-items: center;
+    flex-wrap: wrap;
+    gap: 10px;
+    margin: 12px 0 16px 0;
+  }
+  .pill {
+    display: inline-flex;
+    align-items: center;
+    gap: 6px;
+    padding: 6px 14px;
+    border-radius: 9999px;
+    font-size: 0.88rem;
+    font-weight: 700;
+    letter-spacing: 0.3px;
+  }
+  .pill-ref {
+    background: #0f172a;
+    color: #f8fafc;
+    font-family: ui-monospace, SFMono-Regular, monospace;
+    font-size: 0.95rem;
+  }
+  .pill-closed {
+    background: #dcfce7;
+    color: #15803d;
+    border: 1px solid #86efac;
+  }
+  .pill-resolved {
+    background: #fef9c3;
+    color: #854d0e;
+    border: 1px solid #fde047;
+  }
+  .pill-in-progress {
+    background: #e0f2fe;
+    color: #0369a1;
+    border: 1px solid #7dd3fc;
+  }
+  .pill-assigned {
+    background: #ede9fe;
+    color: #6d28d9;
+    border: 1px solid #c4b5fd;
+  }
+  .pill-open {
+    background: #ffedd5;
+    color: #c2410c;
+    border: 1px solid #fdba74;
+  }
+  .pill-priority {
+    background: #f1f5f9;
+    color: #475569;
+    border: 1px solid #e2e8f0;
+    font-weight: 600;
+  }
+
+  /* ── Real-Time Live Sync Indicator ── */
+  .live-sync-tag {
+    display: inline-flex;
+    align-items: center;
+    gap: 6px;
+    background: #f8fafc;
+    color: #059669;
+    border: 1px solid #a7f3d0;
+    padding: 5px 12px;
+    border-radius: 9999px;
+    font-size: 0.78rem;
+    font-weight: 700;
+    margin-left: auto;
+  }
+  .pulse-dot {
+    width: 8px;
+    height: 8px;
+    background: #10b981;
+    border-radius: 50%;
+    box-shadow: 0 0 0 0 rgba(16, 185, 129, 0.7);
+    animation: livePulse 2s infinite;
+  }
+  @keyframes livePulse {
+    0% { transform: scale(0.95); box-shadow: 0 0 0 0 rgba(16, 185, 129, 0.7); }
+    70% { transform: scale(1); box-shadow: 0 0 0 6px rgba(16, 185, 129, 0); }
+    100% { transform: scale(0.95); box-shadow: 0 0 0 0 rgba(16, 185, 129, 0); }
+  }
+
+  /* ── Form Inputs Sizing ── */
+  .input-standard {
+    width: 100%;
+    max-width: 480px;
+    min-height: 44px;
+    padding: 10px 14px;
+    border: 1.5px solid #cbd5e1;
+    border-radius: 8px;
+    font-size: 0.95rem;
+    box-sizing: border-box;
+    font-family: inherit;
+    background: #ffffff;
+    transition: border-color 0.2s;
+  }
+  .input-standard:focus {
+    outline: none;
+    border-color: #2563eb;
+    box-shadow: 0 0 0 3px rgba(37, 99, 235, 0.15);
+  }
+
+  @media (max-width: 640px) {
+    .btn-row .btn-unified {
+      width: 100%;
+      flex: 1 1 100%;
+    }
+  }
+</style>
+
+  {% if is_tracking_view %}
+  <!-- High-Visibility Token Display & Screenshot Prompt Banner -->
+  <div class="token-notification-card" style="background: linear-gradient(135deg, #0f172a 0%, #1e293b 100%); color: #f8fafc; border-radius: 14px; padding: 22px 24px; margin-bottom: 24px; box-shadow: 0 10px 25px -5px rgba(0, 0, 0, 0.25); border: 1px solid #334155;">
+    <div style="display: flex; align-items: center; justify-content: space-between; flex-wrap: wrap; gap: 12px; margin-bottom: 12px;">
+      <div style="display: flex; align-items: center; gap: 8px;">
+        <span style="font-size: 1.4rem;">🔑</span>
+        <div>
+          <h2 style="margin: 0; color: #f8fafc; font-size: 1.25rem; font-weight: 700;">Zero-Login Tracking Token</h2>
+          <p style="margin: 2px 0 0 0; color: #94a3b8; font-size: 0.85rem;">Private student access receipt — no passwords, SMS, or email required</p>
+        </div>
+      </div>
+      <span style="background: rgba(56, 189, 248, 0.15); color: #38bdf8; border: 1px solid rgba(56, 189, 248, 0.3); font-weight: 600; font-size: 0.8rem; padding: 4px 12px; border-radius: 9999px;">
+        Private Ticket Receipt
+      </span>
+    </div>
+
+    <div style="background: #020617; border: 1px dashed #38bdf8; border-radius: 10px; padding: 14px 18px; margin: 16px 0; display: flex; align-items: center; justify-content: space-between; flex-wrap: wrap; gap: 14px;">
+      <span id="trackingTokenDisplay" style="font-family: ui-monospace, SFMono-Regular, Menlo, Monaco, Consolas, 'Liberation Mono', 'Courier New', monospace; font-size: 1.35rem; font-weight: 700; color: #38bdf8; letter-spacing: 2px; user-select: all; word-break: break-all;">{{ complaint.tracking_token }}</span>
+      <button type="button" id="copyTokenBtn" onclick="copyTrackingToken()" class="btn-unified btn-unified-primary" style="flex-shrink: 0;">
+        <span id="copyIcon">📋</span> <span id="copyText">Copy Token</span>
+      </button>
+    </div>
+
+    <div style="background: rgba(234, 179, 8, 0.15); border-left: 4px solid #eab308; border-radius: 6px; padding: 12px 16px; color: #fef08a; font-size: 0.92rem; line-height: 1.5;">
+      ⚠️ Save this token! Take a screenshot or copy this code. You will need this token to track progress and verify when your issue is resolved.
+    </div>
+  </div>
+
+  <script>
+    function copyTrackingToken() {
+      const token = "{{ complaint.tracking_token }}";
+      const copyText = document.getElementById("copyText");
+      const copyBtn = document.getElementById("copyTokenBtn");
+      
+      function showSuccess() {
+        if (copyText) copyText.textContent = "Copied!";
+        if (copyBtn) copyBtn.style.background = "#16a34a";
+        setTimeout(function() {
+          if (copyText) copyText.textContent = "Copy Token";
+          if (copyBtn) copyBtn.style.background = "#2563eb";
+        }, 2500);
+      }
+
+      if (navigator.clipboard && window.isSecureContext) {
+        navigator.clipboard.writeText(token).then(showSuccess).catch(function() {
+          fallbackCopy(token);
+        });
+      } else {
+        fallbackCopy(token);
+      }
+
+      function fallbackCopy(text) {
+        const textArea = document.createElement("textarea");
+        textArea.value = text;
+        textArea.style.position = "fixed";
+        textArea.style.left = "-999999px";
+        textArea.style.top = "-999999px";
+        document.body.appendChild(textArea);
+        textArea.focus();
+        textArea.select();
+        try {
+          document.execCommand('copy');
+          showSuccess();
+        } catch (err) {
+          alert("Tracking Token: " + text);
+        }
+        textArea.remove();
+      }
+    }
+  </script>
+  {% endif %}
+
+  <!-- Main Complaint Card -->
   <section class="card">
-    {% if is_tracking_view %}<p><strong>Keep this page’s link private.</strong> It is your personal complaint tracking receipt.</p>{% else %}<p><a href="{% url 'core:complaint_list' %}">← Back to complaints</a></p>{% endif %}
-    <h1>{{ complaint.title }}</h1>
-    <p><strong>{{ complaint.reference }}</strong> · {{ complaint.get_status_display }} · {{ complaint.get_priority_display }} priority</p>
-    <p>{{ complaint.description|linebreaksbr }}</p>
-    <p><strong>Category:</strong> {{ complaint.category }}<br><strong>Location:</strong> {% if complaint.room %}{{ complaint.room }}{% else %}{{ complaint.location_description }}{% endif %}<br><strong>Reported:</strong> {{ complaint.created_at|date:"j M Y, H:i" }}</p>
-    {% if complaint.sla_due_at %}<p><strong>SLA deadline:</strong> {{ complaint.sla_due_at|date:"j M Y, H:i" }}{% if complaint.is_sla_breached %} <span style="color:#ac3131">(overdue)</span>{% endif %}{% if complaint.escalation_level %}<br><strong>Escalation level:</strong> {{ complaint.escalation_level }} — escalated {{ complaint.escalated_at|date:"j M Y, H:i" }}{% endif %}</p>{% endif %}
-    {% if complaint.resolution_note %}<p><strong>Resolution note:</strong> {{ complaint.resolution_note }}</p>{% endif %}
-    {% if complaint.category_detected_automatically %}<p><strong>Smart category suggestion:</strong> {{ complaint.category }} ({{ complaint.category_detection_confidence }}% confidence)</p>{% endif %}
-    <p><strong>Priority score:</strong> {{ complaint.priority_score }}/100 — {{ complaint.priority_reason }}</p>
-    {% if complaint.duplicate_of %}<p class="message"><strong>Similar issue found:</strong> <a href="{% url 'core:complaint_detail' complaint.duplicate_of.reference %}">{{ complaint.duplicate_of.reference }} — {{ complaint.duplicate_of.title }}</a>. This report remains open and contributes to campus demand.</p>{% endif %}
-    {% if complaint.is_public and user.is_authenticated %}<form method="post" action="{% url 'core:complaint_toggle_support' complaint.reference %}">{% csrf_token %}<button type="submit">{% if has_supported %}Remove support{% else %}Support this issue{% endif %} ({{ complaint.support_count }})</button></form>{% endif %}
-    {% if complaint.evidence %}<p><strong>Evidence</strong><br><img src="{{ complaint.evidence.url }}" alt="Evidence for {{ complaint.title }}" style="max-width:100%;width:420px;border-radius:8px"></p>{% endif %}
+    {% if is_tracking_view %}
+      <p style="margin-top: 0; color: #64748b; font-size: 0.9rem;">
+        <strong>Keep this page’s link private.</strong> It is your personal complaint tracking receipt.
+      </p>
+    {% else %}
+      <p style="margin-top: 0;"><a href="{% url 'core:complaint_list' %}" style="color: #2563eb; text-decoration: none; font-weight: 600;">← Back to complaints</a></p>
+    {% endif %}
+
+    <h1 style="margin: 4px 0 10px 0; font-size: 1.7rem; color: #0f172a;">{{ complaint.title }}</h1>
+
+    <!-- Enhanced Real-Time Status Strip -->
+    <div class="status-strip" id="mainStatusStrip">
+      <span class="pill pill-ref">{{ complaint.reference }}</span>
+
+      <!-- Primary Status Badge with Exact Timestamp -->
+      <span id="headerStatusPill" class="pill {% if complaint.status == 'closed' %}pill-closed{% elif complaint.status == 'resolved' %}pill-resolved{% elif complaint.status == 'in_progress' %}pill-in-progress{% elif complaint.status == 'assigned' %}pill-assigned{% else %}pill-open{% endif %}">
+        {% if complaint.status == "closed" %}
+          ✓ Closed on {{ complaint.closed_at|date:"j M Y, H:i" }}
+        {% elif complaint.status == "resolved" %}
+          ⚡ Resolved on {{ complaint.resolved_at|date:"j M Y, H:i"|default:"Recently" }} (Awaiting Student Verification)
+        {% elif complaint.status == "in_progress" %}
+          🔧 In Progress
+        {% elif complaint.status == "assigned" %}
+          📋 Assigned to Maintenance Staff
+        {% else %}
+          ⏳ Open
+        {% endif %}
+      </span>
+
+      <span class="pill pill-priority">{{ complaint.get_priority_display }} Priority</span>
+
+      {% if is_tracking_view %}
+        <span class="live-sync-tag" id="liveSyncTag" title="Real-time syncing enabled">
+          <span class="pulse-dot"></span> Live Sync Active
+        </span>
+      {% endif %}
+    </div>
+
+    <p style="font-size: 1rem; line-height: 1.6; color: #334155; margin: 14px 0;">{{ complaint.description|linebreaksbr }}</p>
+
+    <div style="background: #f8fafc; border: 1px solid #e2e8f0; border-radius: 8px; padding: 14px 18px; margin: 16px 0; line-height: 1.7; font-size: 0.95rem;">
+      <strong>Category:</strong> {{ complaint.category }}<br>
+      <strong>Location:</strong> {% if complaint.room %}{{ complaint.room }}{% else %}{{ complaint.location_description }}{% endif %}<br>
+      <strong>Reported:</strong> {{ complaint.created_at|date:"j M Y, H:i" }}
+      {% if complaint.closed_at %}
+        <br><strong>Closed At:</strong> <span style="color: #15803d; font-weight: 700;">{{ complaint.closed_at|date:"j M Y, H:i" }}</span>
+      {% endif %}
+    </div>
+
+    {% if complaint.sla_due_at %}
+      <p style="margin: 8px 0; font-size: 0.92rem; color: #64748b;">
+        <strong>SLA deadline:</strong> {{ complaint.sla_due_at|date:"j M Y, H:i" }}
+        {% if complaint.is_sla_breached %} <span style="color:#ac3131; font-weight:700;">(overdue)</span>{% endif %}
+        {% if complaint.escalation_level %}<br><strong>Escalation level:</strong> {{ complaint.escalation_level }} — escalated {{ complaint.escalated_at|date:"j M Y, H:i" }}{% endif %}
+      </p>
+    {% endif %}
+
+    {% if complaint.resolution_note %}
+      <p style="margin: 8px 0; padding: 10px 14px; background: #f0fdf4; border-left: 3px solid #16a34a; border-radius: 4px; font-size: 0.92rem;">
+        <strong>Technician resolution note:</strong> {{ complaint.resolution_note }}
+      </p>
+    {% endif %}
+
+    {% if complaint.category_detected_automatically %}
+      <p style="color: #64748b; font-size: 0.88rem; margin: 6px 0;">
+        Smart category suggestion: {{ complaint.category }} ({{ complaint.category_detection_confidence }}% confidence)
+      </p>
+    {% endif %}
+
+    {% if complaint.duplicate_of %}
+      <p class="message" style="margin-top: 12px;">
+        <strong>Similar issue found:</strong> <a href="{% url 'core:complaint_detail' complaint.duplicate_of.reference %}">{{ complaint.duplicate_of.reference }} — {{ complaint.duplicate_of.title }}</a>. This report remains open and contributes to campus demand.
+      </p>
+    {% endif %}
+
+    {% if complaint.is_public and user.is_authenticated %}
+      <form method="post" action="{% url 'core:complaint_toggle_support' complaint.reference %}" style="margin-top: 12px;">
+        {% csrf_token %}
+        <button type="submit" class="btn-unified btn-unified-secondary">
+          {% if has_supported %}Remove support{% else %}👍 Support this issue{% endif %} ({{ complaint.support_count }})
+        </button>
+      </form>
+    {% endif %}
+
+    {% if complaint.evidence %}
+      <div style="margin-top: 16px;">
+        <strong>Evidence</strong><br>
+        <img src="{{ complaint.evidence.url }}" alt="Evidence for {{ complaint.title }}" style="max-width:100%; width:420px; border-radius:8px; margin-top: 6px; box-shadow: 0 2px 8px rgba(0,0,0,0.08);">
+      </div>
+    {% endif %}
+
+    {% if complaint.resolution_proof %}
+      <div style="margin-top: 16px; padding: 14px 18px; background: #f0fdf4; border: 1px solid #bbf7d0; border-radius: 8px;">
+        <strong style="color: #166534; font-size: 0.95rem; display: flex; align-items: center; gap: 6px;">
+          <span>📷</span> Resolution Proof (Visual Verification)
+        </strong>
+        <img src="{{ complaint.resolution_proof.url }}" alt="Resolution proof for {{ complaint.title }}" style="max-width:100%; width:440px; border-radius:8px; margin-top: 8px; box-shadow: 0 2px 8px rgba(0,0,0,0.08);">
+      </div>
+    {% endif %}
+
     {% if complaint.assigned_to %}
-      <div style="margin-top:14px; padding:12px 16px; background:#e8f5e9; border-left:4px solid #2e7d32; border-radius:4px;">
-        <div style="font-weight:600; color:#1b5e20; margin-bottom:4px;">👷 Assigned Maintenance Staff (Auto-Assigned by AI)</div>
-        <p style="margin:2px 0;"><strong>Name:</strong> {{ complaint.assigned_to.get_full_name|default:complaint.assigned_to.username }}</p>
+      <div style="margin-top: 18px; padding: 14px 18px; background: #f0fdf4; border-left: 4px solid #16a34a; border-radius: 8px;">
+        <div style="font-weight: 700; color: #166534; margin-bottom: 6px; display: flex; align-items: center; gap: 6px;">
+          👷 Assigned Maintenance Staff
+        </div>
+        <p style="margin: 2px 0;"><strong>Name:</strong> {{ complaint.assigned_to.get_full_name|default:complaint.assigned_to.username }}</p>
         {% if complaint.assigned_to.profile.department %}
-          <p style="margin:2px 0;"><strong>Department:</strong> {{ complaint.assigned_to.profile.department.name }}</p>
+          <p style="margin: 2px 0;"><strong>Department:</strong> {{ complaint.assigned_to.profile.department.name }}</p>
         {% endif %}
         {% if complaint.assigned_to.profile.hall_location %}
-          <p style="margin:2px 0;"><strong>Assigned Facility / Hall:</strong> {{ complaint.assigned_to.profile.hall_location }}</p>
+          <p style="margin: 2px 0;"><strong>Assigned Facility / Hall:</strong> {{ complaint.assigned_to.profile.hall_location }}</p>
         {% endif %}
         {% if complaint.assigned_to.profile.phone %}
-          <p style="margin:2px 0;"><strong>Official Contact:</strong> {{ complaint.assigned_to.profile.phone }}</p>
+          <p style="margin: 2px 0;"><strong>Official Contact:</strong> {{ complaint.assigned_to.profile.phone }}</p>
         {% endif %}
         {% if complaint.assigned_at %}
-          <small style="color:#666;">Assigned on {{ complaint.assigned_at|date:"j M Y, H:i" }}</small>
+          <small style="color: #64748b; display: block; margin-top: 4px;">Assigned on {{ complaint.assigned_at|date:"j M Y, H:i" }}</small>
         {% endif %}
-        {% if can_manage and complaint.staff_task_token %}
-          <p style="margin:8px 0 0 0;"><a href="{% url 'core:technician_task_view' complaint.staff_task_token %}" style="color:#1b5e20; font-weight:600; text-decoration:underline;">🔧 Open Technician Zero-Login Task Portal (/task/{{ complaint.staff_task_token }}/)</a></p>
+        {% if complaint.staff_task_token %}
+          <div style="margin-top: 10px; padding-top: 8px; border-top: 1px dashed #bbf7d0;">
+            <a href="{% url 'core:technician_task_view' complaint.staff_task_token %}" target="_blank" class="btn-unified btn-unified-secondary" style="height: 38px; min-height: 38px; font-size: 0.88rem;">
+              🔧 Open Technician Zero-Login Task Portal
+            </a>
+          </div>
         {% endif %}
       </div>
     {% endif %}
   </section>
-    {% if is_tracking_view and complaint.status == "resolved" %}
-    <section class="card" style="margin-top:1.5rem; border-left:4px solid #16a34a;">
-      <h2>✅ Confirm Resolution &amp; Close Complaint</h2>
-      <p>If the maintenance work is satisfactory, confirm closure below. Attached media files will be automatically purged to save campus storage.</p>
-      <form method="post" action="{% url 'core:student_confirm_resolution' complaint.tracking_token %}">
+
+  <!-- In-Progress Guidance Card (Awaiting Technician Resolution - Strictly for Student Tracking) -->
+  {% if is_student_view and complaint.status != "resolved" and complaint.status != "closed" %}
+    <section class="card" id="inProgressGuidanceCard" style="margin-top: 1.5rem; border-left: 4px solid #0284c7; background: #f0f9ff;">
+      <div style="display: flex; align-items: flex-start; gap: 14px;">
+        <span style="font-size: 1.8rem; line-height: 1;">⏳</span>
+        <div style="flex: 1;">
+          <h3 style="margin: 0 0 6px 0; color: #0369a1; font-size: 1.15rem; font-weight: 700;">
+            Current Status: {{ complaint.get_status_display }}
+          </h3>
+          <p style="margin: 0 0 10px 0; color: #0c4a6e; font-size: 0.95rem; line-height: 1.55;">
+            {% if complaint.assigned_to %}
+              This ticket is currently assigned to <strong>{{ complaint.assigned_to.get_full_name|default:complaint.assigned_to.username }}</strong>.
+            {% else %}
+              This ticket is currently queued for technician assignment.
+            {% endif %}
+            Once maintenance staff inspects the site and marks the task as <strong>Resolved</strong>, the <strong>"✅ Confirm Resolution &amp; Close Complaint"</strong> button and rating form will appear right here for you.
+          </p>
+          {% if complaint.staff_task_token %}
+            <div style="margin-top: 12px; padding: 12px 14px; background: #e0f2fe; border-radius: 8px;">
+              <span style="font-weight: 600; color: #0369a1; display: block; margin-bottom: 6px; font-size: 0.88rem;">
+                🛠️ Technician Simulation / Test Action:
+              </span>
+              <a href="{% url 'core:technician_task_view' complaint.staff_task_token %}" target="_blank" class="btn-unified btn-unified-primary" style="height: 38px; min-height: 38px; font-size: 0.88rem;">
+                Open Technician Portal to Mark Resolved →
+              </a>
+            </div>
+          {% endif %}
+        </div>
+      </div>
+    </section>
+  {% endif %}
+
+  <!-- Closed & Verified State (Prominent Confirmation with Exact Date & Time) -->
+  {% if complaint.status == "closed" %}
+    <section class="card" id="closedVerificationCard" style="margin-top: 1.5rem; border-left: 4px solid #16a34a; background: #f0fdf4;">
+      <div style="display: flex; align-items: center; justify-content: space-between; flex-wrap: wrap; gap: 10px; margin-bottom: 12px;">
+        <span class="pill pill-closed" style="font-size: 1rem; padding: 8px 18px;">
+          ✓ Closed &amp; Verified by Student on {{ complaint.closed_at|date:"j M Y, H:i"|default:complaint.closed_at }}
+        </span>
+        <span style="font-size: 0.85rem; color: #15803d; font-weight: 600;">
+          All media purged &bull; Permanent closure
+        </span>
+      </div>
+
+      {% if complaint.feedback or complaint.feedback_rating or complaint.feedback_comments %}
+        <div style="background: #ffffff; border: 1px solid #bbf7d0; border-radius: 8px; padding: 18px; margin-top: 14px;">
+          <h3 style="margin-top: 0; margin-bottom: 10px; font-size: 1.1rem; color: #15803d; display: flex; align-items: center; gap: 6px;">
+            <span>⭐</span> Recorded Student Satisfaction &amp; Feedback
+          </h3>
+          <p style="margin: 0 0 8px 0; font-size: 1rem; color: #1e293b;">
+            <strong>Rating:</strong>
+            {% if complaint.feedback %}
+              {{ complaint.feedback.rating }}/5 stars
+              <span style="color: #eab308; margin-left: 6px;">
+                {% if complaint.feedback.rating == 5 %}⭐⭐⭐⭐⭐
+                {% elif complaint.feedback.rating == 4 %}⭐⭐⭐⭐
+                {% elif complaint.feedback.rating == 3 %}⭐⭐⭐
+                {% elif complaint.feedback.rating == 2 %}⭐⭐
+                {% else %}⭐{% endif %}
+              </span>
+            {% elif complaint.feedback_rating %}
+              {{ complaint.feedback_rating }}/5 stars
+            {% else %}
+              Not rated
+            {% endif %}
+          </p>
+          {% if complaint.feedback.comment or complaint.feedback_comments %}
+            <p style="margin: 0; color: #334155; font-size: 0.95rem; line-height: 1.5; font-style: italic;">
+              “{{ complaint.feedback.comment|default:complaint.feedback_comments }}”
+            </p>
+          {% endif %}
+        </div>
+      {% endif %}
+    </section>
+  {% endif %}
+
+  <!-- Resolved State: Dynamic Student Action Section (Verification & Dispute Controls - Strictly Isolated to Student Portal) -->
+  {% if is_student_view and complaint.status == "resolved" %}
+    <section class="card" id="resolvedVerificationSection" style="margin-top: 1.5rem; border-left: 4px solid #16a34a; background: #ffffff;">
+      <div class="alert alert-info" style="background: #e0f2fe; border-left: 4px solid #0284c7; color: #0369a1; padding: 14px 18px; border-radius: 8px; margin-bottom: 20px; font-weight: 600; font-size: 1rem; display: flex; align-items: center; gap: 10px;">
+        <span>🔔</span>
+        <span>The technician has marked this issue as resolved. Please inspect the work and confirm below.</span>
+      </div>
+
+      <h2 style="color: #166534; font-size: 1.3rem; margin-top: 0;">✅ Confirm Resolution &amp; Close Complaint</h2>
+      <p style="color: #4b5563; font-size: 0.95rem; margin-bottom: 20px; line-height: 1.5;">
+        If the maintenance work is satisfactory, confirm closure below. Attached media files will be automatically purged from server disks to protect campus storage.
+      </p>
+
+      <form method="post" action="{% url 'core:complaint_confirm' complaint.tracking_token %}">
         {% csrf_token %}
-        <div style="margin-bottom:10px;">
-          <label><strong>Rate Service (1-5):</strong>
-            <select name="rating">
-              <option value="5" selected>5 - Excellent</option>
-              <option value="4">4 - Good</option>
-              <option value="3">3 - Average</option>
-              <option value="2">2 - Poor</option>
-              <option value="1">1 - Unacceptable</option>
-            </select>
+        <div style="margin-bottom: 18px;">
+          <label for="rating-select" style="display: block; font-weight: 600; margin-bottom: 8px; color: #1e293b;">
+            How satisfied are you with the repair? (Optional)
           </label>
+          <select name="rating" id="rating-select" class="input-standard">
+            <option value="">Select rating (optional)</option>
+            <option value="5" selected>⭐⭐⭐⭐⭐ (5/5 - Excellent)</option>
+            <option value="4">⭐⭐⭐⭐ (4/5 - Good)</option>
+            <option value="3">⭐⭐⭐ (3/5 - Average)</option>
+            <option value="2">⭐⭐ (2/5 - Poor)</option>
+            <option value="1">⭐ (1/5 - Unacceptable)</option>
+          </select>
         </div>
-        <div style="margin-bottom:10px;">
-          <input type="text" name="comment" placeholder="Optional feedback comment..." style="width:100%;">
+
+        <div style="margin-bottom: 22px;">
+          <label for="feedback-input" style="display: block; font-weight: 600; margin-bottom: 8px; color: #1e293b;">
+            Feedback Comments (Optional)
+          </label>
+          <textarea name="feedback" id="feedback-input" rows="3" class="input-standard" style="min-height: 80px;" placeholder="Optional feedback about the resolution or staff service..."></textarea>
         </div>
-        <button type="submit" style="background:#16a34a; color:white; border:none; padding:10px 16px; border-radius:4px; cursor:pointer;">
-          Confirm Resolution &amp; Close
-        </button>
+
+        <!-- Uniformly Sized and Positioned Action Buttons -->
+        <div class="btn-row">
+          <button type="submit" class="btn-unified btn-unified-success">
+            ✅ Confirm &amp; Close Complaint
+          </button>
+          <a href="#reopen-dispute-section" onclick="document.getElementById('reopen-dispute-section').scrollIntoView({behavior: 'smooth'}); return true;" class="btn-unified btn-unified-danger-outline">
+            ⚠️ Issue Not Fixed? Reopen Complaint
+          </a>
+        </div>
       </form>
     </section>
 
-    <section class="card" style="margin-top:1.5rem; border-left:4px solid #dc2626;">
-      <h2>⚠️ Dispute &amp; Reopen Complaint</h2>
-      <p>Still not fixed? Provide an explanation (minimum 10 characters) and upload mandatory photo proof to reopen and escalate to Urgent priority.</p>
-      <form method="post" enctype="multipart/form-data" action="{% url 'core:student_reopen_complaint' complaint.tracking_token %}">
+    <!-- Dispute / Reopen section -->
+    <section id="reopen-dispute-section" class="card" style="margin-top: 1.5rem; border-left: 4px solid #dc2626;">
+      <h2 style="color: #991b1b; font-size: 1.25rem; margin-top: 0; display: flex; align-items: center; gap: 8px;">
+        <span>⚠️</span> Dispute &amp; Reopen Complaint
+      </h2>
+      <p style="color: #64748b; font-size: 0.95rem; margin-bottom: 18px; line-height: 1.5;">
+        Still not fixed? Provide an explanation (minimum 10 characters) and upload mandatory photo proof to reopen and escalate to Urgent priority.
+      </p>
+      <form method="post" enctype="multipart/form-data" action="{% url 'core:complaint_reopen' complaint.tracking_token %}">
         {% csrf_token %}
-        <div style="margin-bottom:10px;">
-          <label><strong>Explanation (min 10 chars) *</strong></label>
-          <textarea name="reopen_reason" rows="3" minlength="10" required placeholder="Explain why the issue is still unresolved..."></textarea>
+        <div style="margin-bottom: 16px;">
+          <label style="display: block; font-weight: 600; margin-bottom: 6px; color: #1e293b;">
+            Explanation (min 10 chars) *
+          </label>
+          <textarea name="reopen_reason" rows="3" minlength="10" required class="input-standard" style="min-height: 80px;" placeholder="Explain why the issue is still unresolved..."></textarea>
         </div>
-        <div style="margin-bottom:10px;">
-          <label><strong>Mandatory Photo Proof *</strong></label>
-          <input type="file" name="reopen_proof" accept="image/*" capture="environment" required>
+        <div style="margin-bottom: 20px;">
+          <label style="display: block; font-weight: 600; margin-bottom: 6px; color: #1e293b;">
+            Mandatory Photo Proof *
+          </label>
+          <input type="file" name="reopen_proof" accept="image/*" capture="environment" required style="padding: 8px; border: 1.5px solid #cbd5e1; border-radius: 8px; width: 100%; max-width: 480px; box-sizing: border-box;">
         </div>
-        <button type="submit" style="background:#dc2626; color:white; border:none; padding:10px 16px; border-radius:4px; cursor:pointer;">
-          Submit Proof &amp; Reopen (Escalate to Urgent)
-        </button>
+        <div class="btn-row">
+          <button type="submit" class="btn-unified btn-unified-danger">
+            Submit Proof &amp; Reopen (Escalate to Urgent)
+          </button>
+        </div>
       </form>
     </section>
   {% endif %}
 
-  {% if verification_form %}
-    <section class="card" style="margin-top:1.5rem"><h2>Was this issue resolved?</h2><p>The maintenance team has marked this complaint as resolved. Please verify the result.</p><form method="post" action="{% url 'core:complaint_verify_resolution' complaint.reference %}">{% csrf_token %}<input type="hidden" name="tracking_token" value="{{ complaint.tracking_token }}">{{ verification_form.as_p }}<button type="submit">Submit verification</button></form></section>
-  {% elif reopen_form %}
-    <section class="card" style="margin-top:1.5rem"><h2>Need to reopen this issue?</h2><form method="post" action="{% url 'core:complaint_reopen' complaint.reference %}">{% csrf_token %}<input type="hidden" name="tracking_token" value="{{ complaint.tracking_token }}">{{ reopen_form.as_p }}<button type="submit">Reopen complaint</button></form></section>
+  <!-- Legacy forms for student sessions -->
+  {% if is_student_view and complaint.status != "resolved" and complaint.status != "closed" %}
+    {% if verification_form %}
+      <section class="card" style="margin-top:1.5rem"><h2>Was this issue resolved?</h2><p>The maintenance team has marked this complaint as resolved. Please verify the result.</p><form method="post" action="{% url 'core:complaint_verify_resolution' complaint.reference %}">{% csrf_token %}<input type="hidden" name="tracking_token" value="{{ complaint.tracking_token }}">{{ verification_form.as_p }}<button type="submit" class="btn-unified btn-unified-primary">Submit verification</button></form></section>
+    {% elif reopen_form %}
+      <section class="card" style="margin-top:1.5rem"><h2>Need to reopen this issue?</h2><form method="post" action="{% url 'core:complaint_reopen' complaint.reference %}">{% csrf_token %}<input type="hidden" name="tracking_token" value="{{ complaint.tracking_token }}">{{ reopen_form.as_p }}<button type="submit" class="btn-unified btn-unified-danger">Reopen complaint</button></form></section>
+    {% endif %}
   {% endif %}
-  {% if feedback_form %}
-    <section class="card" style="margin-top:1.5rem"><h2>Rate the resolution</h2><p>Your feedback helps improve maintenance service.</p><form method="post" action="{% url 'core:complaint_feedback' complaint.reference %}">{% csrf_token %}<input type="hidden" name="tracking_token" value="{{ complaint.tracking_token }}">{{ feedback_form.as_p }}<button type="submit">Submit feedback</button></form></section>
-  {% elif has_feedback %}
-    <section class="card" style="margin-top:1.5rem"><h2>Student feedback</h2><p><strong>{{ complaint.feedback.rating }}/5</strong>{% if complaint.feedback.comment %} — {{ complaint.feedback.comment }}{% endif %}</p></section>
-  {% endif %}
-  {% if can_assign_and_update_status %}
-    <section class="card" style="margin-top:1.5rem; background-color: #f0f7ff; border-left: 4px solid #2196F3;">
-      <h2>🔐 Admin Management (Admin Only)</h2>
-      <p><strong>Note:</strong> Only administrators can assign complaints to staff and update status.</p>
-      <form method="post" action="{% url 'core:complaint_assign' complaint.reference %}">{% csrf_token %}{{ assignment_form.as_p }}<button type="submit">Save assignment</button></form><hr style="margin:2rem 0;border:0;border-top:1px solid #e6e9e8"><form method="post" enctype="multipart/form-data" action="{% url 'core:complaint_update_status' complaint.reference %}">{% csrf_token %}{{ status_form.as_p }}<button type="submit">Update status</button></form>
+
+  {% if can_resolve and complaint.status != "resolved" and complaint.status != "closed" %}
+    <section id="admin-resolve-section" class="card" style="margin-top:1.5rem; background-color: #f0fdf4; border-left: 4px solid #16a34a; border-radius: 8px; padding: 22px;">
+      <div style="display: flex; align-items: center; justify-content: space-between; flex-wrap: wrap; gap: 8px; margin-bottom: 8px;">
+        <h2 style="margin: 0; color: #166534; font-size: 1.25rem; display: flex; align-items: center; gap: 8px;">
+          <span>✅</span> Complete Work &amp; Mark as Resolved
+        </h2>
+        <span style="font-size: 0.8rem; font-weight: 600; color: #15803d; background: #dcfce7; padding: 4px 10px; border-radius: 9999px; border: 1px solid #86efac;">
+          Provost / HOD / Caretaker Action
+        </span>
+      </div>
+      <p style="color: #475569; font-size: 0.95rem; margin-bottom: 18px; line-height: 1.5;">
+        Has the physical repair been completed? Upload photographic proof of the finished work or a photo/scan of the student-signed physical dispatch slip. This transitions the complaint to <strong>Resolved</strong> and triggers student verification on their tracking portal.
+      </p>
+
+      <form method="post" enctype="multipart/form-data" action="{% url 'core:complaint_admin_resolve' complaint.reference %}">
+        {% csrf_token %}
+        <div style="margin-bottom: 16px;">
+          <label style="display: block; font-weight: 600; margin-bottom: 6px; color: #1e293b;">
+            Proof Photo or Signed Paper Dispatch Slip *
+          </label>
+          <input type="file" name="resolution_proof" accept="image/*" capture="environment" required style="padding: 8px; border: 1.5px solid #cbd5e1; border-radius: 8px; width: 100%; max-width: 480px; box-sizing: border-box; background: white;">
+          <small style="display: block; color: #64748b; margin-top: 4px;">
+            Accepted formats: JPG, PNG, WEBP. Upload a photo of the completed repair or the signed physical daily dispatch slip.
+          </small>
+        </div>
+
+        <div style="margin-bottom: 18px;">
+          <label style="display: block; font-weight: 600; margin-bottom: 6px; color: #1e293b;">
+            Inspection / Resolution Notes (Optional)
+          </label>
+          <textarea name="resolution_note" rows="3" class="input-standard" style="min-height: 80px;" placeholder="e.g. Inspected on-site by Caretaker office. Work verified and confirmed satisfactory."></textarea>
+        </div>
+
+        <div class="btn-row">
+          <button type="submit" class="btn-unified btn-unified-success" style="background:#16a34a; color:#fff; border-color:#16a34a;">
+            ✅ Mark as Resolved (Pending Student Verification)
+          </button>
+        </div>
+      </form>
     </section>
-  {% elif can_manage %}
-    <section class="card" style="margin-top:1.5rem; background-color: #fff3cd; border-left: 4px solid #FF9800;">
-      <h2>⚠️ Staff Access Limited</h2>
-      <p><strong>Assignment and status updates are restricted to administrators only.</strong> Administrators use these tools to manage and track complaint resolution.</p>
-      <p>If you need to update a complaint, please contact an administrator.</p>
+  {% elif complaint.status == "resolved" %}
+    <section class="card" style="margin-top:1.5rem; background-color: #f0fdf4; border-left: 4px solid #16a34a; border-radius: 8px; padding: 18px;">
+      <div style="display: flex; align-items: center; justify-content: space-between; flex-wrap: wrap; gap: 8px;">
+        <div style="display: flex; align-items: center; gap: 8px; color: #166534; font-weight: 700; font-size: 1.05rem;">
+          <span>⏳</span> Resolution Recorded — Awaiting Student Verification
+        </div>
+        <span class="badge bg-amber-100 text-amber-800" style="padding: 4px 10px; border-radius: 9999px; font-weight: 600; font-size: 0.8rem; border: 1px solid #fde68a;">
+          Pending Student Verification
+        </span>
+      </div>
+      <p style="color: #475569; font-size: 0.95rem; margin-top: 6px; margin-bottom: 0;">
+        This complaint was marked as resolved on {{ complaint.resolved_at|date:"j M Y, H:i" }}. Resolution proof has been uploaded. The student has been prompted via their private tracking portal to inspect and confirm closure.
+      </p>
     </section>
   {% endif %}
-  <section class="card" style="margin-top:1.5rem"><h2>Status history</h2>{% for event in complaint.status_history.all %}<p><strong>{{ event.get_status_display }}</strong> · {{ event.created_at|date:"j M Y, H:i" }}{% if event.changed_by %} by {{ event.changed_by.get_full_name|default:event.changed_by.username }}{% endif %}<br>{% if event.note %}{{ event.note }}{% endif %}</p>{% empty %}<p>No status updates yet.</p>{% endfor %}</section>
+
+  <!-- Real-Time Interactive Status History Timeline -->
+  <section class="audit-log-card" style="margin-top: 1.5rem;">
+    <div class="audit-log-header">
+      <h2 style="margin: 0; font-size: 1.25rem; color: var(--amu-navy-950); display: flex; align-items: center; gap: 8px;">
+        <span>📜</span> Status History &amp; Audit Trail
+      </h2>
+      <span class="audit-badge">
+        <span>🛡️</span> Immutable Audit Log
+      </span>
+    </div>
+
+    <div class="timeline-wrapper" id="statusHistoryTimeline">
+      {% for event in complaint.status_history.all %}
+        <div class="timeline-entry" data-history-id="{{ event.id }}">
+          <div class="timeline-marker status-{{ event.status }}"></div>
+          <div class="timeline-body">
+            <div class="timeline-top">
+              <div class="timeline-title-wrap">
+                <span class="pill pill-{{ event.status }}">{{ event.get_status_display }}</span>
+              </div>
+              <time class="timeline-time">
+                <span>🕒</span> {{ event.created_at|date:"j M Y, H:i" }}
+              </time>
+            </div>
+            <div class="timeline-actor">
+              {% if event.changed_by %}
+                <span>👤</span> Updated by <strong>{{ event.changed_by.get_full_name|default:event.changed_by.username }}</strong>
+              {% else %}
+                <span>⚙️</span> Automated by <strong>System Dispatcher / Student Action</strong>
+              {% endif %}
+            </div>
+            {% if event.note %}
+              <p class="timeline-note">{{ event.note }}</p>
+            {% endif %}
+          </div>
+        </div>
+      {% empty %}
+        <p style="color: #64748b; font-style: italic; margin-left: 10px;">No status updates recorded yet.</p>
+      {% endfor %}
+    </div>
+  </section>
+
+  {% if is_tracking_view %}
+  <!-- Client-Side Real-Time Polling & Live Sync Engine -->
+  <div id="liveUpdateToast" style="display: none; position: fixed; bottom: 24px; right: 24px; z-index: 9999; background: #0f172a; color: #f8fafc; padding: 14px 20px; border-radius: 10px; box-shadow: 0 10px 25px rgba(0,0,0,0.3); border-left: 4px solid #10b981; font-weight: 500; font-size: 0.95rem;">
+    <div style="display: flex; align-items: center; gap: 10px;">
+      <span style="font-size: 1.2rem;">⚡</span>
+      <div>
+        <div style="font-weight: 700; color: #38bdf8;" id="liveToastTitle">Ticket Status Updated!</div>
+        <div style="font-size: 0.85rem; color: #cbd5e1;" id="liveToastBody">Refreshing view with latest updates...</div>
+      </div>
+    </div>
+  </div>
+
+  <script>
+    (function initRealtimeSync() {
+      const trackingToken = "{{ complaint.tracking_token }}";
+      let currentStatus = "{{ complaint.status }}";
+      let currentHistoryCount = {{ complaint.status_history.count|default:0 }};
+      const syncUrl = "{% url 'core:complaint_status_poll' complaint.tracking_token %}";
+      const liveSyncTag = document.getElementById("liveSyncTag");
+      const liveToast = document.getElementById("liveUpdateToast");
+      const toastTitle = document.getElementById("liveToastTitle");
+      const toastBody = document.getElementById("liveToastBody");
+      let pollTimer = null;
+      let isPolling = false;
+
+      async function pollStatus() {
+        if (isPolling) return;
+        isPolling = true;
+        try {
+          const response = await fetch(syncUrl, {
+            headers: {
+              'Accept': 'application/json',
+              'X-Requested-With': 'XMLHttpRequest'
+            }
+          });
+          if (!response.ok) return;
+          const data = await response.json();
+
+          // Check if status or history entries have changed
+          if (data.status !== currentStatus || data.history_count !== currentHistoryCount) {
+            console.log("Real-time update detected:", data);
+            if (liveToast) {
+              if (toastTitle) toastTitle.textContent = "Status Updated: " + (data.status_display || data.status);
+              if (toastBody) toastBody.textContent = "Refreshing view with latest technician updates...";
+              liveToast.style.display = "block";
+            }
+            setTimeout(function() {
+              window.location.reload();
+            }, 800);
+          } else {
+            // Flash the live sync dot green & update title timestamp
+            const pulse = document.querySelector('.pulse-dot');
+            if (pulse) {
+              pulse.style.transform = 'scale(1.2)';
+              setTimeout(() => { pulse.style.transform = 'scale(1)'; }, 300);
+            }
+            if (liveSyncTag) {
+              const now = new Date();
+              const timeStr = now.toLocaleTimeString([], { hour: '2-digit', minute: '2-digit', second: '2-digit' });
+              liveSyncTag.setAttribute('title', 'Live sync connected. Last checked at ' + timeStr);
+            }
+          }
+        } catch (err) {
+          console.debug("Live sync polling check:", err);
+        } finally {
+          isPolling = false;
+        }
+      }
+
+      function startPolling() {
+        if (!pollTimer) {
+          pollTimer = setInterval(pollStatus, 8000);
+        }
+      }
+
+      function stopPolling() {
+        if (pollTimer) {
+          clearInterval(pollTimer);
+          pollTimer = null;
+        }
+      }
+
+      // Initial start
+      startPolling();
+
+      // Pause when tab is hidden, resume and immediately check when visible
+      document.addEventListener('visibilitychange', function() {
+        if (document.hidden) {
+          stopPolling();
+        } else {
+          pollStatus();
+          startPolling();
+        }
+      });
+
+      // Also trigger immediate sync when user focuses the tab
+      window.addEventListener('focus', pollStatus);
+    })();
+  </script>
+  {% endif %}
+
 {% endblock %}

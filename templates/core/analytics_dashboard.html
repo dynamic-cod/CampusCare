@@ -1,41 +1,187 @@
 {% extends "base.html" %}
-{% block title %}Analytics | CampusCare{% endblock %}
+{% block title %}Facility Analytics &amp; SLA Performance · AMU CampusCare{% endblock %}
 {% block content %}
+
+<!-- Top Header Card -->
+<section class="card" style="margin-bottom: 24px; border-left: 5px solid var(--amu-emerald-700);">
+  <div style="display:flex; justify-content:space-between; align-items:center; flex-wrap:wrap; gap:16px;">
+    <div>
+      <div style="font-size: 11px; font-weight: 700; color: var(--amu-emerald-800); text-transform: uppercase; letter-spacing: 0.5px;">
+        🏛️ ALIGARH MUSLIM UNIVERSITY · OPERATIONAL INTELLIGENCE
+      </div>
+      <h1 style="margin: 4px 0 6px 0; font-size: 1.65rem;">Maintenance analytics &amp; SLA Performance</h1>
+      <p style="margin: 0; color: var(--amu-text-muted); font-size: 0.95rem;">
+        Performance evaluation, resolution cycle times, and department accountability over the past <strong>{{ days }} days</strong>.
+      </p>
+    </div>
+
+    <!-- Interval Selectors & CSV Download -->
+    <div class="btn-row">
+      <a href="?days=7" class="btn-unified {% if days == 7 %}btn-unified-emerald{% else %}btn-unified-secondary{% endif %}" style="height: 36px; min-height: 36px; padding: 0 14px; font-size: 13px;">
+        7 Days
+      </a>
+      <a href="?days=30" class="btn-unified {% if days == 30 %}btn-unified-emerald{% else %}btn-unified-secondary{% endif %}" style="height: 36px; min-height: 36px; padding: 0 14px; font-size: 13px;">
+        30 Days
+      </a>
+      <a href="?days=90" class="btn-unified {% if days == 90 %}btn-unified-emerald{% else %}btn-unified-secondary{% endif %}" style="height: 36px; min-height: 36px; padding: 0 14px; font-size: 13px;">
+        90 Days
+      </a>
+      <a href="{% url 'core:complaint_report_csv' %}" class="btn-unified btn-unified-amber" style="height: 36px; min-height: 36px; padding: 0 14px; font-size: 13px;">
+        <span>📊</span> Download CSV
+      </a>
+    </div>
+  </div>
+
+  <!-- Key Metrics Row -->
+  <div class="stats-grid" style="margin-top: 20px;">
+    <div class="stat-card" style="border-top: 4px solid var(--amu-navy-800);">
+      <strong style="color: var(--amu-navy-950);">{{ period_complaints }}</strong>
+      <span>Reported in Period</span>
+    </div>
+    <div class="stat-card" style="border-top: 4px solid var(--amu-emerald-600);">
+      <strong style="color: var(--amu-emerald-700);">{{ period_resolved }}</strong>
+      <span>Resolved in Period</span>
+    </div>
+    <div class="stat-card" style="border-top: 4px solid var(--amu-red-600);">
+      <strong style="color: var(--amu-red-600);">{{ currently_overdue }}</strong>
+      <span>Currently Overdue</span>
+    </div>
+    <div class="stat-card" style="border-top: 4px solid var(--amu-blue-600);">
+      <strong style="color: var(--amu-blue-700);">{% if average_resolution_hours %}{{ average_resolution_hours }}h{% else %}—{% endif %}</strong>
+      <span>Avg. Resolution</span>
+    </div>
+    <div class="stat-card" style="border-top: 4px solid var(--amu-gold-600);">
+      <strong style="color: var(--amu-gold-700);">{% if average_rating %}{{ average_rating }}/5{% else %}—{% endif %}</strong>
+      <span>Avg. Student Rating</span>
+    </div>
+  </div>
+</section>
+
+<!-- Trend Chart Card -->
+<section class="card" style="margin-bottom: 24px;">
+  <div style="display: flex; justify-content: space-between; align-items: center; flex-wrap: wrap; gap: 8px; margin-bottom: 16px;">
+    <div>
+      <h2 style="margin: 0; font-size: 1.2rem; color: var(--amu-navy-950); display: flex; align-items: center; gap: 8px;">
+        <span>📈</span> Daily Intake vs. Resolution Trajectory
+      </h2>
+      <p style="margin: 2px 0 0 0; font-size: 13px; color: var(--amu-text-muted);">
+        Daily volume balance: new work orders lodged versus technician completions verified.
+      </p>
+    </div>
+    <div style="font-size: 12px; display: flex; gap: 12px; align-items: center;">
+      <span style="display: inline-flex; align-items: center; gap: 4px;">
+        <span style="width: 10px; height: 10px; background: var(--amu-gold-500); border-radius: 2px;"></span> Reported
+      </span>
+      <span style="display: inline-flex; align-items: center; gap: 4px;">
+        <span style="width: 10px; height: 10px; background: var(--amu-emerald-700); border-radius: 2px;"></span> Resolved
+      </span>
+    </div>
+  </div>
+
+  <div style="display:flex; align-items:flex-end; gap:6px; height:200px; border-bottom:2px solid #cbd5e1; padding: 10px 4px; background: #f8fafc; border-radius: 8px;">
+    {% for row in trends %}
+      <div title="{{ row.date }}: {{ row.reported }} reported, {{ row.resolved }} resolved" style="flex:1; min-width:6px; display:flex; gap:2px; align-items:flex-end; height:100%; transition: opacity 0.2s;" onmouseover="this.style.opacity='0.8'" onmouseout="this.style.opacity='1'">
+        <span style="display:block; flex:1; background: var(--amu-gold-500); border-radius: 2px 2px 0 0; height:{% widthratio row.reported max_trend_value 100 %}%; min-height: 2px;"></span>
+        <span style="display:block; flex:1; background: var(--amu-emerald-700); border-radius: 2px 2px 0 0; height:{% widthratio row.resolved max_trend_value 100 %}%; min-height: 2px;"></span>
+      </div>
+    {% empty %}
+      <p style="text-align: center; width: 100%; color: var(--amu-text-muted); margin: auto;">No trend history available for this time window.</p>
+    {% endfor %}
+  </div>
+</section>
+
+<!-- Department Performance Card -->
+<section class="card" style="margin-bottom: 24px;">
+  <h2 style="margin: 0 0 14px 0; font-size: 1.2rem; color: var(--amu-navy-950); display: flex; align-items: center; gap: 8px;">
+    <span>🏢</span> Maintenance Department Performance &amp; Accountability
+  </h2>
+  <div style="overflow-x: auto;">
+    <table style="width: 100%; border-collapse: collapse; text-align: left; font-size: 13.5px;">
+      <thead>
+        <tr style="background: #f1f5f9; border-bottom: 2px solid #cbd5e1; color: var(--amu-navy-900);">
+          <th style="padding: 10px 14px;">Maintenance Wing</th>
+          <th style="padding: 10px 14px; text-align: center;">Reported</th>
+          <th style="padding: 10px 14px; text-align: center;">Resolved</th>
+          <th style="padding: 10px 14px; text-align: center;">Overdue SLA</th>
+          <th style="padding: 10px 14px; text-align: center;">Avg. Turnaround</th>
+          <th style="padding: 10px 14px; text-align: center;">Student Rating</th>
+        </tr>
+      </thead>
+      <tbody>
+        {% for row in departments %}
+          <tr style="border-bottom: 1px solid var(--amu-border); transition: background 0.15s;" onmouseover="this.style.background='#f8fafc'" onmouseout="this.style.background='white'">
+            <td style="padding: 12px 14px; font-weight: 600; color: var(--amu-navy-950);">{{ row.name }}</td>
+            <td style="padding: 12px 14px; text-align: center;">{{ row.total }}</td>
+            <td style="padding: 12px 14px; text-align: center; color: var(--amu-emerald-700); font-weight: 700;">{{ row.resolved }}</td>
+            <td style="padding: 12px 14px; text-align: center; {% if row.overdue > 0 %}color: #dc2626; font-weight: 700;{% endif %}">{{ row.overdue }}</td>
+            <td style="padding: 12px 14px; text-align: center;">{% if row.average_hours %}{{ row.average_hours }}h{% else %}—{% endif %}</td>
+            <td style="padding: 12px 14px; text-align: center; font-weight: 600; color: var(--amu-gold-700);">{% if row.average_rating %}★ {{ row.average_rating }}/5{% else %}—{% endif %}</td>
+          </tr>
+        {% empty %}
+          <tr>
+            <td colspan="6" style="padding: 24px; text-align: center; color: var(--amu-text-muted);">No active departments configured.</td>
+          </tr>
+        {% endfor %}
+      </tbody>
+    </table>
+  </div>
+</section>
+
+<!-- Recurring Issues & Location Heat Bars -->
+<div style="display: grid; grid-template-columns: repeat(auto-fit, minmax(360px, 1fr)); gap: 24px;">
+  <!-- Recurring Issues -->
   <section class="card">
-    <h1>Maintenance analytics</h1>
-    <p>Operational view for the last {{ days }} days. <a href="?days=7">7 days</a> · <a href="?days=30">30 days</a> · <a href="?days=90">90 days</a> · <a href="{% url 'core:complaint_report_csv' %}">Download full CSV report</a></p>
-    <div class="grid">
-      <div class="metric"><strong>{{ period_complaints }}</strong><span>Reported in period</span></div>
-      <div class="metric"><strong>{{ period_resolved }}</strong><span>Resolved in period</span></div>
-      <div class="metric"><strong>{{ currently_overdue }}</strong><span>Currently overdue</span></div>
-      <div class="metric"><strong>{% if average_resolution_hours %}{{ average_resolution_hours }}h{% else %}—{% endif %}</strong><span>Average resolution</span></div>
-      <div class="metric"><strong>{% if average_rating %}{{ average_rating }}/5{% else %}—{% endif %}</strong><span>Average rating</span></div>
+    <h2 style="margin: 0 0 6px 0; font-size: 1.15rem; color: var(--amu-navy-950); display: flex; align-items: center; gap: 8px;">
+      <span>⚠️</span> Recurring Incident Hotspots
+    </h2>
+    <p style="margin: 0 0 14px 0; font-size: 13px; color: var(--amu-text-muted);">
+      Specific rooms or common areas with $\ge 2$ repeat complaints in this period.
+    </p>
+
+    <div style="display: flex; flex-direction: column; gap: 8px;">
+      {% for row in recurring %}
+        <div style="padding: 10px 14px; background: #fffbeb; border: 1px solid #fde68a; border-radius: 8px; font-size: 13px;">
+          <div style="font-weight: 700; color: #92400e;">
+            {{ row.category__name }} · {{ row.room__floor__building__name }}
+          </div>
+          <div style="color: #78350f; font-size: 12px; margin-top: 2px;">
+            Room {{ row.room__number }}{% if row.room__name %} ({{ row.room__name }}){% endif %} &middot; 
+            <strong>{{ row.total }} incidents</strong> ({{ row.open_total }} currently pending)
+          </div>
+        </div>
+      {% empty %}
+        <p style="color: var(--amu-text-muted); font-size: 13px; font-style: italic; margin: 0;">No chronic recurring hotspots detected in this period.</p>
+      {% endfor %}
     </div>
   </section>
 
-  <section class="card" style="margin-top:1.5rem">
-    <h2>Complaint trend</h2><p>Reported and resolved maintenance requests over time.</p>
-    <div style="display:flex;align-items:end;gap:4px;height:180px;border-bottom:1px solid #dbe1e3;padding:0 3px">
-      {% for row in trends %}<div title="{{ row.date }}: {{ row.reported }} reported, {{ row.resolved }} resolved" style="flex:1;min-width:3px;display:flex;gap:1px;align-items:end;height:100%"><span style="display:block;flex:1;background:#d89e32;height:{% widthratio row.reported max_trend_value 100 %}%"></span><span style="display:block;flex:1;background:#123250;height:{% widthratio row.resolved max_trend_value 100 %}%"></span></div>{% endfor %}
-    </div><p><small><span style="color:#d89e32">■</span> Reported &nbsp; <span style="color:#123250">■</span> Resolved</small></p>
-  </section>
+  <!-- Location Heatmap Demand -->
+  <section class="card">
+    <h2 style="margin: 0 0 6px 0; font-size: 1.15rem; color: var(--amu-navy-950); display: flex; align-items: center; gap: 8px;">
+      <span>🗺️</span> Location Demand Ranking
+    </h2>
+    <p style="margin: 0 0 14px 0; font-size: 13px; color: var(--amu-text-muted);">
+      Campus facilities ranked by aggregate work order volume.
+    </p>
 
-  <section class="card" style="margin-top:1.5rem">
-    <h2>Department performance</h2>
-    <div style="overflow:auto"><table style="width:100%;border-collapse:collapse;text-align:left"><thead><tr><th>Department</th><th>Reported</th><th>Resolved</th><th>Overdue</th><th>Avg. resolution</th><th>Rating</th></tr></thead><tbody>{% for row in departments %}<tr style="border-top:1px solid #e6e9e8"><td>{{ row.name }}</td><td>{{ row.total }}</td><td>{{ row.resolved }}</td><td>{{ row.overdue }}</td><td>{% if row.average_hours %}{{ row.average_hours }}h{% else %}—{% endif %}</td><td>{% if row.average_rating %}{{ row.average_rating }}/5{% else %}—{% endif %}</td></tr>{% empty %}<tr><td colspan="6">No active departments configured.</td></tr>{% endfor %}</tbody></table></div>
+    <div style="display: flex; flex-direction: column; gap: 10px;">
+      {% for row in heatmap %}
+        <div style="display: grid; grid-template-columns: minmax(130px, 1fr) 2fr auto; gap: 10px; align-items: center; font-size: 12.5px;">
+          <span style="font-weight: 600; color: var(--amu-navy-900); white-space: nowrap; overflow: hidden; text-overflow: ellipsis;" title="{{ row.floor__building__name }} · {{ row.number }}">
+            {{ row.floor__building__name|truncatechars:18 }} · {{ row.number }}
+          </span>
+          <div style="height: 10px; background: #e2e8f0; border-radius: 9999px; overflow: hidden;">
+            <div style="background: linear-gradient(90deg, #059669 0%, #047857 100%); width: {% widthratio row.total max_heat 100 %}%; height: 100%; border-radius: 9999px;"></div>
+          </div>
+          <strong style="color: var(--amu-navy-950); font-size: 13px;">
+            {{ row.total }} <small style="color: var(--amu-text-muted); font-weight: normal;">({{ row.open_total }} open)</small>
+          </strong>
+        </div>
+      {% empty %}
+        <p style="color: var(--amu-text-muted); font-size: 13px; font-style: italic; margin: 0;">No location maintenance records found.</p>
+      {% endfor %}
+    </div>
   </section>
+</div>
 
-  <section class="card" style="margin-top:1.5rem">
-    <h2>Recurring issue detection</h2><p>Locations with two or more reports for the same category in this period.</p>
-    <div class="directory">{% for row in recurring %}<details><summary>{{ row.category__name }} — {{ row.room__floor__building__name }}, room {{ row.room__number }}{% if row.room__name %} ({{ row.room__name }}){% endif %}</summary><p>{{ row.total }} reports · {{ row.open_total }} still open</p></details>{% empty %}<p>No recurring patterns detected for this period.</p>{% endfor %}</div>
-  </section>
-
-  <section class="card" style="margin-top:1.5rem">
-    <h2>Location heatmap</h2><p>Rooms ranked by number of reports. Darker bars represent more maintenance demand.</p>
-    {% for row in heatmap %}<div style="display:grid;grid-template-columns:minmax(150px,1fr) 3fr auto;gap:.7rem;align-items:center;margin:.7rem 0"><span>{{ row.floor__building__name }} · {{ row.number }}{% if row.name %} — {{ row.name }}{% endif %}</span><span style="height:14px;background:#eef1f1;border-radius:8px;overflow:hidden"><i style="display:block;background:#456f89;width:{% widthratio row.total max_heat 100 %}%;height:100%"></i></span><strong>{{ row.total }} <small>({{ row.open_total }} open)</small></strong></div>{% empty %}<p>No room-based complaints were reported in this period.</p>{% endfor %}
-  </section>
-
-  <section class="card" style="margin-top:1.5rem">
-    <h2>Maintenance history</h2><div class="directory">{% for complaint in history %}<details><summary>{{ complaint.reference }} — {{ complaint.title }}</summary><p>{{ complaint.category.department }} · {{ complaint.category }} · resolved {{ complaint.resolved_at|date:"j M Y" }}{% if complaint.room %} · {{ complaint.room }}{% endif %}</p></details>{% empty %}<p>No completed maintenance history yet.</p>{% endfor %}</div>
-  </section>
 {% endblock %}

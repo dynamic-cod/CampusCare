@@ -92,16 +92,18 @@ def run_audit():
     # 3. Zero complaints have orphaned or broken building / room relations
     print(f"\n[CHECK 3] Complaint Spatial Integrity & Orphaned Relations:")
     total_complaints = Complaint.objects.count()
-    orphaned_room_complaints = Complaint.objects.filter(room__isnull=True).count()
-    orphaned_floor_complaints = Complaint.objects.filter(room__floor__isnull=True).count()
-    orphaned_bldg_complaints = Complaint.objects.filter(room__floor__building__isnull=True).count()
+    broken_floor_complaints = Complaint.objects.filter(room__isnull=False, room__floor__isnull=True).count()
+    broken_bldg_complaints = Complaint.objects.filter(room__isnull=False, room__floor__building__isnull=True).count()
+    invalid_unlocated = Complaint.objects.filter(room__isnull=True, location_description="").count()
+    outdoor_complaints = Complaint.objects.filter(room__isnull=True).exclude(location_description="").count()
 
     print(f"  - Total Complaints in Database: {total_complaints}")
-    print(f"  - Complaints with room__isnull=True: {orphaned_room_complaints}")
-    print(f"  - Complaints with broken floor relation: {orphaned_floor_complaints}")
-    print(f"  - Complaints with broken building relation: {orphaned_bldg_complaints}")
+    print(f"  - Valid Outdoor Complaints (room=None, with location): {outdoor_complaints}")
+    print(f"  - Complaints with broken floor relation: {broken_floor_complaints}")
+    print(f"  - Complaints with broken building relation: {broken_bldg_complaints}")
+    print(f"  - Invalid unlocated complaints (no room & no location): {invalid_unlocated}")
 
-    if orphaned_room_complaints == 0 and orphaned_floor_complaints == 0 and orphaned_bldg_complaints == 0:
+    if broken_floor_complaints == 0 and broken_bldg_complaints == 0 and invalid_unlocated == 0:
         print("  ✅ PASS: Zero complaints have orphaned or broken room/floor/building relations!")
     else:
         print("  ❌ FAIL: Found orphaned complaints!")

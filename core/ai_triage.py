@@ -2,6 +2,7 @@
 import re
 from typing import Optional, Tuple
 from django.db.models import Q
+from .faculty_directory import detect_department, detect_faculty
 from .models import Building, Complaint, ComplaintCategory, Department, Floor, Room
 
 BUILDING_ALIASES = {
@@ -21,13 +22,17 @@ BUILDING_ALIASES = {
     "aftab": "AFT",
     "abdullah hall": "ABH",
     "abdullah": "ABH",
-    "sulaiman hall": "SUL",
-    "sulaiman": "SUL",
+    "sir shah sulaiman hall": "SSH",
+    "sir shah sulaiman": "SSH",
+    "sulaiman hall": "SSH",
+    "sulaiman": "SSH",
+    "ssh": "SSH",
     "viqar-ul-mulk": "VMH",
     "viqarul mulk": "VMH",
     "vm hall": "VMH",
     "v.m. hall": "VMH",
     "mohsin-ul-mulk": "MMH",
+    "mohsinul mulk": "MMH",
     "mm hall": "MMH",
     "m.m. hall": "MMH",
     "ross masood": "RMH",
@@ -54,6 +59,30 @@ BUILDING_ALIASES = {
     "central library": "LIB",
 }
 
+_BUILDINGS_CACHE = None
+_DEPTS_CACHE = None
+
+
+def get_cached_buildings():
+    global _BUILDINGS_CACHE
+    if _BUILDINGS_CACHE is None:
+        _BUILDINGS_CACHE = list(Building.objects.select_related("department", "parent").filter(is_active=True))
+    return _BUILDINGS_CACHE
+
+
+def get_cached_departments():
+    global _DEPTS_CACHE
+    if _DEPTS_CACHE is None:
+        _DEPTS_CACHE = list(Department.objects.filter(is_active=True))
+    return _DEPTS_CACHE
+
+
+def invalidate_triage_caches():
+    global _BUILDINGS_CACHE, _DEPTS_CACHE
+    _BUILDINGS_CACHE = None
+    _DEPTS_CACHE = None
+
+
 def extract_building_and_department(
     location_text: str,
     title: str = "",
@@ -63,43 +92,103 @@ def extract_building_and_department(
     combined_raw = " ".join([location_text or "", title or "", description or ""])
     combined = combined_raw.lower()
     matched_building: Optional[Building] = None
-    matched_dept: Optional[Department] = category.department if (category and category.department_id) else None
+    matched_dept: Optional[Department] = None
 
-    for phrase, b_code in sorted(BUILDING_ALIASES.items(), key=lambda x: len(x[0]), reverse=True):
-        if phrase in combined:
-            matched_building = Building.objects.select_related("department").filter(code__iexact=b_code).first()
-            if matched_building:
+    buildings = get_cached_buildings()
+    depts = get_cached_departments()
+
+    # 1. PRIORITY A: Academic Teaching Department -> Bind to its Parent Faculty Building
+    dept_info = detect_department(combined_raw)
+    if dept_info:
+        for d in depts:
+            if d.code.upper() == dept_info["code"].upper():
+                matched_dept = d
+                break
+        fac_code = dept_info["faculty"].upper()
+        for b in buildings:
+            if b.building_type == "academic" and b.code.upper() == fac_code:
+                matched_building = b
                 break
 
+    # 2. PRIORITY B: Check if a Residential Hall is explicitly named
+    mentioned_hall = None
+    for b in buildings:
+        if b.building_type == "hall":
+            h_name_low = b.name.lower()
+            code_low = b.code.lower()
+            if h_name_low in combined or re.search(r"\b" + re.escape(code_low) + r"\b", combined):
+                mentioned_hall = b
+                break
+
+    # Constituent Hostel -> If a hall is mentioned, strictly match that hall's hostels
     if not matched_building:
-        for b in Building.objects.select_related("department", "parent").filter(is_active=True):
+        for b in buildings:
+            if b.building_type == "hostel" and b.parent_id:
+                h_name_low = b.name.lower()
+                short_low = b.short_name.lower() if b.short_name else ""
+                if mentioned_hall:
+                    if b.parent_id == mentioned_hall.id and (h_name_low in combined or (short_low and len(short_low) >= 4 and short_low in combined)):
+                        matched_building = b
+                        break
+                else:
+                    if h_name_low in combined or (short_low and len(short_low) >= 5 and short_low in combined):
+                        matched_building = b
+                        break
+
+    # If hall was mentioned and no constituent hostel matched, use the hall itself
+    if not matched_building and mentioned_hall:
+        matched_building = mentioned_hall
+
+    # 3. PRIORITY C: Building Aliases (Residential Halls, Faculties, Libraries)
+    if not matched_building:
+        for phrase, b_code in sorted(BUILDING_ALIASES.items(), key=lambda x: len(x[0]), reverse=True):
+            if phrase in combined:
+                for b in buildings:
+                    if b.code.upper() == b_code.upper():
+                        matched_building = b
+                        break
+                if matched_building:
+                    break
+
+    # 4. PRIORITY D: General Building Full Name, Short Name, or Code Match
+    if not matched_building:
+        for b in buildings:
             b_name_low = b.name.lower()
             b_code_low = b.code.lower()
             short_low = b.short_name.lower() if b.short_name else ""
             if (
-                (short_low and len(short_low) >= 3 and short_low in combined)
+                (short_low and len(short_low) >= 4 and short_low in combined)
                 or b_name_low in combined
-                or re.search(r"\b" + re.escape(b_code_low) + r"\b", combined)
+                or (b_code_low in combined and re.search(r"\b" + re.escape(b_code_low) + r"\b", combined))
             ):
                 matched_building = b
                 break
 
-    if not matched_dept:
-        for d in Department.objects.filter(is_active=True):
-            if d.name.lower() in combined or re.search(r"\b" + re.escape(d.code.lower()) + r"\b", combined):
-                matched_dept = d
-                break
-
+    # Associate department from matched building if department not already found
     if matched_building and not matched_dept and matched_building.department_id:
         matched_dept = matched_building.department
 
+    # Check for department text if still not found
+    if not matched_dept:
+        for d in depts:
+            d_code_low = d.code.lower()
+            if d.name.lower() in combined or (d_code_low in combined and re.search(r"\b" + re.escape(d_code_low) + r"\b", combined)):
+                matched_dept = d
+                break
+
+    # Fallback to category department if still unassigned
+    if not matched_dept and category and category.department_id:
+        matched_dept = category.department
+
+    # If building still unmatched, check if department corresponds to an academic building
     if not matched_building and matched_dept:
-        matched_building = (
-            Building.objects.filter(Q(code__iexact=matched_dept.code) | Q(department=matched_dept))
-            .order_by("id")
-            .first()
-        )
+        for b in buildings:
+            if b.code.upper() == matched_dept.code.upper() or (b.department_id and b.department_id == matched_dept.id):
+                matched_building = b
+                break
+
     return matched_building, matched_dept
+
 
 def resolve_room_for_building(building: Building, location_text: str = "") -> Optional[Room]:
     if not building:
@@ -113,6 +202,10 @@ def resolve_room_for_building(building: Building, location_text: str = "") -> Op
             exact_room = rooms_qs.filter(Q(number__iexact=token) | Q(name__icontains=token)).first()
             if exact_room:
                 return exact_room
+            if token.isdigit():
+                padded_room = rooms_qs.filter(number__iexact=f"{int(token):03d}").first()
+                if padded_room:
+                    return padded_room
     first_room = rooms_qs.first()
     if first_room:
         return first_room
@@ -124,6 +217,7 @@ def resolve_room_for_building(building: Building, location_text: str = "") -> Op
     )
     return room
 
+
 def bind_complaint_spatial_origin(complaint: Complaint) -> Complaint:
     if complaint.category_id and complaint.category and not complaint.category.department_id:
         default_dept = Department.objects.filter(is_active=True).first()
@@ -131,28 +225,42 @@ def bind_complaint_spatial_origin(complaint: Complaint) -> Complaint:
             complaint.category.department = default_dept
             complaint.category.save(update_fields=["department", "updated_at"])
 
-    if complaint.room_id and complaint.room:
-        building = complaint.room.floor.building
-        if not building.department_id and complaint.category_id and complaint.category.department_id:
-            if building.code.upper() == complaint.category.department.code.upper():
-                building.department = complaint.category.department
-                building.save(update_fields=["department", "updated_at"])
-        if not complaint.location_description:
-            complaint.location_description = str(complaint.room)
-        return complaint
-
+    # Extract verified building and department from text
     building, dept = extract_building_and_department(
         location_text=complaint.location_description or "",
         title=complaint.title or "",
         description=complaint.description or "",
         category=complaint.category if complaint.category_id else None,
     )
-    if not building:
-        building = Building.objects.filter(is_active=True).order_by("id").first()
+
+    # If building identified, verify and ensure room is within this building or its hierarchy
     if building:
-        room = resolve_room_for_building(building, complaint.location_description or "")
-        if room:
-            complaint.room = room
-            if not complaint.location_description:
-                complaint.location_description = f"{building.name} - {room.number}"
+        current_room = complaint.room if complaint.room_id else None
+        needs_rebind = True
+        if current_room:
+            room_bldg = current_room.floor.building
+            # Valid if room belongs to building or building's parent or building is parent of room
+            if (
+                room_bldg.id == building.id
+                or (room_bldg.parent_id and room_bldg.parent_id == building.id)
+                or (building.parent_id and room_bldg.id == building.parent_id)
+            ):
+                needs_rebind = False
+
+        if needs_rebind:
+            room = resolve_room_for_building(building, complaint.location_description or "")
+            if room:
+                complaint.room = room
+
+        if not complaint.location_description and complaint.room:
+            complaint.location_description = f"{building.name} - {complaint.room.number}"
+
+    elif not complaint.room_id and not complaint.location_description:
+        fallback_building = Building.objects.filter(is_active=True).order_by("id").first()
+        if fallback_building:
+            complaint.room = resolve_room_for_building(fallback_building, "")
+            complaint.location_description = str(complaint.room)
+
+    complaint._spatial_bound = True
     return complaint
+

@@ -4,6 +4,12 @@ Tests:
  1. Complaint submission assigns correct hall Dining Incharge (not JSON roster)
  2. API preview detects mess category and returns Dining Incharge from DB
 """
+import os
+import django
+
+os.environ.setdefault("DJANGO_SETTINGS_MODULE", "campuscare.settings")
+django.setup()
+
 from core.models import Building, UserProfile, Complaint, ComplaintCategory, Department
 from core.dispatcher import auto_dispatch_complaint
 

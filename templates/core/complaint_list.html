@@ -1,73 +1,187 @@
 {% extends "base.html" %}
-{% block title %}Complaints | CampusCare{% endblock %}
+{% block title %}Complaint Queue · AMU CampusCare{% endblock %}
 {% block content %}
-  <section class="card">
-    <h1>Complaints</h1>
-    <p>{% if user.profile.role == 'student' %}View campus maintenance issues and show your support for issues affecting you.{% else %}Campus maintenance complaint queue.{% endif %}</p>
-    <p class="actions"><a href="?">All</a>{% for value, label in status_choices %}<a href="?status={{ value }}" {% if selected_status == value %}style="font-weight: bold; text-decoration: underline;"{% endif %}>{{ label }}</a>{% endfor %}</p>
-    
-    {% if user.profile.role == 'student' %}
-      <div style="background-color: #e3f2fd; border-left: 4px solid #2196F3; padding: 12px; margin-bottom: 20px; border-radius: 4px;">
-        <strong>💡 Pro Tip:</strong> Find an issue affecting you? Click the 👍 button to show your support. Admins use support counts to prioritize maintenance work!
+
+<section class="card" style="margin-bottom: 24px;">
+  <div style="display: flex; align-items: center; justify-content: space-between; flex-wrap: wrap; gap: 14px; margin-bottom: 16px;">
+    <div>
+      <div style="font-size: 11px; font-weight: 700; color: var(--amu-emerald-800); text-transform: uppercase; letter-spacing: 0.5px;">
+        🏛️ ALIGARH MUSLIM UNIVERSITY · QUEUE MANAGEMENT
       </div>
-    {% endif %}
-    
-    <div class="directory">
-      {% for complaint in complaints %}
-        <div style="border: 1px solid #e0e0e0; border-radius: 8px; padding: 16px; margin-bottom: 12px; background: white;">
-          <div style="display: flex; justify-content: space-between; align-items: start; gap: 12px;">
-            <div style="flex: 1;">
-              <h3 style="margin: 0 0 8px 0;">
-                <a href="{% url 'core:complaint_detail' complaint.reference %}" style="text-decoration: none; color: #1a73e8;">{{ complaint.reference }}</a> — {{ complaint.title }}
-              </h3>
-              <p style="margin: 0 0 8px 0; color: #666; font-size: 14px;">
-                <strong>{{ complaint.category }}</strong> 
-                {% if complaint.get_priority_display %} • {{ complaint.get_priority_display }} priority{% endif %}
-                • {{ complaint.get_status_display }}
-                {% if complaint.assigned_to %} • Assigned to {{ complaint.assigned_to.get_full_name|default:complaint.assigned_to.username }}{% endif %}
-              </p>
-              <p style="margin: 0; color: #555; font-size: 14px;">{{ complaint.description|truncatechars:200 }}</p>
-            </div>
-            
-            <div style="display: flex; flex-direction: column; align-items: center; gap: 8px; min-width: 80px;">
-              {% if complaint.is_public and user.is_authenticated %}
-                <form method="post" action="{% url 'core:complaint_toggle_support' complaint.reference %}" style="margin: 0;">
-                  {% csrf_token %}
-                  <button type="submit" title="{% if complaint.id in user_supported_ids %}Remove support{% else %}Show support for this issue{% endif %}" style="
-                    background: none;
-                    border: 2px solid {% if complaint.id in user_supported_ids %}#FFD700{% else %}#ccc{% endif %};
-                    color: {% if complaint.id in user_supported_ids %}#FFD700{% else %}#999{% endif %};
-                    padding: 8px 12px;
-                    border-radius: 20px;
-                    cursor: pointer;
-                    font-size: 18px;
-                    font-weight: bold;
-                    transition: all 0.2s;
-                  " onmouseover="this.style.background='{% if complaint.id in user_supported_ids %}#fffbea{% else %}#f5f5f5{% endif %}'; this.style.borderColor='{% if complaint.id in user_supported_ids %}#FFD700{% else %}#999{% endif %}'" onmouseout="this.style.background='none'; this.style.borderColor='{% if complaint.id in user_supported_ids %}#FFD700{% else %}#ccc{% endif %}'" >
-                    👍
-                  </button>
-                </form>
+      <h1 style="margin: 4px 0 6px 0; font-size: 1.65rem;">Maintenance Complaint Queue</h1>
+      <p style="margin: 0; color: var(--amu-text-muted); font-size: 0.95rem;">
+        {% if user.profile.role == 'student' %}
+          Browse campus maintenance tickets, check resolution progress, and endorse issues that affect you.
+        {% else %}
+          Operational facility queue with SLA tracking, technician assignments, and peer support counts.
+        {% endif %}
+      </p>
+    </div>
+
+    <div class="btn-row">
+      <a href="{% url 'core:complaint_create' %}" class="btn-unified btn-unified-emerald">
+        <span>✍️</span> Report New Issue
+      </a>
+      <a href="{% url 'core:tracking_form' %}" class="btn-unified btn-unified-amber">
+        <span>🔍</span> Track Ticket
+      </a>
+    </div>
+  </div>
+
+  <!-- Interactive Quick Status Filter Chips -->
+  <div style="display: flex; gap: 8px; flex-wrap: wrap; margin-bottom: 20px; padding-bottom: 14px; border-bottom: 1px solid var(--amu-border);">
+    <a href="?" class="btn-unified {% if not selected_status %}btn-unified-emerald{% else %}btn-unified-secondary{% endif %}" style="height: 34px; min-height: 34px; padding: 0 14px; font-size: 13px;">
+      All Issues
+    </a>
+    {% for value, label in status_choices %}
+      <a href="?status={{ value }}" class="btn-unified {% if selected_status == value %}btn-unified-emerald{% else %}btn-unified-secondary{% endif %}" style="height: 34px; min-height: 34px; padding: 0 14px; font-size: 13px;">
+        {{ label }}
+      </a>
+    {% endfor %}
+  </div>
+
+  <!-- Interactive Real-Time Search Bar -->
+  <div class="interactive-search-bar" style="margin-bottom: 18px;">
+    <span class="search-icon">🔍</span>
+    <input 
+      type="text" 
+      id="queueSearchInput" 
+      placeholder="Type to filter queue by reference, title, category, technician name, or room..."
+      aria-label="Filter queue"
+    >
+  </div>
+
+  {% if user.profile.role == 'student' %}
+    <div style="background-color: #f0fdf4; border-left: 4px solid #16a34a; padding: 12px 16px; margin-bottom: 20px; border-radius: 6px; font-size: 13px; color: #166534;">
+      <strong>💡 Campus Tip:</strong> Encountering an issue that affects you too? Click the 👍 button to endorse the report. Facility caretakers prioritize issues with higher student demand!
+    </div>
+  {% endif %}
+
+  <!-- Queue Items Container -->
+  <div id="queueItemsList" style="display: flex; flex-direction: column; gap: 12px;">
+    {% for complaint in complaints %}
+      <div class="card card-interactive queue-search-item" style="padding: 16px 20px; border-left: 4px solid {% if complaint.priority == 'urgent' %}#dc2626{% elif complaint.priority == 'high' %}#ea580c{% elif complaint.priority == 'normal' %}#0284c7{% else %}#16a34a{% endif %};" data-search="{{ complaint.reference|lower }} {{ complaint.title|lower }} {{ complaint.category.name|lower }} {{ complaint.location_description|lower }} {{ complaint.room|default:''|lower }} {{ complaint.assigned_to.get_full_name|default:complaint.assigned_to.username|default:''|lower }}">
+        <div style="display: flex; justify-content: space-between; align-items: flex-start; gap: 16px; flex-wrap: wrap;">
+          <div style="flex: 1; min-width: 240px;">
+            <div style="display: flex; align-items: center; gap: 8px; flex-wrap: wrap; margin-bottom: 6px;">
+              <a href="{% url 'core:complaint_detail' complaint.reference %}" style="font-family: ui-monospace, SFMono-Regular, monospace; font-size: 13px; font-weight: 700; color: var(--amu-navy-900); text-decoration: none; background: #f1f5f9; padding: 2px 8px; border-radius: 4px; border: 1px solid #e2e8f0;">
+                {{ complaint.reference }}
+              </a>
+
+              <span class="pill pill-{{ complaint.status }}">
+                {% if complaint.status == 'resolved' %}⚡ Pending Student Verification{% else %}{{ complaint.get_status_display }}{% endif %}
+              </span>
+
+              <span style="font-size: 11px; font-weight: 600; padding: 2px 8px; border-radius: 9999px; background: {% if complaint.priority == 'urgent' %}#fee2e2; color:#b91c1c; border:1px solid #fca5a5;{% elif complaint.priority == 'high' %}#ffedd5; color:#c2410c; border:1px solid #fed7aa;{% elif complaint.priority == 'normal' %}#e0f2fe; color:#0369a1; border:1px solid #bae6fd;{% else %}#dcfce7; color:#15803d; border:1px solid #86efac;{% endif %};">
+                {{ complaint.get_priority_display }}
+              </span>
+
+              {% if complaint.assigned_to %}
+                <span style="font-size: 12px; color: var(--amu-text-muted); background: #f8fafc; padding: 2px 8px; border-radius: 4px; border: 1px solid #e2e8f0;">
+                  👷 {{ complaint.assigned_to.get_full_name|default:complaint.assigned_to.username }}
+                </span>
               {% endif %}
-              
-              <div style="text-align: center; font-size: 12px; color: #666;">
-                <strong style="font-size: 18px; color: #ff9800; display: block;">{{ complaint.support_count }}</strong>
-                <span>support{{ complaint.support_count|pluralize }}</span>
-              </div>
             </div>
+
+            <h3 style="margin: 0 0 6px 0; font-size: 1.05rem;">
+              <a href="{% url 'core:complaint_detail' complaint.reference %}" style="text-decoration: none; color: var(--amu-navy-950);" onmouseover="this.style.color='#047857'" onmouseout="this.style.color='var(--amu-navy-950)'">
+                {{ complaint.title }}
+              </a>
+            </h3>
+
+            <div style="font-size: 13px; color: var(--amu-navy-700); margin-bottom: 6px;">
+              <strong style="color: var(--amu-emerald-800);">{{ complaint.category }}</strong>
+              {% if complaint.room %} &middot; 📍 {{ complaint.room }}{% elif complaint.location_description %} &middot; 📍 {{ complaint.location_description }}{% endif %}
+              {% if complaint.sla_due_at %} &middot; <span style="color: var(--amu-text-muted);">SLA: {{ complaint.sla_due_at|date:"j M, H:i" }}</span>{% endif %}
+            </div>
+
+            <p style="margin: 0; color: var(--amu-text-secondary); font-size: 13.5px; line-height: 1.5;">
+              {{ complaint.description|truncatechars:200 }}
+            </p>
           </div>
-          
-          <div style="margin-top: 12px; padding-top: 12px; border-top: 1px solid #f0f0f0; font-size: 12px; color: #999;">
-            Reported {{ complaint.created_at|date:"M j, Y" }} {% if complaint.reporter_name %} by {{ complaint.reporter_name }}{% endif %}
+
+          <div style="display: flex; flex-direction: column; align-items: center; gap: 4px; min-width: 80px;">
+            {% if complaint.is_public and user.is_authenticated %}
+              <form method="post" action="{% url 'core:complaint_toggle_support' complaint.reference %}" style="margin: 0;">
+                {% csrf_token %}
+                <button type="submit" class="btn-unified" style="height: 38px; min-height: 38px; padding: 0 14px; font-size: 14px; background: {% if complaint.id in user_supported_ids %}#dcfce7; color: #15803d; border-color: #86efac;{% else %}#f8fafc; color: var(--amu-navy-700); border-color: #cbd5e1;{% endif %};" title="{% if complaint.id in user_supported_ids %}Remove support{% else %}Show support for this issue{% endif %}">
+                  <span>👍</span> <span>{{ complaint.support_count }}</span>
+                </button>
+              </form>
+            {% else %}
+              <div style="padding: 6px 12px; background: #f8fafc; border: 1px solid #cbd5e1; border-radius: 8px; font-size: 13px; font-weight: 700; color: var(--amu-navy-800); display: flex; align-items: center; gap: 4px;">
+                <span>👍</span> <span>{{ complaint.support_count }}</span>
+              </div>
+            {% endif %}
+            <span style="font-size: 11px; color: var(--amu-text-muted);">
+              support{{ complaint.support_count|pluralize }}
+            </span>
           </div>
         </div>
-      {% empty %}
-        <p style="text-align: center; padding: 40px; color: #666;">
-          <strong>No complaints found</strong><br>
+
+        <div style="margin-top: 10px; padding-top: 10px; border-top: 1px solid #f1f5f9; font-size: 12px; color: var(--amu-text-muted); display: flex; justify-content: space-between; flex-wrap: wrap; gap: 8px;">
+          <div>
+            Reported {{ complaint.created_at|date:"j M Y, H:i" }}
+            {% if complaint.reporter_name %} by {{ complaint.reporter_name }}{% endif %}
+          </div>
+          {% if complaint.closed_at %}
+            <div style="color: #16a34a; font-weight: 600;">
+              ✓ Closed {{ complaint.closed_at|date:"j M Y" }}
+            </div>
+          {% endif %}
+        </div>
+      </div>
+    {% empty %}
+      <div class="card" style="text-align: center; padding: 48px 20px; color: var(--amu-text-muted);">
+        <span style="font-size: 2.2rem;">📋</span>
+        <h3 style="margin: 8px 0 4px 0; color: var(--amu-navy-900);">No complaints found</h3>
+        <p style="margin: 0; font-size: 14px;">
           {% if selected_status == 'open' %}
-            <small>No open complaints at this time. Great news! 🎉</small>
+            No open complaints at this time. All campus systems are operating nominally! 🎉
+          {% else %}
+            No complaints match the selected filter.
           {% endif %}
         </p>
-      {% endfor %}
-    </div>
-  </section>
+      </div>
+    {% endfor %}
+  </div>
+
+  <!-- Live Search Empty State -->
+  <div id="noQueueSearchMatch" class="card" style="display: none; text-align: center; padding: 36px 20px; color: var(--amu-text-muted); margin-top: 12px;">
+    <span style="font-size: 2rem;">🔍</span>
+    <h3 style="margin: 8px 0 4px 0; color: var(--amu-navy-900);">No matching complaints in queue</h3>
+    <p style="margin: 0; font-size: 13px;">Try searching for another keyword or clear the search input.</p>
+  </div>
+</section>
+
+<!-- Interactive Live Queue Filter Script -->
+<script>
+  document.addEventListener('DOMContentLoaded', function() {
+    const searchInput = document.getElementById('queueSearchInput');
+    const items = document.querySelectorAll('.queue-search-item');
+    const noMatch = document.getElementById('noQueueSearchMatch');
+
+    if (searchInput) {
+      searchInput.addEventListener('input', function() {
+        const query = this.value.trim().toLowerCase();
+        let matchCount = 0;
+
+        items.forEach(function(item) {
+          const text = item.getAttribute('data-search') || '';
+          if (!query || text.includes(query)) {
+            item.style.display = 'block';
+            matchCount++;
+          } else {
+            item.style.display = 'none';
+          }
+        });
+
+        if (noMatch) {
+          noMatch.style.display = (matchCount === 0 && query !== '') ? 'block' : 'none';
+        }
+      });
+    }
+  });
+</script>
+
 {% endblock %}

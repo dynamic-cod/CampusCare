@@ -38,7 +38,7 @@ def test_csrf_submission():
         # Prepare form data
         form_data = {
             'reporter_name': 'Test Student',
-            'reporter_enrollment_number': 'TEST456',
+            'reporter_enrollment_number': 'TEST-456',
             'title': 'CSRF Test Complaint',
             'description': 'This is a test to verify CSRF protection works correctly.',
             'category': category.id,

@@ -97,6 +97,8 @@ class Building(TimestampedModel):
     building_type = models.CharField(max_length=50, default="hall", help_text="e.g. hall, hostel, academic, administrative")
     wing_detail = models.CharField(max_length=150, blank=True)
     capacity_detail = models.CharField(max_length=255, blank=True)
+    latitude = models.DecimalField(max_digits=9, decimal_places=6, null=True, blank=True, help_text="GPS Latitude")
+    longitude = models.DecimalField(max_digits=9, decimal_places=6, null=True, blank=True, help_text="GPS Longitude")
     is_active = models.BooleanField(default=True)
 
     class Meta:
@@ -166,6 +168,9 @@ class ComplaintCategory(TimestampedModel):
         return self.name
 
 
+Category = ComplaintCategory  # Alias for backward compatibility
+
+
 def generate_complaint_reference():
     return f"CC-{uuid.uuid4().hex[:8].upper()}"
 
@@ -214,7 +219,7 @@ class Complaint(TimestampedModel):
     priority = models.CharField(max_length=10, choices=Priority.choices, default=Priority.NORMAL)
     priority_score = models.PositiveSmallIntegerField(default=50, help_text="Rule-based urgency score from 0 to 100.")
     priority_reason = models.CharField(max_length=255, blank=True)
-    status = models.CharField(max_length=16, choices=Status.choices, default=Status.OPEN)
+    status = models.CharField(max_length=16, choices=Status.choices, default=Status.OPEN, db_index=True)
     evidence = models.ImageField(
         upload_to="complaint_evidence/%Y/%m/",
         blank=True,
@@ -257,6 +262,12 @@ class Complaint(TimestampedModel):
 
     class Meta:
         ordering = ["-created_at"]
+        indexes = [
+            models.Index(fields=["status", "-created_at"], name="complaint_stat_creat_idx"),
+            models.Index(fields=["priority", "status"], name="complaint_prio_stat_idx"),
+            models.Index(fields=["category", "status"], name="complaint_cat_stat_idx"),
+            models.Index(fields=["-created_at"], name="complaint_created_at_idx"),
+        ]
 
     def clean(self):
         from django.core.exceptions import ValidationError
@@ -267,13 +278,15 @@ class Complaint(TimestampedModel):
             raise ValidationError({"assigned_to": "Complaints can only be assigned to maintenance staff."})
 
     def save(self, *args, **kwargs):
-        if not kwargs.get("update_fields") and not self.room_id:
+        if not kwargs.get("update_fields") and not self.room_id and not getattr(self, "_spatial_bound", False):
             try:
                 from .ai_triage import bind_complaint_spatial_origin
                 bind_complaint_spatial_origin(self)
+                self._spatial_bound = True
             except Exception:
                 pass
         super().save(*args, **kwargs)
+
 
     def __str__(self):
         return f"{self.reference} · {self.title}"
@@ -313,6 +326,26 @@ class Complaint(TimestampedModel):
                 updated_fields.append(field_name)
         if updated_fields and self.pk:
             self.save(update_fields=updated_fields)
+
+    @property
+    def feedback_rating(self):
+        if hasattr(self, "feedback") and self.feedback:
+            return self.feedback.rating
+        return getattr(self, "_feedback_rating", None)
+
+    @feedback_rating.setter
+    def feedback_rating(self, value):
+        self._feedback_rating = value
+
+    @property
+    def feedback_comments(self):
+        if hasattr(self, "feedback") and self.feedback:
+            return self.feedback.comment
+        return getattr(self, "_feedback_comments", "")
+
+    @feedback_comments.setter
+    def feedback_comments(self, value):
+        self._feedback_comments = value
 
 
 class ComplaintSupport(models.Model):

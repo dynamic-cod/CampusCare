@@ -1,35 +1,72 @@
+{% load static %}
 <!DOCTYPE html>
 <html lang="en">
 <head>
   <meta charset="utf-8">
   <meta name="viewport" content="width=device-width, initial-scale=1">
-  <title>{% block title %}{{ console_title|default:"Admin Dashboard" }} | CampusCare{% endblock %}</title>
+  <title>{% block title %}{{ console_title|default:"Admin Dashboard" }} | AMU CampusCare{% endblock %}</title>
   <script src="https://cdn.tailwindcss.com"></script>
+  <link rel="stylesheet" href="{% static 'styles.css' %}">
+  {% block extra_head %}{% endblock %}
 </head>
-<body class="bg-slate-50 text-slate-900 min-h-screen flex flex-col">
-  <!-- Unified Shared Admin Header (BUG 4) -->
-  <header class="bg-emerald-950 text-white shadow-sm border-b border-emerald-900">
-    <div class="max-w-7xl mx-auto px-4 sm:px-6 lg:px-8 py-3.5 flex flex-wrap items-center justify-between gap-4">
+<body class="text-slate-900 min-h-screen flex flex-col" style="background-color: #f8fafc; background-image: radial-gradient(ellipse 90% 40% at 50% -10%, rgba(5, 150, 105, 0.08) 0%, rgba(15, 23, 42, 0.02) 65%, transparent 100%), url(&quot;data:image/svg+xml,%3Csvg width='48' height='48' viewBox='0 0 48 48' xmlns='http://www.w3.org/2000/svg'%3E%3Cg fill='%23064e3b' fill-opacity='0.025' fill-rule='evenodd'%3E%3Cpath d='M24 20v-4h-2v4h-4v2h4v4h2v-4h4v-2h-4zm0-20V0h-2v4h-4v2h4v4h2V6h4V4h-4zM4 20v-4H2v4H0v2h2v4h2v-4h4v-2H4zM4 0V0H2v4H0v2h2v4h2V6h4V4H4z'/%3E%3C/g%3E%3C/svg%3E&quot;); background-attachment: fixed;">
+
+  <!-- Institutional Top Bar -->
+  <div class="university-topbar" style="background: #022c22;">
+    <div style="display: flex; align-items: center; gap: 8px;">
+      <span>🏛️</span>
+      <span><strong>Aligarh Muslim University</strong> · Administrative &amp; Provost Management Console</span>
+    </div>
+    <div style="display: flex; align-items: center; gap: 14px;">
+      <a href="{% url 'core:home' %}">← Public Board</a>
+      <span style="opacity: 0.5;">|</span>
+      <a href="{% url 'core:tracking_form' %}">🔍 Track Ticket</a>
+    </div>
+  </div>
+
+  <!-- Unified Shared Admin Header -->
+  <header class="bg-emerald-950 text-white shadow-md border-b border-emerald-900 sticky top-0 z-50">
+    <div class="max-w-7xl mx-auto px-4 sm:px-6 lg:px-8 py-3 flex flex-wrap items-center justify-between gap-4">
       <div class="flex items-center gap-4 min-w-0">
-        <a href="{% url 'core:home' %}" class="text-lg font-bold tracking-tight text-white hover:text-emerald-200 shrink-0">
-          AMU CampusCare
+        <a href="{% url 'core:dashboard' %}" class="flex items-center gap-2.5 text-lg font-bold tracking-tight text-white hover:text-emerald-200 shrink-0">
+          <span class="amu-brand-crest" style="width: 32px; height: 32px; font-size: 1rem;">AMU</span>
+          <span>Campus<span class="text-amber-400">Care</span> <span class="text-xs text-emerald-300 font-normal">Console</span></span>
         </a>
-        <span class="text-emerald-700">|</span>
-        <span class="inline-flex items-center px-3 py-1 rounded-full text-xs font-semibold bg-emerald-800 text-emerald-100 border border-emerald-700 truncate max-w-xs">
+        <span class="text-emerald-700 hidden sm:inline">|</span>
+        <span class="inline-flex items-center px-3 py-1 rounded-full text-xs font-semibold bg-emerald-800 text-emerald-100 border border-emerald-700 truncate max-w-xs shadow-sm">
           {% if role_badge_text %}{{ role_badge_text }}{% elif profile.role == "provost" and profile.managed_building %}Provost - {{ profile.managed_building.name }}{% elif profile.role == "hod" and profile.managed_department %}HOD - {{ profile.managed_department.name }}{% else %}Registrar{% endif %}
         </span>
       </div>
-      <div class="flex items-center gap-4 text-sm min-w-0">
-        <a href="{% url 'core:dashboard' %}" class="text-emerald-100 hover:text-white font-medium">Dashboard</a>
-        <a href="{% url 'core:complaint_list' %}" class="text-emerald-100 hover:text-white font-medium">Queue</a>
-        <a href="{% url 'core:complaint_report_csv' %}" class="text-emerald-100 hover:text-white font-medium">Export CSV</a>
-        <div class="flex items-center gap-2 pl-2 border-l border-emerald-800 min-w-0">
-          <span class="font-semibold text-white truncate max-w-[180px]" title="{{ user.get_full_name|default:user.username }}">
+
+      <div class="flex items-center gap-3 sm:gap-4 text-sm min-w-0 flex-wrap">
+        <a href="{% url 'core:dashboard' %}" class="text-emerald-100 hover:text-white font-medium px-2.5 py-1.5 rounded-lg hover:bg-emerald-900/60 transition">
+          📊 Console
+        </a>
+        {% if request.user.is_superuser or profile.role == "registrar" %}
+          <a href="{% url 'core:campus_heatmap' %}" class="text-amber-300 hover:text-amber-100 font-semibold px-2.5 py-1.5 rounded-lg bg-emerald-900/80 hover:bg-emerald-900 flex items-center gap-1.5 transition border border-amber-500/30">
+            <span>🗺️</span> Heatmap
+          </a>
+        {% endif %}
+        <a href="{% url 'core:complaint_list' %}" class="text-emerald-100 hover:text-white font-medium px-2.5 py-1.5 rounded-lg hover:bg-emerald-900/60 transition">
+          ⚡ Queue
+        </a>
+        <a href="{% url 'core:daily_dispatch_sheet' %}" target="_blank" class="text-emerald-100 hover:text-white font-medium px-2.5 py-1.5 rounded-lg hover:bg-emerald-900/60 transition hidden md:inline-flex items-center gap-1">
+          🖨️ Dispatch
+        </a>
+        <a href="{% url 'core:complaint_report_csv' %}" class="text-emerald-100 hover:text-white font-medium px-2.5 py-1.5 rounded-lg hover:bg-emerald-900/60 transition hidden sm:inline">
+          Export CSV
+        </a>
+
+        <div class="flex items-center gap-2 pl-2 sm:pl-3 border-l border-emerald-800 min-w-0">
+          <span class="font-semibold text-white truncate max-w-[150px] text-xs sm:text-sm" title="{{ user.get_full_name|default:user.username }}">
             {{ user.get_full_name|default:user.username }}
           </span>
-          <a href="{% url 'core:logout' %}" class="inline-flex items-center px-3 py-1.5 rounded-md text-xs font-semibold bg-red-600 hover:bg-red-700 text-white transition">
-            Logout
-          </a>
+          <form action="{% url 'core:logout' %}" method="post" style="display:inline; margin:0;">
+            {% csrf_token %}
+            <button type="submit" class="inline-flex items-center px-3 py-1.5 rounded-md text-xs font-semibold bg-red-600 hover:bg-red-700 text-white transition shadow-sm cursor-pointer">
+              Logout
+            </button>
+          </form>
         </div>
       </div>
     </div>
@@ -38,7 +75,13 @@
   {% if messages %}
     <div class="max-w-7xl mx-auto w-full px-4 sm:px-6 lg:px-8 mt-4 space-y-2">
       {% for message in messages %}
-        <div class="p-3 rounded-lg bg-emerald-50 border border-emerald-200 text-emerald-900 text-sm break-words">{{ message }}</div>
+        <div class="p-3 rounded-lg bg-emerald-50 border border-emerald-200 text-emerald-900 text-sm break-words flex items-center justify-between gap-2 shadow-sm">
+          <div class="flex items-center gap-2">
+            <span>✓</span>
+            <span>{{ message }}</span>
+          </div>
+          <button type="button" onclick="this.parentElement.remove()" class="text-emerald-700 hover:text-emerald-900 font-bold px-1">✕</button>
+        </div>
       {% endfor %}
     </div>
   {% endif %}
@@ -46,5 +89,18 @@
   <main class="max-w-7xl mx-auto w-full px-4 sm:px-6 lg:px-8 py-6 flex-1 space-y-6">
     {% block admin_content %}{% block content %}{% endblock %}{% endblock %}
   </main>
+
+  <footer class="mt-auto bg-slate-900 text-slate-400 border-t border-slate-800 text-xs py-4 px-4 sm:px-6 lg:px-8">
+    <div class="max-w-7xl mx-auto flex flex-wrap justify-between items-center gap-4">
+      <div>
+        © 2026 Aligarh Muslim University · CampusCare Multi-Tenant Operations Engine
+      </div>
+      <div class="flex gap-4">
+        <span>SLA Enforcement Active</span>
+        <span>Audit Trail Synced</span>
+      </div>
+    </div>
+  </footer>
+  {% block extra_scripts %}{% endblock %}
 </body>
 </html>

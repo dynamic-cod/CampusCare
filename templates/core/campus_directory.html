@@ -1,18 +1,179 @@
 {% extends "base.html" %}
-{% block title %}Campus directory | CampusCare{% endblock %}
+{% block title %}Campus Directory & Facilities Atlas · AMU CampusCare{% endblock %}
 {% block content %}
-  <section class="card">
-    <h1>Campus directory</h1>
-    <p>Operational view of active reporting locations and maintenance categories.</p>
-    <div class="directory">
-      <h2>Locations</h2>
-      {% for campus in campuses %}
-        <details open><summary>{{ campus.name }} ({{ campus.code }})</summary>
-          {% if campus.buildings.all %}<ul>{% for building in campus.buildings.all %}<li><strong>{{ building.name }}</strong> ({{ building.code }})<ul>{% for floor in building.floors.all %}<li>{{ floor.label|default:"Floor " }}{% if not floor.label %}{{ floor.number }}{% endif %}: {% for room in floor.rooms.all %}{{ room.number }}{% if room.name %} — {{ room.name }}{% endif %}{% if not forloop.last %}; {% endif %}{% empty %}No rooms yet{% endfor %}</li>{% endfor %}</ul></li>{% endfor %}</ul>{% else %}<p>No buildings added yet.</p>{% endif %}
-        </details>
-      {% empty %}<p>No active campuses have been added yet.</p>{% endfor %}
-      <h2>Maintenance categories</h2>
-      {% for department in departments %}<details><summary>{{ department.name }}</summary><ul>{% for category in department.complaint_categories.all %}{% if category.is_active %}<li>{{ category.name }} — target: {{ category.default_sla_hours }} hours</li>{% endif %}{% empty %}<li>No categories assigned.</li>{% endfor %}</ul></details>{% empty %}<p>No departments have been added yet.</p>{% endfor %}
+
+<section class="card" style="margin-bottom: 24px;">
+  <div style="display: flex; align-items: center; justify-content: space-between; flex-wrap: wrap; gap: 16px; margin-bottom: 20px;">
+    <div>
+      <div style="font-size: 11px; font-weight: 700; color: var(--amu-emerald-800); text-transform: uppercase; letter-spacing: 0.5px;">
+        🏛️ ALIGARH MUSLIM UNIVERSITY · INFRASTRUCTURE REGISTRY
+      </div>
+      <h1 style="margin: 4px 0 6px 0; font-size: 1.65rem;">Campus Directory &amp; Facility Atlas</h1>
+      <p style="margin: 0; color: var(--amu-text-muted); font-size: 0.95rem;">
+        Official operational directory of residential halls, constituent hostels, academic faculties, and maintenance wings across AMU.
+      </p>
     </div>
-  </section>
+
+    <div class="btn-row">
+      <button type="button" id="expandAllBtn" class="btn-unified btn-unified-secondary" style="height: 36px; min-height: 36px; font-size: 13px;">
+        Expand All
+      </button>
+      <button type="button" id="collapseAllBtn" class="btn-unified btn-unified-secondary" style="height: 36px; min-height: 36px; font-size: 13px;">
+        Collapse All
+      </button>
+    </div>
+  </div>
+
+  <!-- Interactive Live Filter Search -->
+  <div class="interactive-search-bar" style="margin-bottom: 24px;">
+    <span class="search-icon">🔍</span>
+    <input 
+      type="text" 
+      id="directorySearchInput" 
+      placeholder="Type to find any Hall, Hostel, Room number, Department, or Maintenance Wing (e.g., Sir Syed, Room 204, Plumbing)..."
+      aria-label="Search directory"
+    >
+  </div>
+
+  <!-- Tabbed / Sectioned Directory -->
+  <div style="display: grid; grid-template-columns: 1fr; gap: 24px;">
+    
+    <!-- Section 1: Residential Halls & Campus Buildings -->
+    <div>
+      <h2 style="font-size: 1.25rem; color: var(--amu-navy-950); margin-bottom: 14px; display: flex; align-items: center; gap: 8px;">
+        <span>🏛️</span> Campus Locations &amp; Residential Halls
+      </h2>
+
+      <div id="locationsDirectory" style="display: flex; flex-direction: column; gap: 12px;">
+        {% for campus in campuses %}
+          <details class="dir-item card" open style="padding: 16px 20px; border-left: 4px solid var(--amu-emerald-700);">
+            <summary style="font-weight: 700; font-size: 1.05rem; cursor: pointer; color: var(--amu-navy-900); display: flex; align-items: center; justify-content: space-between;">
+              <div style="display: flex; align-items: center; gap: 8px;">
+                <span>📍</span> {{ campus.name }} ({{ campus.code }})
+              </div>
+              <span style="font-size: 12px; font-weight: 600; color: var(--amu-emerald-800); background: var(--amu-emerald-50); padding: 2px 10px; border-radius: 9999px;">
+                {{ campus.buildings.count }} Building{{ campus.buildings.count|pluralize }}
+              </span>
+            </summary>
+
+            <div style="margin-top: 14px; display: grid; grid-template-columns: repeat(auto-fit, minmax(280px, 1fr)); gap: 14px;">
+              {% for building in campus.buildings.all %}
+                <div class="dir-subitem" style="background: #f8fafc; border: 1px solid var(--amu-border); border-radius: 8px; padding: 14px;">
+                  <div style="font-weight: 700; color: var(--amu-navy-900); font-size: 0.95rem; margin-bottom: 6px; display: flex; align-items: center; justify-content: space-between;">
+                    <span>🏢 {{ building.name }}</span>
+                    <span style="font-family: monospace; font-size: 11px; background: #e2e8f0; padding: 2px 6px; border-radius: 4px;">{{ building.code }}</span>
+                  </div>
+
+                  {% if building.floors.all %}
+                    <div style="display: flex; flex-direction: column; gap: 6px; margin-top: 8px; font-size: 13px;">
+                      {% for floor in building.floors.all %}
+                        <div style="background: white; border: 1px solid #e2e8f0; border-radius: 6px; padding: 6px 10px;">
+                          <div style="font-weight: 600; color: var(--amu-text-secondary); margin-bottom: 4px;">
+                            {{ floor.label|default:"Floor " }}{% if not floor.label %}{{ floor.number }}{% endif %}
+                          </div>
+                          <div style="color: var(--amu-navy-700); font-size: 12px; display: flex; flex-wrap: wrap; gap: 4px;">
+                            {% for room in floor.rooms.all %}
+                              <span style="background: #f1f5f9; padding: 2px 6px; border-radius: 4px; border: 1px solid #e2e8f0;">
+                                🚪 Room {{ room.number }}{% if room.name %} ({{ room.name }}){% endif %}
+                              </span>
+                            {% empty %}
+                              <span style="color: #94a3b8; font-style: italic;">No specific rooms listed</span>
+                            {% endfor %}
+                          </div>
+                        </div>
+                      {% endfor %}
+                    </div>
+                  {% else %}
+                    <p style="font-size: 12px; color: #94a3b8; margin: 6px 0 0 0; font-style: italic;">Central Facility · No internal floor subdivisions</p>
+                  {% endif %}
+                </div>
+              {% empty %}
+                <p style="color: var(--amu-text-muted); font-size: 13px; font-style: italic;">No buildings mapped yet for this sector.</p>
+              {% endfor %}
+            </div>
+          </details>
+        {% empty %}
+          <p style="color: var(--amu-text-muted); font-style: italic;">No campus facilities registered yet.</p>
+        {% endfor %}
+      </div>
+    </div>
+
+    <!-- Section 2: Maintenance Wings & Service Categories -->
+    <div style="margin-top: 10px;">
+      <h2 style="font-size: 1.25rem; color: var(--amu-navy-950); margin-bottom: 14px; display: flex; align-items: center; gap: 8px;">
+        <span>🔧</span> Maintenance Categories &amp; Standard Resolution SLAs
+      </h2>
+
+      <div id="departmentsDirectory" style="display: grid; grid-template-columns: repeat(auto-fit, minmax(300px, 1fr)); gap: 14px;">
+        {% for department in departments %}
+          <div class="dir-item card" style="padding: 18px; border-left: 4px solid var(--amu-gold-600);">
+            <h3 style="margin: 0 0 10px 0; font-size: 1.05rem; color: var(--amu-navy-900); display: flex; align-items: center; justify-content: space-between;">
+              <span>🛠️ {{ department.name }}</span>
+            </h3>
+
+            <div style="display: flex; flex-direction: column; gap: 8px;">
+              {% for category in department.complaint_categories.all %}
+                {% if category.is_active %}
+                  <div class="dir-subitem" style="display: flex; justify-content: space-between; align-items: center; gap: 8px; background: #f8fafc; border: 1px solid var(--amu-border); padding: 8px 12px; border-radius: 6px; font-size: 13px;">
+                    <span style="font-weight: 600; color: var(--amu-navy-950);">{{ category.name }}</span>
+                    <span style="font-size: 11px; font-weight: 700; color: var(--amu-emerald-800); background: var(--amu-emerald-50); border: 1px solid var(--amu-emerald-100); padding: 2px 8px; border-radius: 9999px; white-space: nowrap;">
+                      ⏱️ SLA: {{ category.default_sla_hours }}h
+                    </span>
+                  </div>
+                {% endif %}
+              {% empty %}
+                <p style="font-size: 12px; color: var(--amu-text-muted); font-style: italic; margin: 0;">No active complaint categories assigned.</p>
+              {% endfor %}
+            </div>
+          </div>
+        {% empty %}
+          <p style="color: var(--amu-text-muted); font-style: italic;">No departments configured.</p>
+        {% endfor %}
+      </div>
+    </div>
+
+  </div>
+</section>
+
+<!-- Interactive Directory Live Search Script -->
+<script>
+  document.addEventListener('DOMContentLoaded', function() {
+    const searchInput = document.getElementById('directorySearchInput');
+    const expandBtn = document.getElementById('expandAllBtn');
+    const collapseBtn = document.getElementById('collapseAllBtn');
+    const allDetails = document.querySelectorAll('details.dir-item');
+
+    if (expandBtn) {
+      expandBtn.addEventListener('click', function() {
+        allDetails.forEach(d => d.open = true);
+      });
+    }
+
+    if (collapseBtn) {
+      collapseBtn.addEventListener('click', function() {
+        allDetails.forEach(d => d.open = false);
+      });
+    }
+
+    if (searchInput) {
+      searchInput.addEventListener('input', function() {
+        const query = this.value.trim().toLowerCase();
+
+        // Search in locations and departments
+        document.querySelectorAll('.dir-item').forEach(function(item) {
+          const text = item.textContent.toLowerCase();
+          if (!query || text.includes(query)) {
+            item.style.display = '';
+            if (query && item.tagName === 'DETAILS') {
+              item.open = true;
+            }
+          } else {
+            item.style.display = 'none';
+          }
+        });
+      });
+    }
+  });
+</script>
+
 {% endblock %}

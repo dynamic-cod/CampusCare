@@ -1,85 +1,85 @@
-Category,Hall Name,Constituent Hostel / Block,Block / Wing Detail,Capacity / Room Details
-Girls,Begum Azeezun Nisa Hall,Sikandar Jahan Begum Hostel,Block-I,"Accommodates ~1,500 students (Hall total)"
-Girls,Begum Azeezun Nisa Hall,Hamida Habibullah Hostel,Block-I,"Accommodates ~1,500 students (Hall total)"
-Girls,Begum Azeezun Nisa Hall,Kadambini Ganguly Hostel,Block-I,"Accommodates ~1,500 students (Hall total)"
-Girls,Begum Azeezun Nisa Hall,Begum Hazrat Mahal Hostel,Block-II,"Accommodates ~1,500 students (Hall total)"
-Girls,Begum Azeezun Nisa Hall,Annie Besant Hostel,Block-II,"Accommodates ~1,500 students (Hall total)"
-Girls,Begum Azeezun Nisa Hall,Madam Cama Hostel,Block-II,"Accommodates ~1,500 students (Hall total)"
-Girls,Abdullah Hall,Sultania Hostel,Main Wing,"Accommodates ~1,135 resident students (Hall total)"
-Girls,Abdullah Hall,Waheedia Hostel,Main Wing,"Accommodates ~1,135 resident students (Hall total)"
-Girls,Abdullah Hall,Hamid Manzil Hostel,Main Wing,"Accommodates ~1,135 resident students (Hall total)"
-Girls,Abdullah Hall,New Hostel,New Wing,"Accommodates ~1,135 resident students (Hall total)"
-Girls,Abdullah Hall,TW Hostel,Wing,"Accommodates ~1,135 resident students (Hall total)"
-Girls,Abdullah Hall,MJ Hostel,Wing,"Accommodates ~1,135 resident students (Hall total)"
-Girls,Abdullah Hall,Old Girls' Hostel / Annexes,Annexe Wing,"Accommodates ~1,135 resident students (Hall total)"
-Girls,Begum Sultan Jahan Hall,Block-A,Block-A,50 rooms (Double-seated; 206 rooms / ~412 students total)
-Girls,Begum Sultan Jahan Hall,Block-B,Block-B,58 rooms (Double-seated; 206 rooms / ~412 students total)
-Girls,Begum Sultan Jahan Hall,Block-C,Block-C,42 rooms (Double-seated; 206 rooms / ~412 students total)
-Girls,Begum Sultan Jahan Hall,Block-D,Block-D,40 rooms (Double-seated; 206 rooms / ~412 students total)
-Girls,Indira Gandhi Hall,Main Building,Main Building,~654 seats across main blocks
-Girls,Indira Gandhi Hall,Annexe Building,Annexe Building,~654 seats across main blocks
-Girls,Sarojini Naidu Hall,Main Hostel,Main Hostel,Residential Hostel
-Girls,Sarojini Naidu Hall,S.N. Hall Annexe,Annexe Wing,Includes Nurse’s Hostel
-Girls,Bibi Fatima Hall,Main Engineering Block & Newly Constructed Wing,Engineering & Annexe Blocks,Main engineering block & newly constructed wing
-Boys,Aftab Hall,Morison Court,Residential Court,Constituent Hostel
-Boys,Aftab Hall,Mumtaz House,Residential House,Constituent Hostel
-Boys,Aftab Hall,Aftab Hostel,Main Hostel,Constituent Hostel
-Boys,Aftab Hall,MacDonnell Hostel,Residential Hostel,Constituent Hostel
-Boys,Aftab Hall,Latouche-Mumtaz Hostel,Residential Hostel,Constituent Hostel
-Boys,Sir Syed Hall (North),Syed Mahmood North (A),North Wing (A),13 Rooms
-Boys,Sir Syed Hall (North),Syed Mahmood North (B),North Wing (B),12 Rooms
-Boys,Sir Syed Hall (North),Osmania (Lower),Osmania Wing (Lower),22 Rooms
-Boys,Sir Syed Hall (North),Osmania (Upper),Osmania Wing (Upper),23 Rooms
-Boys,Sir Syed Hall (North),Central (Lower),Central Wing (Lower),31 Rooms
-Boys,Sir Syed Hall (North),Central (Upper),Central Wing (Upper),8 Rooms
-Boys,Sir Syed Hall (North),Syed Mahmood East (Lower),East Wing (Lower),19 Rooms
-Boys,Sir Syed Hall (North),Syed Mahmood East (Upper),East Wing (Upper),18 Rooms
-Boys,Sir Syed Hall (South),Nazir Ahmad Hostel,Residential Hostel,107 penta-seated rooms (~515 residents hall total)
-Boys,Sir Syed Hall (South),East Wing Hostel,East Wing,107 penta-seated rooms (~515 residents hall total)
-Boys,Sir Syed Hall (South),West Wing Hostel,West Wing,107 penta-seated rooms (~515 residents hall total)
-Boys,Sir Syed Hall (South),Strachey Hall Quad,Historic MAO College Quad,Historic college quadrangle
-Boys,Sir Syed Hall (South),Mushtaq Manzil & Asman Manzil Quads,Historic MAO College Wings,Historic college quads/wings
-Boys,Sir Ziauddin Hall,Mohammad Omar Farooq (MOF) Hostel,MOF Hostel,42 triple-seater rooms
-Boys,Sir Ziauddin Hall,Rasheed Ahmed Siddiqui (RAS) Hostel,RAS Hostel & Annexe,22 triple-seater rooms + Annexe
-Boys,Sir Ziauddin Hall,Major Dhyan Chand (DC) Hostel,DC Hostel,42 rooms (36 triple-seater & 6 single-seater)
-Boys,Sir Ziauddin Hall,Zafar Ahmed Siddiqui (ZAS) Hostel,ZAS Hostel,41 rooms (36 triple-seater & 5 single-seater)
-Boys,Viqarul Mulk Hall,Jubilee Hostel,Jubilee Hostel,54 rooms (207 rooms total)
-Boys,Viqarul Mulk Hall,Muzammil Hostel,Muzammil Hostel,54 rooms (207 rooms total)
-Boys,Viqarul Mulk Hall,Nasrullah Hostel,Nasrullah Hostel,50 rooms (207 rooms total)
-Boys,Viqarul Mulk Hall,Marris Hostel,Marris Hostel,49 rooms (207 rooms total)
-Boys,Sir Shah Sulaiman Hall,Agha Khan Hostel,Residential Hostel,Constituent Hostel
-Boys,Sir Shah Sulaiman Hall,Bhopal House,Residential House,Constituent House
-Boys,Sir Shah Sulaiman Hall,Jaikishan Das Hostel,Residential Hostel,Constituent Hostel
-Boys,Sir Shah Sulaiman Hall,Hasrat Mohani Hostel,Residential Hostel,Constituent Hostel
-Boys,Sir Shah Sulaiman Hall,Kashmir House,Residential House,Constituent House
-Boys,Sir Shah Sulaiman Hall,Qidwai Hostel,Residential Hostel,Constituent Hostel
-Boys,Sir Shah Sulaiman Hall,Mahmoodabad House,Residential House,Constituent House
-Boys,Mohsinul Mulk Hall,Shibli Hostel,Residential Hostel,Constituent Hostel
-Boys,Mohsinul Mulk Hall,Saifi Hostel (Lower & Upper),Saifi Wings,Lower & Upper Wings
-Boys,Mohsinul Mulk Hall,Amin Hostel,Residential Hostel,Constituent Hostel
-Boys,Mohsinul Mulk Hall,Hali Hostel (with Annexe I & II),Hali Hostel & Annexes,Includes Annexe I & II
-Boys,Mohsinul Mulk Hall,Majaz Hostel,Residential Hostel,Constituent Hostel
-Boys,Mohsinul Mulk Hall,MMA Hostel,Residential Hostel,Constituent Hostel
-Boys,Mohammad Habib Hall,Chakraverty Hostel,Residential Hostel,383 rooms (~925 students hall total)
-Boys,Mohammad Habib Hall,Umaruddin Hostel,Residential Hostel,383 rooms (~925 students hall total)
-Boys,Mohammad Habib Hall,Haider Khan Hostel,Residential Hostel,383 rooms (~925 students hall total)
-Boys,Dr. B.R. Ambedkar Hall,A-Block Hostel,A-Block,46 rooms (138 seats)
-Boys,Dr. B.R. Ambedkar Hall,B-Block Hostel,B-Block,56 rooms (112 seats)
-Boys,Dr. B.R. Ambedkar Hall,Annexe Hostel,Annexe,76 rooms (228 seats; 178 rooms / 478 intake total)
-Boys,Nadeem Tarin Hall,Main Nadeem Tarin Hostel,Main Hostel,146 rooms hall total
-Boys,Nadeem Tarin Hall,Nadeem Tarin Annexe,Annexe,146 rooms hall total
-Boys,Ross Masood Hall,Block-A,Block-A,Multi-wing residential block
-Boys,Ross Masood Hall,Block-B,Block-B,Multi-wing residential block
-Boys,Ross Masood Hall,Block-C,Block-C,Multi-wing residential block
-Boys,Ross Masood Hall,Block-D,Block-D,Multi-wing residential block
-Boys,Hadi Hasan Hall,Prof. Wali Mohammad Hostel,Residential Hostel,~500 rooms hall total
-Boys,Hadi Hasan Hall,Dr. Khawaja Ghulam-us-Saiyidain Hostel,Residential Hostel,~500 rooms hall total
-Boys,Hadi Hasan Hall,Mr. Khawaja Hameed Hostel,Residential Hostel,~500 rooms hall total
-Boys,Hadi Hasan Hall,Postgraduate (PG) Medicos Hostel,PG Medicos Hostel,~500 rooms hall total
-Boys,Non-Resident Students Centre (N.R.S.C.) Hall,Non-Resident Students Centre,Common Room Facilities,Off-campus day scholars facility
-Boys,Allama Iqbal Boarding House,Block A: AGF,Ground Floor (AGF),Rooms 001 to 108 (Block A total)
-Boys,Allama Iqbal Boarding House,Block A: AFF,First Floor (AFF),Rooms 001 to 108 (Block A total)
-Boys,Allama Iqbal Boarding House,Block A: ATF,Top Floor (ATF),Rooms 001 to 108 (Block A total)
-Boys,Allama Iqbal Boarding House,Block B: BGF,Ground Floor (BGF),Rooms 109 to 216 (Block B total; 216 rooms total)
-Boys,Allama Iqbal Boarding House,Block B: BFF,First Floor (BFF),Rooms 109 to 216 (Block B total; 216 rooms total)
-Boys,Allama Iqbal Boarding House,Block B: BTF,Top Floor (BTF),Rooms 109 to 216 (Block B total; 216 rooms total)
+Category,Hall Name,Constituent Hostel / Block,Block / Wing Detail,Room Numbering Range,Total Rooms,Capacity / Room Details
+Girls,Abdullah Hall,Hamid Manzil Hostel,Main Wing,Rooms 001 to 150,150,"150 rooms (Numbered 001 to 150); Accommodates ~1,135 resident students (Hall total)"
+Girls,Abdullah Hall,MJ Hostel,Wing,Rooms 001 to 150,150,"150 rooms (Numbered 001 to 150); Accommodates ~1,135 resident students (Hall total)"
+Girls,Abdullah Hall,New Hostel,New Wing,Rooms 001 to 150,150,"150 rooms (Numbered 001 to 150); Accommodates ~1,135 resident students (Hall total)"
+Girls,Abdullah Hall,Old Girls' Hostel / Annexes,Annexe Wing,Rooms 001 to 150,150,"150 rooms (Numbered 001 to 150); Accommodates ~1,135 resident students (Hall total)"
+Girls,Abdullah Hall,Sultania Hostel,Main Wing,Rooms 001 to 150,150,"150 rooms (Numbered 001 to 150); Accommodates ~1,135 resident students (Hall total)"
+Girls,Abdullah Hall,TW Hostel,Wing,Rooms 001 to 150,150,"150 rooms (Numbered 001 to 150); Accommodates ~1,135 resident students (Hall total)"
+Girls,Abdullah Hall,Waheedia Hostel,Main Wing,Rooms 001 to 150,150,"150 rooms (Numbered 001 to 150); Accommodates ~1,135 resident students (Hall total)"
+Boys,Aftab Hall,Aftab Hostel,Main Hostel,Rooms 001 to 150,150,150 rooms (Numbered 001 to 150); Constituent Hostel
+Boys,Aftab Hall,Latouche-Mumtaz Hostel,Residential Hostel,Rooms 001 to 150,150,150 rooms (Numbered 001 to 150); Constituent Hostel
+Boys,Aftab Hall,MacDonnell Hostel,Residential Hostel,Rooms 001 to 150,150,150 rooms (Numbered 001 to 150); Constituent Hostel
+Boys,Aftab Hall,Morison Court,Residential Court,Rooms 001 to 150,150,150 rooms (Numbered 001 to 150); Constituent Hostel
+Boys,Aftab Hall,Mumtaz House,Residential House,Rooms 001 to 150,150,150 rooms (Numbered 001 to 150); Constituent Hostel
+Boys,Allama Iqbal Boarding House,Block A: AFF,First Floor (AFF),Rooms 001 to 150,150,150 rooms (Numbered 001 to 150); Rooms 001 to 108 (Block A total)
+Boys,Allama Iqbal Boarding House,Block A: AGF,Ground Floor (AGF),Rooms 001 to 150,150,150 rooms (Numbered 001 to 150); Rooms 001 to 108 (Block A total)
+Boys,Allama Iqbal Boarding House,Block A: ATF,Top Floor (ATF),Rooms 001 to 150,150,150 rooms (Numbered 001 to 150); Rooms 001 to 108 (Block A total)
+Boys,Allama Iqbal Boarding House,Block B: BFF,First Floor (BFF),Rooms 001 to 150,150,150 rooms (Numbered 001 to 150); Rooms 109 to 216 (Block B total; 216 rooms total)
+Boys,Allama Iqbal Boarding House,Block B: BGF,Ground Floor (BGF),Rooms 001 to 150,150,150 rooms (Numbered 001 to 150); Rooms 109 to 216 (Block B total; 216 rooms total)
+Boys,Allama Iqbal Boarding House,Block B: BTF,Top Floor (BTF),Rooms 001 to 150,150,150 rooms (Numbered 001 to 150); Rooms 109 to 216 (Block B total; 216 rooms total)
+Girls,Begum Azeezun Nisa Hall,Annie Besant Hostel,Block-II,Rooms 001 to 150,150,"150 rooms (Numbered 001 to 150); Accommodates ~1,500 students (Hall total)"
+Girls,Begum Azeezun Nisa Hall,Begum Hazrat Mahal Hostel,Block-II,Rooms 001 to 150,150,"150 rooms (Numbered 001 to 150); Accommodates ~1,500 students (Hall total)"
+Girls,Begum Azeezun Nisa Hall,Hamida Habibullah Hostel,Block-I,Rooms 001 to 150,150,"150 rooms (Numbered 001 to 150); Accommodates ~1,500 students (Hall total)"
+Girls,Begum Azeezun Nisa Hall,Kadambini Ganguly Hostel,Block-I,Rooms 001 to 150,150,"150 rooms (Numbered 001 to 150); Accommodates ~1,500 students (Hall total)"
+Girls,Begum Azeezun Nisa Hall,Madam Cama Hostel,Block-II,Rooms 001 to 150,150,"150 rooms (Numbered 001 to 150); Accommodates ~1,500 students (Hall total)"
+Girls,Begum Azeezun Nisa Hall,Sikandar Jahan Begum Hostel,Block-I,Rooms 001 to 150,150,"150 rooms (Numbered 001 to 150); Accommodates ~1,500 students (Hall total)"
+Girls,Begum Sultan Jahan Hall,Block-A,Block-A,Rooms 001 to 150,150,150 rooms (Numbered 001 to 150); 50 rooms (Double-seated; 206 rooms / ~412 students total)
+Girls,Begum Sultan Jahan Hall,Block-B,Block-B,Rooms 001 to 150,150,150 rooms (Numbered 001 to 150); 58 rooms (Double-seated; 206 rooms / ~412 students total)
+Girls,Begum Sultan Jahan Hall,Block-C,Block-C,Rooms 001 to 150,150,150 rooms (Numbered 001 to 150); 42 rooms (Double-seated; 206 rooms / ~412 students total)
+Girls,Begum Sultan Jahan Hall,Block-D,Block-D,Rooms 001 to 150,150,150 rooms (Numbered 001 to 150); 40 rooms (Double-seated; 206 rooms / ~412 students total)
+Girls,Bibi Fatima Hall,Main Engineering Block & Newly Constructed Wing,Engineering & Annexe Blocks,Rooms 001 to 150,150,150 rooms (Numbered 001 to 150); Main engineering block & newly constructed wing
+Boys,Dr. B.R. Ambedkar Hall,A-Block Hostel,A-Block,Rooms 001 to 150,150,150 rooms (Numbered 001 to 150); 46 rooms (138 seats)
+Boys,Dr. B.R. Ambedkar Hall,Annexe Hostel,Annexe,Rooms 001 to 150,150,150 rooms (Numbered 001 to 150); 76 rooms (228 seats; 178 rooms / 478 intake total)
+Boys,Dr. B.R. Ambedkar Hall,B-Block Hostel,B-Block,Rooms 001 to 150,150,150 rooms (Numbered 001 to 150); 56 rooms (112 seats)
+Boys,Hadi Hasan Hall,Dr. Khawaja Ghulam-us-Saiyidain Hostel,Residential Hostel,Rooms 001 to 150,150,150 rooms (Numbered 001 to 150); ~500 rooms hall total
+Boys,Hadi Hasan Hall,Mr. Khawaja Hameed Hostel,Residential Hostel,Rooms 001 to 150,150,150 rooms (Numbered 001 to 150); ~500 rooms hall total
+Boys,Hadi Hasan Hall,Postgraduate (PG) Medicos Hostel,PG Medicos Hostel,Rooms 001 to 150,150,150 rooms (Numbered 001 to 150); ~500 rooms hall total
+Boys,Hadi Hasan Hall,Prof. Wali Mohammad Hostel,Residential Hostel,Rooms 001 to 150,150,150 rooms (Numbered 001 to 150); ~500 rooms hall total
+Girls,Indira Gandhi Hall,Annexe Building,Annexe Building,Rooms 001 to 150,150,150 rooms (Numbered 001 to 150); ~654 seats across main blocks
+Girls,Indira Gandhi Hall,Main Building,Main Building,Rooms 001 to 150,150,150 rooms (Numbered 001 to 150); ~654 seats across main blocks
+Boys,Mohammad Habib Hall,Chakraverty Hostel,Residential Hostel,Rooms 001 to 150,150,150 rooms (Numbered 001 to 150); 383 rooms (~925 students hall total)
+Boys,Mohammad Habib Hall,Haider Khan Hostel,Residential Hostel,Rooms 001 to 150,150,150 rooms (Numbered 001 to 150); 383 rooms (~925 students hall total)
+Boys,Mohammad Habib Hall,Umaruddin Hostel,Residential Hostel,Rooms 001 to 150,150,150 rooms (Numbered 001 to 150); 383 rooms (~925 students hall total)
+Boys,Mohsinul Mulk Hall,Amin Hostel,Residential Hostel,Rooms 001 to 150,150,150 rooms (Numbered 001 to 150); Constituent Hostel
+Boys,Mohsinul Mulk Hall,Hali Hostel (with Annexe I & II),Hali Hostel & Annexes,Rooms 001 to 150,150,150 rooms (Numbered 001 to 150); Includes Annexe I & II
+Boys,Mohsinul Mulk Hall,MMA Hostel,Residential Hostel,Rooms 001 to 150,150,150 rooms (Numbered 001 to 150); Constituent Hostel
+Boys,Mohsinul Mulk Hall,Majaz Hostel,Residential Hostel,Rooms 001 to 150,150,150 rooms (Numbered 001 to 150); Constituent Hostel
+Boys,Mohsinul Mulk Hall,Saifi Hostel (Lower & Upper),Saifi Wings,Rooms 001 to 150,150,150 rooms (Numbered 001 to 150); Lower & Upper Wings
+Boys,Mohsinul Mulk Hall,Shibli Hostel,Residential Hostel,Rooms 001 to 150,150,150 rooms (Numbered 001 to 150); Constituent Hostel
+Boys,Nadeem Tarin Hall,Main Nadeem Tarin Hostel,Main Hostel,Rooms 001 to 150,150,150 rooms (Numbered 001 to 150); 146 rooms hall total
+Boys,Nadeem Tarin Hall,Nadeem Tarin Annexe,Annexe,Rooms 001 to 150,150,150 rooms (Numbered 001 to 150); 146 rooms hall total
+Boys,Non-Resident Students Centre,Non-Resident Students Centre,Common Room Facilities,Rooms 001 to 150,150,150 rooms (Numbered 001 to 150); Off-campus day scholars facility
+Boys,Ross Masood Hall,Block-A,Block-A,Rooms 001 to 150,150,150 rooms (Numbered 001 to 150); Multi-wing residential block
+Boys,Ross Masood Hall,Block-B,Block-B,Rooms 001 to 150,150,150 rooms (Numbered 001 to 150); Multi-wing residential block
+Boys,Ross Masood Hall,Block-C,Block-C,Rooms 001 to 150,150,150 rooms (Numbered 001 to 150); Multi-wing residential block
+Boys,Ross Masood Hall,Block-D,Block-D,Rooms 001 to 150,150,150 rooms (Numbered 001 to 150); Multi-wing residential block
+Girls,Sarojini Naidu Hall,Main Hostel,Main Hostel,Rooms 001 to 150,150,150 rooms (Numbered 001 to 150); Residential Hostel
+Girls,Sarojini Naidu Hall,S.N. Hall Annexe,Annexe Wing,Rooms 001 to 150,150,150 rooms (Numbered 001 to 150); Includes Nurse’s Hostel
+Boys,Sir Shah Sulaiman Hall,Agha Khan Hostel,Residential Hostel,Rooms 001 to 150,150,150 rooms (Numbered 001 to 150); Constituent Hostel
+Boys,Sir Shah Sulaiman Hall,Bhopal House,Residential House,Rooms 001 to 150,150,150 rooms (Numbered 001 to 150); Constituent House
+Boys,Sir Shah Sulaiman Hall,Hasrat Mohani Hostel,Residential Hostel,Rooms 001 to 150,150,150 rooms (Numbered 001 to 150); Constituent Hostel
+Boys,Sir Shah Sulaiman Hall,Jaikishan Das Hostel,Residential Hostel,Rooms 001 to 150,150,150 rooms (Numbered 001 to 150); Constituent Hostel
+Boys,Sir Shah Sulaiman Hall,Kashmir House,Residential House,Rooms 001 to 150,150,150 rooms (Numbered 001 to 150); Constituent House
+Boys,Sir Shah Sulaiman Hall,Mahmoodabad House,Residential House,Rooms 001 to 150,150,150 rooms (Numbered 001 to 150); Constituent House
+Boys,Sir Shah Sulaiman Hall,Qidwai Hostel,Residential Hostel,Rooms 001 to 150,150,150 rooms (Numbered 001 to 150); Constituent Hostel
+Boys,Sir Syed Hall (North),Central (Lower),Central Wing (Lower),Rooms 001 to 150,150,150 rooms (Numbered 001 to 150); 31 Rooms
+Boys,Sir Syed Hall (North),Central (Upper),Central Wing (Upper),Rooms 001 to 150,150,150 rooms (Numbered 001 to 150); 8 Rooms
+Boys,Sir Syed Hall (North),Osmania (Lower),Osmania Wing (Lower),Rooms 001 to 150,150,150 rooms (Numbered 001 to 150); 22 Rooms
+Boys,Sir Syed Hall (North),Osmania (Upper),Osmania Wing (Upper),Rooms 001 to 150,150,150 rooms (Numbered 001 to 150); 23 Rooms
+Boys,Sir Syed Hall (North),Syed Mahmood East (Lower),East Wing (Lower),Rooms 001 to 150,150,150 rooms (Numbered 001 to 150); 19 Rooms
+Boys,Sir Syed Hall (North),Syed Mahmood East (Upper),East Wing (Upper),Rooms 001 to 150,150,150 rooms (Numbered 001 to 150); 18 Rooms
+Boys,Sir Syed Hall (North),Syed Mahmood North (A),North Wing (A),Rooms 001 to 150,150,150 rooms (Numbered 001 to 150); 13 Rooms
+Boys,Sir Syed Hall (North),Syed Mahmood North (B),North Wing (B),Rooms 001 to 150,150,150 rooms (Numbered 001 to 150); 12 Rooms
+Boys,Sir Syed Hall (South),East Wing Hostel,East Wing,Rooms 001 to 150,150,150 rooms (Numbered 001 to 150); 107 penta-seated rooms (~515 residents hall total)
+Boys,Sir Syed Hall (South),Mushtaq Manzil & Asman Manzil Quads,Historic MAO College Wings,Rooms 001 to 150,150,150 rooms (Numbered 001 to 150); Historic college quads/wings
+Boys,Sir Syed Hall (South),Nazir Ahmad Hostel,Residential Hostel,Rooms 001 to 150,150,150 rooms (Numbered 001 to 150); 107 penta-seated rooms (~515 residents hall total)
+Boys,Sir Syed Hall (South),Strachey Hall Quad,Historic MAO College Quad,Rooms 001 to 150,150,150 rooms (Numbered 001 to 150); Historic college quadrangle
+Boys,Sir Syed Hall (South),West Wing Hostel,West Wing,Rooms 001 to 150,150,150 rooms (Numbered 001 to 150); 107 penta-seated rooms (~515 residents hall total)
+Boys,Sir Ziauddin Hall,Major Dhyan Chand (DC) Hostel,DC Hostel,Rooms 001 to 150,150,150 rooms (Numbered 001 to 150); 42 rooms (36 triple-seater & 6 single-seater)
+Boys,Sir Ziauddin Hall,Mohammad Omar Farooq (MOF) Hostel,MOF Hostel,Rooms 001 to 150,150,150 rooms (Numbered 001 to 150); 42 triple-seater rooms
+Boys,Sir Ziauddin Hall,Rasheed Ahmed Siddiqui (RAS) Hostel,RAS Hostel & Annexe,Rooms 001 to 150,150,150 rooms (Numbered 001 to 150); 22 triple-seater rooms + Annexe
+Boys,Sir Ziauddin Hall,Zafar Ahmed Siddiqui (ZAS) Hostel,ZAS Hostel,Rooms 001 to 150,150,150 rooms (Numbered 001 to 150); 41 rooms (36 triple-seater & 5 single-seater)
+Boys,Viqarul Mulk Hall,Jubilee Hostel,Jubilee Hostel,Rooms 001 to 150,150,150 rooms (Numbered 001 to 150); 54 rooms (207 rooms total)
+Boys,Viqarul Mulk Hall,Marris Hostel,Marris Hostel,Rooms 001 to 150,150,150 rooms (Numbered 001 to 150); 49 rooms (207 rooms total)
+Boys,Viqarul Mulk Hall,Muzammil Hostel,Muzammil Hostel,Rooms 001 to 150,150,150 rooms (Numbered 001 to 150); 54 rooms (207 rooms total)
+Boys,Viqarul Mulk Hall,Nasrullah Hostel,Nasrullah Hostel,Rooms 001 to 150,150,150 rooms (Numbered 001 to 150); 50 rooms (207 rooms total)

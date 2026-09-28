@@ -205,6 +205,7 @@
               <th class="p-3">Priority</th>
               <th class="p-3">Status</th>
               <th class="p-3 max-w-xs">Assigned Technician &amp; Task Token</th>
+              <th class="p-3 text-right">Actions</th>
             </tr>
           </thead>
           <tbody class="divide-y">
@@ -244,7 +245,7 @@
                   {% elif c.status == "in_progress" or c.status == "assigned" or c.status == "open" %}
                     <span class="inline-flex items-center px-2.5 py-0.5 rounded-full text-xs font-semibold bg-amber-100 text-amber-800 border border-amber-200">{{ c.get_status_display }}</span>
                   {% elif c.status == "resolved" %}
-                    <span class="inline-flex items-center px-2.5 py-0.5 rounded-full text-xs font-semibold bg-blue-100 text-blue-800 border border-blue-200">Pending Verification</span>
+                    <span class="badge bg-amber-100 text-amber-800 inline-flex items-center px-2.5 py-0.5 rounded-full text-xs font-semibold border border-amber-200">Pending Student Verification</span>
                   {% elif c.status == "closed" %}
                     <span class="inline-flex items-center px-2.5 py-0.5 rounded-full text-xs font-semibold bg-emerald-100 text-emerald-800 border border-emerald-200">Closed</span>
                   {% else %}
@@ -268,9 +269,19 @@
                     <span class="text-xs text-red-600 font-semibold">Unassigned</span>
                   {% endif %}
                 </td>
+                <td class="p-3 text-right whitespace-nowrap">
+                  <a href="{% url 'core:complaint_detail' c.reference %}" class="inline-flex items-center px-2.5 py-1 text-xs font-semibold rounded-md border border-slate-300 bg-white text-slate-700 hover:bg-slate-50">
+                    View
+                  </a>
+                  {% if c.status != "resolved" and c.status != "closed" %}
+                    <a href="{% url 'core:complaint_detail' c.reference %}#admin-resolve-section" class="inline-flex items-center px-2.5 py-1 text-xs font-semibold rounded-md bg-emerald-700 text-white hover:bg-emerald-800 ml-1.5" title="Mark resolved with proof">
+                      ✅ Resolve
+                    </a>
+                  {% endif %}
+                </td>
               </tr>
             {% empty %}
-              <tr><td colspan="7" class="p-6 text-center text-slate-500">No complaints filed in this jurisdiction.</td></tr>
+              <tr><td colspan="8" class="p-6 text-center text-slate-500">No complaints filed in this jurisdiction.</td></tr>
             {% endfor %}
           </tbody>
         </table>

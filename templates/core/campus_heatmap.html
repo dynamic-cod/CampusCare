@@ -1,0 +1,518 @@
+{% extends "core/base_admin_dashboard.html" %}
+
+{% block title %}Campus Complaint Heatmap | Registrar Global Console{% endblock %}
+
+{% block admin_content %}
+  {# Leaflet CSS & JS + Leaflet Heatmap CDN (100% Free & Open-Source) #}
+  <link rel="stylesheet" href="https://unpkg.com/leaflet@1.9.4/dist/leaflet.css" integrity="sha256-p4NxAoJBhIIN+hmNHrzRCf9tD/miZyoHS5obTRR9BMY=" crossorigin=""/>
+  <script src="https://unpkg.com/leaflet@1.9.4/dist/leaflet.js" integrity="sha256-20nQCchB9co0qIjJZRGuk2/Z9VM+kNiyxNV1lvTlZBo=" crossorigin=""></script>
+  <script src="https://unpkg.com/leaflet.heat@0.2.0/dist/leaflet-heat.js"></script>
+
+  <style>
+    #campus-map {
+      height: 640px;
+      width: 100%;
+      border-radius: 0.75rem;
+      z-index: 1;
+    }
+    .building-marker-badge {
+      background: #0f172a;
+      color: #fff;
+      font-weight: 700;
+      font-size: 11px;
+      border-radius: 9999px;
+      padding: 2px 7px;
+      border: 2px solid #fff;
+      box-shadow: 0 4px 6px -1px rgba(0, 0, 0, 0.2);
+      text-align: center;
+      white-space: nowrap;
+      display: inline-flex;
+      align-items: center;
+      gap: 3px;
+    }
+    .building-marker-badge.has-urgent {
+      background: #dc2626;
+      border-color: #fecaca;
+      animation: pulse-urgent 2s infinite;
+    }
+    @keyframes pulse-urgent {
+      0%, 100% { transform: scale(1); }
+      50% { transform: scale(1.1); box-shadow: 0 0 12px rgba(220, 38, 38, 0.7); }
+    }
+    .leaflet-popup-content-wrapper {
+      border-radius: 0.75rem;
+      padding: 0;
+      overflow: hidden;
+      box-shadow: 0 20px 25px -5px rgba(0, 0, 0, 0.15), 0 10px 10px -5px rgba(0, 0, 0, 0.04);
+    }
+    .leaflet-popup-content {
+      margin: 0 !important;
+      line-height: 1.4;
+    }
+  </style>
+
+  <div class="space-y-6">
+    {# Header & Key Metrics #}
+    <div class="bg-white rounded-xl shadow-sm border border-slate-200 p-6 flex flex-col md:flex-row md:items-center justify-between gap-4">
+      <div>
+        <div class="flex items-center gap-2">
+          <span class="inline-flex items-center px-2.5 py-0.5 rounded-full text-xs font-semibold bg-emerald-100 text-emerald-800">
+            🔒 SuperUser &amp; Registrar Confidential
+          </span>
+          <span class="inline-flex items-center px-2.5 py-0.5 rounded-full text-xs font-semibold bg-blue-100 text-blue-800">
+            100% Free OpenStreetMap Engine
+          </span>
+        </div>
+        <h1 class="text-2xl font-bold text-slate-900 mt-2 flex items-center gap-2">
+          🗺️ Campus Spatial Analytics &amp; Complaint Heatmap
+        </h1>
+        <p class="text-sm text-slate-500 mt-1">
+          Real-time thermal density analysis of infrastructure issues across Aligarh Muslim University residential halls and academic faculties.
+        </p>
+      </div>
+
+      {# Metric Badges #}
+      <div class="flex flex-wrap items-center gap-3 shrink-0">
+        <div class="bg-slate-50 border border-slate-200 rounded-lg px-3.5 py-2 text-center min-w-[95px]">
+          <div class="text-xs font-semibold text-slate-500 uppercase tracking-wider">Total Filed</div>
+          <div class="text-xl font-bold text-slate-900" id="stat-total">{{ total_complaints }}</div>
+        </div>
+        <div class="bg-amber-50 border border-amber-200 rounded-lg px-3.5 py-2 text-center min-w-[95px]">
+          <div class="text-xs font-semibold text-amber-700 uppercase tracking-wider">Active</div>
+          <div class="text-xl font-bold text-amber-900" id="stat-active">{{ active_complaints }}</div>
+        </div>
+        <div class="bg-red-50 border border-red-200 rounded-lg px-3.5 py-2 text-center min-w-[95px]">
+          <div class="text-xs font-semibold text-red-700 uppercase tracking-wider">Urgent Hotspots</div>
+          <div class="text-xl font-bold text-red-700" id="stat-urgent">{{ urgent_complaints }}</div>
+        </div>
+      </div>
+    </div>
+
+    {# Interactive Filter Toolbar #}
+    <div class="bg-white rounded-xl shadow-sm border border-slate-200 p-4">
+      <div class="grid grid-cols-1 sm:grid-cols-2 lg:grid-cols-5 gap-3 items-end">
+        {# Status Filter #}
+        <div>
+          <label for="filter-status" class="block text-xs font-bold text-slate-700 uppercase mb-1">Status</label>
+          <select id="filter-status" class="w-full text-sm border-slate-300 rounded-lg shadow-sm focus:border-emerald-500 focus:ring-emerald-500 py-1.5 px-2.5">
+            <option value="active" selected>🔥 Active (Open / In-Progress / Reopened)</option>
+            <option value="all">🌐 All Complaints (Historical &amp; Resolved)</option>
+            <option value="resolved">✅ Resolved / Closed Only</option>
+            <option value="open">Pending Assignment (Open)</option>
+            <option value="reopened">⚠️ Reopened / Disputed</option>
+          </select>
+        </div>
+
+        {# Category Filter #}
+        <div>
+          <label for="filter-category" class="block text-xs font-bold text-slate-700 uppercase mb-1">Category / Service</label>
+          <select id="filter-category" class="w-full text-sm border-slate-300 rounded-lg shadow-sm focus:border-emerald-500 focus:ring-emerald-500 py-1.5 px-2.5">
+            <option value="">All Services &amp; Categories</option>
+            {% for cat in categories %}
+              <option value="{{ cat.id }}">{{ cat.name }} ({{ cat.department.code }})</option>
+            {% endfor %}
+          </select>
+        </div>
+
+        {# Priority Filter #}
+        <div>
+          <label for="filter-priority" class="block text-xs font-bold text-slate-700 uppercase mb-1">Priority Level</label>
+          <select id="filter-priority" class="w-full text-sm border-slate-300 rounded-lg shadow-sm focus:border-emerald-500 focus:ring-emerald-500 py-1.5 px-2.5">
+            <option value="all" selected>All Priorities</option>
+            <option value="urgent">🚨 Urgent (Highest Heat Weight)</option>
+            <option value="high">High Priority</option>
+            <option value="normal">Normal Priority</option>
+            <option value="low">Low Priority</option>
+          </select>
+        </div>
+
+        {# Timeframe Filter #}
+        <div>
+          <label for="filter-timeframe" class="block text-xs font-bold text-slate-700 uppercase mb-1">Timeframe</label>
+          <select id="filter-timeframe" class="w-full text-sm border-slate-300 rounded-lg shadow-sm focus:border-emerald-500 focus:ring-emerald-500 py-1.5 px-2.5">
+            <option value="all" selected>All Time</option>
+            <option value="7days">Last 7 Days</option>
+            <option value="30days">Last 30 Days</option>
+            <option value="90days">Last 90 Days</option>
+          </select>
+        </div>
+
+        {# Action Buttons #}
+        <div class="flex items-center gap-2">
+          <button id="btn-refresh" class="flex-1 inline-flex items-center justify-center gap-1.5 px-3 py-2 border border-slate-300 rounded-lg shadow-sm text-xs font-semibold text-slate-700 bg-white hover:bg-slate-50 transition">
+            🔄 Refresh
+          </button>
+          <button id="btn-reset-view" class="flex-1 inline-flex items-center justify-center gap-1.5 px-3 py-2 border border-emerald-600 bg-emerald-600 hover:bg-emerald-700 text-white rounded-lg shadow-sm text-xs font-semibold transition" title="Center on AMU">
+            🎯 Center AMU
+          </button>
+        </div>
+      </div>
+
+      {# Visual Controls & Legend #}
+      <div class="mt-4 pt-3 border-t border-slate-100 flex flex-wrap items-center justify-between gap-4 text-xs text-slate-600">
+        <div class="flex items-center gap-4 flex-wrap">
+          <label class="inline-flex items-center gap-2 cursor-pointer font-medium">
+            <input type="checkbox" id="toggle-markers" checked class="rounded border-slate-300 text-emerald-600 focus:ring-emerald-500">
+            Show Building Pins &amp; Incident Badges
+          </label>
+          <label class="inline-flex items-center gap-2 cursor-pointer font-medium">
+            <input type="checkbox" id="toggle-heat" checked class="rounded border-slate-300 text-emerald-600 focus:ring-emerald-500">
+            Show Thermal Heatmap Layer
+          </label>
+          <div class="flex items-center gap-2">
+            <span class="font-medium text-slate-500">Heat Radius:</span>
+            <input type="range" id="slider-radius" min="15" max="50" value="28" class="w-24 accent-emerald-600">
+          </div>
+        </div>
+
+        {# Heatmap Gradient Legend #}
+        <div class="flex items-center gap-2 font-medium">
+          <span class="text-slate-500">Heatmap Intensity:</span>
+          <div class="flex items-center gap-1">
+            <span class="inline-block w-3 h-3 rounded-full bg-blue-500" title="Low Volume"></span>
+            <span class="text-[11px] text-slate-500">Low</span>
+          </div>
+          <span class="text-slate-300">→</span>
+          <div class="flex items-center gap-1">
+            <span class="inline-block w-3 h-3 rounded-full bg-emerald-500" title="Moderate"></span>
+            <span class="text-[11px] text-slate-500">Moderate</span>
+          </div>
+          <span class="text-slate-300">→</span>
+          <div class="flex items-center gap-1">
+            <span class="inline-block w-3 h-3 rounded-full bg-amber-500" title="High"></span>
+            <span class="text-[11px] text-slate-500">High</span>
+          </div>
+          <span class="text-slate-300">→</span>
+          <div class="flex items-center gap-1">
+            <span class="inline-block w-3 h-3 rounded-full bg-red-600" title="Critical / Severe"></span>
+            <span class="text-[11px] font-bold text-red-700">Critical Hotspot</span>
+          </div>
+        </div>
+      </div>
+    </div>
+
+    {# Map Canvas Container #}
+    <div class="bg-white rounded-xl shadow-sm border border-slate-200 p-2 relative">
+      <div id="campus-map"></div>
+
+      {# Loading Overlay #}
+      <div id="map-loading" class="absolute inset-0 bg-white/80 backdrop-blur-sm rounded-xl flex items-center justify-center gap-3 z-10 transition-opacity" style="display: none;">
+        <svg class="animate-spin h-6 w-6 text-emerald-600" fill="none" viewBox="0 0 24 24">
+          <circle class="opacity-25" cx="12" cy="12" r="10" stroke="currentColor" stroke-width="4"></circle>
+          <path class="opacity-75" fill="currentColor" d="M4 12a8 8 0 018-8V0C5.373 0 0 5.373 0 12h4zm2 5.291A7.962 7.962 0 014 12H0c0 3.042 1.135 5.824 3 7.938l3-2.647z"></path>
+        </svg>
+        <span class="text-sm font-semibold text-slate-700">Loading spatial data...</span>
+      </div>
+    </div>
+
+    {# Hotspot Buildings Table #}
+    <div class="bg-white rounded-xl shadow-sm border border-slate-200 overflow-hidden">
+      <div class="px-6 py-4 border-b border-slate-100 flex items-center justify-between">
+        <div>
+          <h2 class="text-base font-bold text-slate-900">📍 Top Campus Incident Hotspots</h2>
+          <p class="text-xs text-slate-500 mt-0.5">Click any hall or faculty to instantly zoom and highlight on the map.</p>
+        </div>
+        <span id="hotspot-count-badge" class="px-2.5 py-1 rounded-full text-xs font-bold bg-slate-100 text-slate-700">
+          Loading locations...
+        </span>
+      </div>
+      <div class="overflow-x-auto">
+        <table class="w-full text-sm text-left">
+          <thead class="text-xs text-slate-500 uppercase bg-slate-50 border-b border-slate-200">
+            <tr>
+              <th scope="col" class="px-6 py-3">Location / Facility</th>
+              <th scope="col" class="px-6 py-3">Active Incidents</th>
+              <th scope="col" class="px-6 py-3">Urgent Issues</th>
+              <th scope="col" class="px-6 py-3">Primary Categories</th>
+              <th scope="col" class="px-6 py-3 text-right">Actions</th>
+            </tr>
+          </thead>
+          <tbody id="hotspots-table-body" class="divide-y divide-slate-100">
+            <tr>
+              <td colspan="5" class="px-6 py-8 text-center text-slate-400">Loading campus hotspots...</td>
+            </tr>
+          </tbody>
+        </table>
+      </div>
+    </div>
+  </div>
+
+  <script>
+    document.addEventListener('DOMContentLoaded', function() {
+      // 1. Initialize Map centered on Aligarh Muslim University (AMU) Campus
+      const AMU_COORDS = [27.9145, 78.0778];
+      const map = L.map('campus-map', {
+        center: AMU_COORDS,
+        zoom: 15,
+        minZoom: 13,
+        maxZoom: 18,
+      });
+
+      // 2. Add OpenStreetMap Tile Layer (100% Free Forever)
+      L.tileLayer('https://{s}.tile.openstreetmap.org/{z}/{x}/{y}.png', {
+        attribution: '&copy; <a href="https://www.openstreetmap.org/copyright" target="_blank">OpenStreetMap</a> contributors | AMU CampusCare Spatial Hub',
+        maxZoom: 19,
+      }).addTo(map);
+
+      // Layer groups
+      let heatLayer = null;
+      const markersLayer = L.layerGroup().addTo(map);
+
+      const loadingEl = document.getElementById('map-loading');
+      const tableBody = document.getElementById('hotspots-table-body');
+      const hotspotCountBadge = document.getElementById('hotspot-count-badge');
+      const statTotalEl = document.getElementById('stat-total');
+      const statActiveEl = document.getElementById('stat-active');
+      const statUrgentEl = document.getElementById('stat-urgent');
+
+      // Fetch and render data
+      function fetchHeatmapData() {
+        if (loadingEl) loadingEl.style.display = 'flex';
+
+        const status = document.getElementById('filter-status').value;
+        const category = document.getElementById('filter-category').value;
+        const priority = document.getElementById('filter-priority').value;
+        const timeframe = document.getElementById('filter-timeframe').value;
+
+        const params = new URLSearchParams({
+          status: status,
+          category: category,
+          priority: priority,
+          timeframe: timeframe,
+        });
+
+        fetch(`/api/heatmap-data/?${params.toString()}`)
+          .then(res => {
+            if (!res.ok) throw new Error('Unauthorized or network error');
+            return res.json();
+          })
+          .then(data => {
+            renderHeatmap(data.points);
+            renderMarkersAndTable(data.buildings);
+            updateSummaryCounters(data);
+          })
+          .catch(err => {
+            console.error('Heatmap load error:', err);
+            if (tableBody) {
+              tableBody.innerHTML = `<tr><td colspan="5" class="px-6 py-6 text-center text-red-500 font-semibold">Error loading heatmap data: ${err.message}</td></tr>`;
+            }
+          })
+          .finally(() => {
+            if (loadingEl) loadingEl.style.display = 'none';
+          });
+      }
+
+      // Render Thermal Layer using Leaflet.heat
+      function renderHeatmap(points) {
+        if (heatLayer) {
+          map.removeLayer(heatLayer);
+        }
+
+        if (!points || points.length === 0) return;
+
+        const radius = parseInt(document.getElementById('slider-radius').value, 10) || 28;
+
+        heatLayer = L.heatLayer(points, {
+          radius: radius,
+          blur: 20,
+          maxZoom: 17,
+          max: 4.0,
+          gradient: {
+            0.15: '#3b82f6',  // Blue
+            0.35: '#06b6d4',  // Cyan
+            0.55: '#10b981',  // Emerald
+            0.75: '#f59e0b',  // Amber
+            1.00: '#dc2626',  // Red Hotspot
+          }
+        });
+
+        if (document.getElementById('toggle-heat').checked) {
+          heatLayer.addTo(map);
+        }
+      }
+
+      // Render Building Markers & Hotspots Table
+      function renderMarkersAndTable(buildings) {
+        markersLayer.clearLayers();
+        if (!tableBody) return;
+
+        if (!buildings || buildings.length === 0) {
+          tableBody.innerHTML = `<tr><td colspan="5" class="px-6 py-8 text-center text-slate-400">No complaints matching the active filter selection.</td></tr>`;
+          if (hotspotCountBadge) hotspotCountBadge.textContent = '0 hotspots';
+          return;
+        }
+
+        // Sort descending by active complaints
+        buildings.sort((a, b) => b.active - a.active || b.total - a.total);
+
+        if (hotspotCountBadge) {
+          hotspotCountBadge.textContent = `${buildings.length} locations identified`;
+        }
+
+        let tableHtml = '';
+
+        buildings.forEach((b, idx) => {
+          // 1. Map Marker
+          const hasUrgent = b.urgent > 0;
+          const badgeClass = hasUrgent ? 'building-marker-badge has-urgent' : 'building-marker-badge';
+          const iconHtml = `<div class="${badgeClass}"><span>📍</span> ${b.active}</div>`;
+
+          const customIcon = L.divIcon({
+            html: iconHtml,
+            className: 'custom-building-pin',
+            iconSize: [44, 24],
+            iconAnchor: [22, 24],
+            popupAnchor: [0, -24],
+          });
+
+          const popupContent = `
+            <div class="p-4 max-w-xs">
+              <div class="flex items-center justify-between gap-2 border-b border-slate-100 pb-2 mb-2">
+                <strong class="text-sm font-bold text-slate-900">${escapeHtml(b.name)}</strong>
+                <span class="text-xs px-2 py-0.5 rounded font-mono bg-slate-100 text-slate-700 font-semibold">${escapeHtml(b.code)}</span>
+              </div>
+              <div class="grid grid-cols-2 gap-2 text-xs mb-3">
+                <div class="bg-amber-50 p-2 rounded border border-amber-100">
+                  <div class="text-amber-800 font-bold text-base">${b.active}</div>
+                  <div class="text-amber-700">Active Issues</div>
+                </div>
+                <div class="bg-red-50 p-2 rounded border border-red-100">
+                  <div class="text-red-700 font-bold text-base">${b.urgent}</div>
+                  <div class="text-red-600">Urgent Pending</div>
+                </div>
+              </div>
+              <div class="text-xs text-slate-600 mb-3">
+                <strong class="block text-slate-700 mb-1">Issue Distribution:</strong>
+                ${Object.entries(b.categories).slice(0, 3).map(([cat, count]) => `
+                  <div class="flex justify-between py-0.5 text-slate-500">
+                    <span class="truncate">${escapeHtml(cat)}</span>
+                    <span class="font-semibold text-slate-700">${count}</span>
+                  </div>
+                `).join('')}
+              </div>
+              <a href="/dashboard/?building=${b.id}" class="block text-center text-xs font-semibold py-1.5 px-3 rounded bg-emerald-600 hover:bg-emerald-700 text-white transition">
+                Inspect Complaints in Console →
+              </a>
+            </div>
+          `;
+
+          const marker = L.marker([b.lat, b.lng], { icon: customIcon })
+            .bindPopup(popupContent);
+
+          markersLayer.addLayer(marker);
+
+          // 2. Hotspots Table Row
+          const catBadges = Object.entries(b.categories).slice(0, 2).map(([cat, c]) => 
+            `<span class="inline-flex items-center px-2 py-0.5 rounded text-xs font-medium bg-slate-100 text-slate-700">${escapeHtml(cat)} (${c})</span>`
+          ).join(' ');
+
+          tableHtml += `
+            <tr class="hover:bg-slate-50 transition cursor-pointer" data-lat="${b.lat}" data-lng="${b.lng}" data-index="${idx}">
+              <td class="px-6 py-3.5 font-semibold text-slate-900 flex items-center gap-2">
+                <span class="text-emerald-700">📍</span>
+                <div>
+                  <div class="font-bold text-slate-900">${escapeHtml(b.name)}</div>
+                  <div class="text-xs text-slate-400 font-mono">${escapeHtml(b.code)}</div>
+                </div>
+              </td>
+              <td class="px-6 py-3.5">
+                <span class="inline-flex items-center px-2.5 py-0.5 rounded-full text-xs font-bold ${b.active > 0 ? 'bg-amber-100 text-amber-800' : 'bg-slate-100 text-slate-600'}">
+                  ${b.active} active
+                </span>
+              </td>
+              <td class="px-6 py-3.5">
+                ${b.urgent > 0 
+                  ? `<span class="inline-flex items-center px-2.5 py-0.5 rounded-full text-xs font-bold bg-red-100 text-red-800 animate-pulse">🚨 ${b.urgent} urgent</span>`
+                  : `<span class="text-xs text-slate-400">None</span>`}
+              </td>
+              <td class="px-6 py-3.5">
+                <div class="flex flex-wrap gap-1">${catBadges || '<span class="text-xs text-slate-400">None</span>'}</div>
+              </td>
+              <td class="px-6 py-3.5 text-right whitespace-nowrap">
+                <button type="button" class="btn-zoom-building px-2.5 py-1 text-xs font-semibold text-emerald-700 bg-emerald-50 hover:bg-emerald-100 rounded border border-emerald-200 transition mr-2" data-lat="${b.lat}" data-lng="${b.lng}">
+                  Zoom
+                </button>
+                <a href="/dashboard/?building=${b.id}" class="text-xs font-semibold text-slate-600 hover:text-slate-900 underline">
+                  View
+                </a>
+              </td>
+            </tr>
+          `;
+        });
+
+        tableBody.innerHTML = tableHtml;
+
+        // Attach click zoom handlers to table rows
+        tableBody.querySelectorAll('tr[data-lat]').forEach(row => {
+          row.addEventListener('click', function(e) {
+            if (e.target.tagName === 'A') return; // let link handle it
+            const lat = parseFloat(this.dataset.lat);
+            const lng = parseFloat(this.dataset.lng);
+            if (!isNaN(lat) && !isNaN(lng)) {
+              map.flyTo([lat, lng], 17, { duration: 1.2 });
+              document.getElementById('campus-map').scrollIntoView({ behavior: 'smooth', block: 'center' });
+            }
+          });
+        });
+      }
+
+      function updateSummaryCounters(data) {
+        if (!data || !data.buildings) return;
+        let totalActive = 0;
+        let totalUrgent = 0;
+        data.buildings.forEach(b => {
+          totalActive += b.active;
+          totalUrgent += b.urgent;
+        });
+        if (statTotalEl && data.total_complaints !== undefined) statTotalEl.textContent = data.total_complaints;
+        if (statActiveEl) statActiveEl.textContent = totalActive;
+        if (statUrgentEl) statUrgentEl.textContent = totalUrgent;
+      }
+
+      function escapeHtml(text) {
+        if (!text) return '';
+        const d = document.createElement('div');
+        d.textContent = text;
+        return d.innerHTML;
+      }
+
+      // Event Listeners
+      document.getElementById('filter-status').addEventListener('change', fetchHeatmapData);
+      document.getElementById('filter-category').addEventListener('change', fetchHeatmapData);
+      document.getElementById('filter-priority').addEventListener('change', fetchHeatmapData);
+      document.getElementById('filter-timeframe').addEventListener('change', fetchHeatmapData);
+      document.getElementById('btn-refresh').addEventListener('click', fetchHeatmapData);
+
+      document.getElementById('btn-reset-view').addEventListener('click', function() {
+        map.flyTo(AMU_COORDS, 15, { duration: 1.2 });
+      });
+
+      document.getElementById('toggle-markers').addEventListener('change', function() {
+        if (this.checked) {
+          markersLayer.addTo(map);
+        } else {
+          map.removeLayer(markersLayer);
+        }
+      });
+
+      document.getElementById('toggle-heat').addEventListener('change', function() {
+        if (heatLayer) {
+          if (this.checked) {
+            heatLayer.addTo(map);
+          } else {
+            map.removeLayer(heatLayer);
+          }
+        }
+      });
+
+      document.getElementById('slider-radius').addEventListener('input', function() {
+        if (heatLayer) {
+          heatLayer.setOptions({ radius: parseInt(this.value, 10) });
+        }
+      });
+
+      // Initial Fetch
+      fetchHeatmapData();
+    });
+  </script>
+{% endblock %}

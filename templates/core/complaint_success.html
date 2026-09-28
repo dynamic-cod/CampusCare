@@ -1,0 +1,169 @@
+{% extends "base.html" %}
+{% block title %}Complaint Submitted - Tracking Token | AMU Care{% endblock %}
+{% block content %}
+<style>
+  .btn-row {
+    display: flex;
+    flex-wrap: wrap;
+    gap: 12px;
+    align-items: center;
+  }
+  .btn-unified {
+    display: inline-flex;
+    align-items: center;
+    justify-content: center;
+    gap: 8px;
+    min-height: 44px;
+    height: 44px;
+    padding: 0 20px;
+    font-size: 0.95rem;
+    font-weight: 600;
+    border-radius: 8px;
+    border: 1px solid transparent;
+    cursor: pointer;
+    text-decoration: none;
+    line-height: 1;
+    white-space: nowrap;
+    box-sizing: border-box;
+    vertical-align: middle;
+    margin: 0;
+    transition: all 0.2s cubic-bezier(0.4, 0, 0.2, 1);
+    font-family: inherit;
+  }
+  .btn-unified:hover {
+    transform: translateY(-1px);
+    box-shadow: 0 4px 12px rgba(0, 0, 0, 0.12);
+  }
+  .btn-unified-primary {
+    background: #2563eb;
+    color: #ffffff !important;
+    border-color: #2563eb;
+  }
+  .btn-unified-primary:hover {
+    background: #1d4ed8;
+    border-color: #1d4ed8;
+  }
+  .btn-unified-success {
+    background: #16a34a;
+    color: #ffffff !important;
+    border-color: #16a34a;
+  }
+  .btn-unified-success:hover {
+    background: #15803d;
+    border-color: #15803d;
+  }
+</style>
+
+<section class="card" style="max-width: 680px; margin: 0 auto; box-shadow: 0 10px 25px -5px rgba(0,0,0,0.08); border-radius: 14px;">
+  <div style="text-align: center; margin-bottom: 24px;">
+    <div style="width: 56px; height: 56px; background: #dcfce7; color: #16a34a; border-radius: 50%; display: inline-flex; align-items: center; justify-content: center; font-size: 28px; margin-bottom: 12px;">
+      ✓
+    </div>
+    <h1 style="color: #166534; margin: 0 0 6px 0; font-size: 1.6rem;">Complaint Lodged Successfully!</h1>
+    <p style="color: #4b5563; font-size: 0.95rem; margin: 0;">
+      Your maintenance ticket has been registered in the campus dispatch system.
+    </p>
+  </div>
+
+  <!-- High-Visibility Token Display & Screenshot Prompt Banner -->
+  <div class="token-notification-card" style="background: linear-gradient(135deg, #0f172a 0%, #1e293b 100%); color: #f8fafc; border-radius: 12px; padding: 22px; margin-bottom: 22px; border: 1px solid #334155;">
+    <div style="display: flex; align-items: center; justify-content: space-between; flex-wrap: wrap; gap: 8px; margin-bottom: 10px;">
+      <span style="font-size: 0.85rem; font-weight: 700; text-transform: uppercase; letter-spacing: 1px; color: #38bdf8;">
+        🔑 Your Unique Tracking Token
+      </span>
+      <span style="background: rgba(56, 189, 248, 0.15); color: #38bdf8; font-size: 0.78rem; padding: 3px 10px; border-radius: 9999px;">
+        Zero-Login Access
+      </span>
+    </div>
+
+    <div style="background: #020617; border: 1px dashed #38bdf8; border-radius: 8px; padding: 14px 18px; margin: 14px 0; display: flex; align-items: center; justify-content: space-between; flex-wrap: wrap; gap: 14px;">
+      <span id="successTrackingTokenCode" style="font-family: ui-monospace, SFMono-Regular, Menlo, Monaco, Consolas, monospace; font-size: 1.3rem; font-weight: 700; color: #38bdf8; letter-spacing: 1.5px; user-select: all; word-break: break-all;">{{ complaint.tracking_token }}</span>
+      <div class="btn-row" style="margin: 0;">
+        <button type="button" id="copyTokenBtnSuccess" onclick="copySuccessToken()" class="btn-unified btn-unified-primary">
+          <span id="copyIconSuccess">📋</span> <span id="copyTextSuccess">Copy Token</span>
+        </button>
+        <a href="{% url 'core:complaint_tracking' complaint.tracking_token %}" class="btn-unified btn-unified-success">
+          🔍 Track Complaint Now
+        </a>
+      </div>
+    </div>
+
+    <div style="background: rgba(234, 179, 8, 0.15); border-left: 4px solid #eab308; border-radius: 6px; padding: 12px 14px; color: #fef08a; font-size: 0.92rem; line-height: 1.5;">
+      ⚠️ Save this token! Take a screenshot or copy this code. You will need this token to track progress and verify when your issue is resolved.
+    </div>
+  </div>
+
+  <div style="background: #f8fafc; border: 1px solid #e2e8f0; border-radius: 8px; padding: 16px; margin-bottom: 20px;">
+    <h3 style="margin-top: 0; margin-bottom: 8px; font-size: 1.05rem; color: #1e293b;">Issue Summary</h3>
+    <p style="margin: 4px 0;"><strong>Reference:</strong> {{ complaint.reference }}</p>
+    <p style="margin: 4px 0;"><strong>Title:</strong> {{ complaint.title }}</p>
+    <p style="margin: 4px 0;"><strong>Category:</strong> {{ complaint.category }}</p>
+    <p style="margin: 4px 0;"><strong>Location:</strong> {% if complaint.room %}{{ complaint.room }}{% else %}{{ complaint.location_description }}{% endif %}</p>
+  </div>
+
+  <div style="text-align: center;">
+    <a href="{% url 'core:complaint_tracking' complaint.tracking_token %}" class="btn-unified btn-unified-primary" style="padding: 0 28px;">
+      Proceed to Tracking Dashboard →
+    </a>
+  </div>
+</section>
+
+<script>
+  function copySuccessToken() {
+    const token = "{{ complaint.tracking_token }}";
+    const copyText = document.getElementById("copyTextSuccess");
+    const copyBtn = document.getElementById("copyTokenBtnSuccess");
+    
+    function showSuccess() {
+      if (copyText) copyText.textContent = "Copied!";
+      if (copyBtn) copyBtn.style.background = "#16a34a";
+      setTimeout(function() {
+        if (copyText) copyText.textContent = "Copy Token";
+        if (copyBtn) copyBtn.style.background = "#2563eb";
+      }, 2500);
+    }
+
+    if (navigator.clipboard && window.isSecureContext) {
+      navigator.clipboard.writeText(token).then(showSuccess).catch(function() {
+        fallbackCopy(token);
+      });
+    } else {
+      fallbackCopy(token);
+    }
+
+    function fallbackCopy(text) {
+      const textArea = document.createElement("textarea");
+      textArea.value = text;
+      textArea.style.position = "fixed";
+      textArea.style.left = "-999999px";
+      textArea.style.top = "-999999px";
+      document.body.appendChild(textArea);
+      textArea.focus();
+      textArea.select();
+      try {
+        document.execCommand('copy');
+        showSuccess();
+      } catch (err) {
+        alert("Tracking Token: " + text);
+      }
+      textArea.remove();
+    }
+  }
+  // Save to student's local recent complaints history
+  try {
+    const token = "{{ complaint.tracking_token }}";
+    const ref = "{{ complaint.reference }}";
+    const title = "{{ complaint.title|escapejs }}";
+    const cat = "{{ complaint.category.name|default:complaint.category|escapejs }}";
+    const dateStr = "{{ complaint.created_at|date:'j M, H:i' }}";
+    
+    let recents = JSON.parse(localStorage.getItem('amu_recent_complaints') || '[]');
+    recents = recents.filter(item => item.token !== token);
+    recents.unshift({ token: token, ref: ref, title: title, category: cat, date: dateStr });
+    if (recents.length > 5) recents = recents.slice(0, 5);
+    localStorage.setItem('amu_recent_complaints', JSON.stringify(recents));
+  } catch (err) {
+    console.debug('LocalStorage recent tickets notice:', err);
+  }
+</script>
+{% endblock %}

@@ -1,10 +1,41 @@
 {% extends "base.html" %}
-{% block title %}Create account | CampusCare{% endblock %}
+{% block title %}Create Operator Account · AMU CampusCare{% endblock %}
 {% block content %}
-  <section class="card">
-    <h1>Create your student account</h1>
-    <p>Use this account to report and follow campus maintenance issues.</p>
-    <form method="post">{% csrf_token %}{{ form.as_p }}<button type="submit">Create account</button></form>
-    <p>Already registered? <a href="{% url 'core:login' %}">Log in</a>.</p>
+
+<div style="max-width: 520px; margin: 2rem auto;">
+  <section class="card" style="padding: 32px 30px; border-top: 5px solid var(--amu-emerald-700); box-shadow: var(--shadow-lg);">
+    <div style="text-align: center; margin-bottom: 22px;">
+      <div class="amu-brand-crest" style="width: 48px; height: 48px; font-size: 1.35rem; margin: 0 auto 12px auto;">
+        AMU
+      </div>
+      <h1 style="margin: 0 0 6px 0; font-size: 1.55rem; color: var(--amu-navy-950);">Register Operator Account</h1>
+      <p style="margin: 0; color: var(--amu-text-muted); font-size: 0.92rem;">
+        Staff, Caretaker, Provost, and Student Representative Registration
+      </p>
+    </div>
+
+    <form method="post" style="display: flex; flex-direction: column; gap: 14px;">
+      {% csrf_token %}
+
+      {% if form.non_field_errors %}
+        <div style="padding: 10px 14px; background-color: #fef2f2; border: 1px solid #fecaca; border-left: 4px solid #ef4444; border-radius: 6px; color: #991b1b; font-size: 13px; font-weight: 500;">
+          {{ form.non_field_errors }}
+        </div>
+      {% endif %}
+
+      <div style="font-size: 13.5px; line-height: 1.6;">
+        {{ form.as_p }}
+      </div>
+
+      <button type="submit" class="btn-unified btn-unified-emerald" style="width: 100%; height: 44px; margin-top: 8px; font-size: 1rem;">
+        <span>📝</span> Create Account
+      </button>
+    </form>
+
+    <div style="margin-top: 24px; padding-top: 18px; border-top: 1px solid var(--amu-border); text-align: center; font-size: 13px; color: var(--amu-text-muted);">
+      Already have an account? <a href="{% url 'core:login' %}" style="color: var(--amu-emerald-800); font-weight: 600; text-decoration: none;">Sign in here</a>
+    </div>
   </section>
+</div>
+
 {% endblock %}

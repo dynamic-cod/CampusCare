@@ -74,7 +74,7 @@ class ComplaintWorkflowTests(TestCase):
         response = self.client.post(
             "/complaints/new/",
             {
-                "reporter_name": "Asha Sharma", "reporter_enrollment_number": "UNI2026001",
+                "reporter_name": "Asha Sharma", "reporter_enrollment_number": "GQ0001",
                 "title": "Leaking tap", "category": self.category.id,
                 "location_description": "Hostel 2 washroom", "description": "Tap is leaking continuously.",
             },
@@ -82,7 +82,7 @@ class ComplaintWorkflowTests(TestCase):
         complaint = Complaint.objects.get()
         self.assertRedirects(response, f"/track/{complaint.tracking_token}/")
         self.assertEqual(complaint.reporter_name, "Asha Sharma")
-        self.assertEqual(complaint.reporter_enrollment_number, "UNI2026001")
+        self.assertEqual(complaint.reporter_enrollment_number, "GQ0001")
         self.assertIn(complaint.status, {Complaint.Status.OPEN, Complaint.Status.ASSIGNED})
         self.assertTrue(ComplaintStatusHistory.objects.filter(complaint=complaint, status=Complaint.Status.OPEN).exists())
 
@@ -120,7 +120,7 @@ class ComplaintWorkflowTests(TestCase):
         response = self.client.post(
             "/complaints/new/",
             {
-                "reporter_name": "Asha Sharma", "reporter_enrollment_number": "UNI2026001",
+                "reporter_name": "Asha Sharma", "reporter_enrollment_number": "GQ0001",
                 "title": "Water leak from pipe", "location_description": "Hostel 2 washroom",
                 "description": "Water is leaking continuously from the pipe.",
                 "is_public": "on",
@@ -153,7 +153,7 @@ class ComplaintWorkflowTests(TestCase):
         response = self.client.post(
             "/complaints/new/",
             {
-                "reporter_name": "Ravi Patel", "reporter_enrollment_number": "UNI2026002",
+                "reporter_name": "Ravi Patel", "reporter_enrollment_number": "GQ0002",
                 "title": "Leaking tap in washroom", "category": self.category.id,
                 "description": "Water is leaking continuously from the tap.", "location_description": "Hostel 2 washroom",
                 "priority": Complaint.Priority.NORMAL, "is_public": "on",
@@ -237,14 +237,14 @@ class ComplaintWorkflowTests(TestCase):
             "/complaints/new/",
             {
                 "reporter_name": "Tariq Ali",
-                "reporter_enrollment_number": "UNI2026101",
+                "reporter_enrollment_number": "GQ0101",
                 "title": "Wi-Fi router down in corridor",
                 "category": it_cat.id,
                 "location_description": "Sir Syed Hall North Block Room 14",
                 "description": "Internet connection drops every few minutes.",
             },
         )
-        complaint = Complaint.objects.get(reporter_enrollment_number="UNI2026101")
+        complaint = Complaint.objects.get(reporter_enrollment_number="GQ0101")
         self.assertRedirects(response, f"/track/{complaint.tracking_token}/")
         self.assertEqual(complaint.assigned_to, it_staff)
         self.assertEqual(complaint.status, Complaint.Status.ASSIGNED)
@@ -264,14 +264,14 @@ class ComplaintWorkflowTests(TestCase):
             "/complaints/new/",
             {
                 "reporter_name": "Zubair Khan",
-                "reporter_enrollment_number": "UNI2026102",
+                "reporter_enrollment_number": "GQ0102",
                 "title": "Sparking switch board",
                 "category": elec_cat.id,
                 "location_description": "Aftab Hall 2nd Floor Common Room",
                 "description": "Short circuit and sparking when turning on switch.",
             },
         )
-        complaint = Complaint.objects.get(reporter_enrollment_number="UNI2026102")
+        complaint = Complaint.objects.get(reporter_enrollment_number="GQ0102")
         self.assertEqual(complaint.assigned_to, elec_staff)
         self.assertEqual(complaint.status, Complaint.Status.ASSIGNED)
         self.assertEqual(complaint.priority, Complaint.Priority.URGENT)
@@ -502,3 +502,126 @@ class ComplaintWorkflowTests(TestCase):
         self.assertEqual(set(get_scoped_complaints(registrar)), {c1, c2})
         self.assertEqual(list(get_scoped_complaints(provost)), [c1])
         self.assertEqual(list(get_scoped_complaints(hod)), [c2])
+
+    def test_student_enrollment_and_name_validation(self):
+        """Test strict validation on student name and enrollment number (2 letters + 4 digits)."""
+        req_err = "Both Name and Enrollment Number are required."
+        fmt_err = "Invalid Enrollment Number. It must be exactly 6 characters: 2 letters followed by 4 digits (e.g., gq1234 or AA0001)."
+
+        base_payload = {
+            "title": "Broken fan",
+            "description": "Fan not working in room.",
+            "category": self.category.id,
+            "location_description": "Hostel 1 Room 101",
+        }
+
+        # 1. Blank student name
+        p1 = dict(base_payload, reporter_name="", reporter_enrollment_number="gq1234")
+        r1 = self.client.post("/complaints/new/", p1)
+        self.assertEqual(r1.status_code, 200)
+        self.assertContains(r1, req_err)
+
+        # 2. Whitespace-only student name
+        p2 = dict(base_payload, reporter_name="   ", reporter_enrollment_number="gq1234")
+        r2 = self.client.post("/complaints/new/", p2)
+        self.assertEqual(r2.status_code, 200)
+        self.assertContains(r2, req_err)
+
+        # 3. Blank enrollment number
+        p3 = dict(base_payload, reporter_name="Mohd Asif", reporter_enrollment_number="")
+        r3 = self.client.post("/complaints/new/", p3)
+        self.assertEqual(r3.status_code, 200)
+        self.assertContains(r3, req_err)
+
+        # 4. Whitespace-only enrollment number
+        p4 = dict(base_payload, reporter_name="Mohd Asif", reporter_enrollment_number="   ")
+        r4 = self.client.post("/complaints/new/", p4)
+        self.assertEqual(r4.status_code, 200)
+        self.assertContains(r4, req_err)
+
+        # 5. Valid 2 letters + 4 digits combinations across various prefixes
+        valid_cases = ["aa0001", "ba0001", "gn0234", "gr0234", "hq1234", "ar0001", "za9999", "gq0234", "GQ9583"]
+        for enroll_val in valid_cases:
+            payload = dict(base_payload, reporter_name="Mohd Asif", reporter_enrollment_number=enroll_val)
+            resp = self.client.post("/complaints/new/", payload)
+            self.assertEqual(resp.status_code, 302, f"Failed for valid enrollment: {enroll_val}")
+            self.assertTrue(
+                Complaint.objects.filter(reporter_enrollment_number=enroll_val.upper()).exists(),
+                f"Complaint with enrollment {enroll_val.upper()} not found"
+            )
+
+        # 6. Invalid formats
+        invalid_cases = [
+            "gq123",    # 5 chars (too short)
+            "gq12345",  # 7 chars (too long)
+            "12gq34",   # digits at start
+            "abc123",   # 3 letters, 3 digits
+            "ab123c",   # letter in last 4 chars
+            "!@1234",   # special characters
+            "123456",   # only digits
+            "abcdef",   # only letters
+        ]
+        for bad_val in invalid_cases:
+            payload = dict(base_payload, reporter_name="Mohd Asif", reporter_enrollment_number=bad_val)
+            resp = self.client.post("/complaints/new/", payload)
+            self.assertEqual(resp.status_code, 200, f"Failed to reject invalid enrollment: {bad_val}")
+            self.assertContains(resp, fmt_err)
+
+    def test_campus_heatmap_access_and_api(self):
+        """Test that the campus heatmap and its API are strictly accessible only to SuperUser and Registrar."""
+        # 1. Anonymous user blocked
+        r_anon = self.client.get("/dashboard/heatmap/")
+        self.assertEqual(r_anon.status_code, 302)
+        self.assertIn("/login/", r_anon.url)
+
+        r_api_anon = self.client.get("/api/heatmap-data/")
+        self.assertEqual(r_api_anon.status_code, 302)
+
+        # 2. Student user blocked
+        self.client.force_login(self.student)
+        r_stud = self.client.get("/dashboard/heatmap/")
+        self.assertEqual(r_stud.status_code, 302)
+        r_api_stud = self.client.get("/api/heatmap-data/")
+        self.assertEqual(r_api_stud.status_code, 302)
+
+        # 3. Staff user blocked
+        self.client.force_login(self.staff_member)
+        r_staff = self.client.get("/dashboard/heatmap/")
+        self.assertEqual(r_staff.status_code, 302)
+
+        # 4. Provost blocked
+        provost = User.objects.create_user(username="provost_test", password="password")
+        provost.profile.role = UserProfile.Role.PROVOST
+        provost.profile.save()
+        self.client.force_login(provost)
+        r_prov = self.client.get("/dashboard/heatmap/")
+        self.assertEqual(r_prov.status_code, 302)
+
+        # 5. Registrar Office allowed
+        registrar = User.objects.create_user(username="reg_test", password="password")
+        registrar.profile.role = UserProfile.Role.REGISTRAR
+        registrar.profile.save()
+        self.client.force_login(registrar)
+        r_reg = self.client.get("/dashboard/heatmap/")
+        self.assertEqual(r_reg.status_code, 200)
+        self.assertContains(r_reg, "Campus Complaint Heatmap")
+
+        r_api_reg = self.client.get("/api/heatmap-data/")
+        self.assertEqual(r_api_reg.status_code, 200)
+        data_reg = r_api_reg.json()
+        self.assertIn("points", data_reg)
+        self.assertIn("buildings", data_reg)
+        self.assertIn("total_complaints", data_reg)
+
+        # 6. Superuser allowed
+        superuser = User.objects.create_superuser(username="admin_super", email="admin@amu.edu", password="password")
+        self.client.force_login(superuser)
+        r_sup = self.client.get("/dashboard/heatmap/")
+        self.assertEqual(r_sup.status_code, 200)
+
+        r_api_sup = self.client.get("/api/heatmap-data/?status=active")
+        self.assertEqual(r_api_sup.status_code, 200)
+        data_sup = r_api_sup.json()
+        self.assertIsInstance(data_sup["points"], list)
+
+

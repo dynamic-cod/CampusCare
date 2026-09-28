@@ -1,9 +1,63 @@
 {% extends "base.html" %}
-{% block title %}Log in | CampusCare{% endblock %}
+{% block title %}Staff &amp; Operator Login · AMU CampusCare{% endblock %}
 {% block content %}
-  <section class="card">
-    <h1>Welcome back</h1>
-    <form method="post">{% csrf_token %}{{ form.as_p }}<button type="submit">Log in</button></form>
-    <p>New to CampusCare? <a href="{% url 'core:register' %}">Create an account</a>.</p>
+
+<div style="max-width: 480px; margin: 2rem auto;">
+  <section class="card" style="padding: 32px 30px; border-top: 5px solid var(--amu-emerald-700); box-shadow: var(--shadow-lg);">
+    <div style="text-align: center; margin-bottom: 24px;">
+      <div class="amu-brand-crest" style="width: 48px; height: 48px; font-size: 1.35rem; margin: 0 auto 12px auto;">
+        AMU
+      </div>
+      <h1 style="margin: 0 0 6px 0; font-size: 1.55rem; color: var(--amu-navy-950);">Staff &amp; Operator Login</h1>
+      <p style="margin: 0; color: var(--amu-text-muted); font-size: 0.92rem;">
+        Provost, Registrar, HOD, and Maintenance Technician Portal
+      </p>
+    </div>
+
+    <!-- Student Notice Callout -->
+    <div style="background: #f0fdf4; border: 1px solid #bbf7d0; border-radius: 8px; padding: 12px 14px; margin-bottom: 22px; font-size: 13px; color: #166534; line-height: 1.5;">
+      🎓 <strong>Are you a student?</strong> You do not need to log in! <br>
+      You can <a href="{% url 'core:complaint_create' %}" style="color: #047857; font-weight: 700; text-decoration: underline;">Report an Issue</a> or <a href="{% url 'core:tracking_form' %}" style="color: #047857; font-weight: 700; text-decoration: underline;">Track your Ticket</a> with zero login.
+    </div>
+
+    <form method="post" style="display: flex; flex-direction: column; gap: 16px;">
+      {% csrf_token %}
+
+      {% if form.non_field_errors %}
+        <div style="padding: 10px 14px; background-color: #fef2f2; border: 1px solid #fecaca; border-left: 4px solid #ef4444; border-radius: 6px; color: #991b1b; font-size: 13px; font-weight: 500;">
+          {{ form.non_field_errors }}
+        </div>
+      {% endif %}
+
+      <div>
+        <label for="{{ form.username.id_for_label }}" style="display: block; font-weight: 600; margin-bottom: 6px; color: var(--amu-navy-900); font-size: 13.5px;">
+          Username / Employee ID
+        </label>
+        {{ form.username }}
+        {% if form.username.errors %}
+          <div style="color: #dc2626; font-size: 12px; margin-top: 4px;">{{ form.username.errors.0 }}</div>
+        {% endif %}
+      </div>
+
+      <div>
+        <label for="{{ form.password.id_for_label }}" style="display: block; font-weight: 600; margin-bottom: 6px; color: var(--amu-navy-900); font-size: 13.5px;">
+          Password
+        </label>
+        {{ form.password }}
+        {% if form.password.errors %}
+          <div style="color: #dc2626; font-size: 12px; margin-top: 4px;">{{ form.password.errors.0 }}</div>
+        {% endif %}
+      </div>
+
+      <button type="submit" class="btn-unified btn-unified-emerald" style="width: 100%; height: 44px; margin-top: 6px; font-size: 1rem;">
+        <span>🔐</span> Sign In to Console
+      </button>
+    </form>
+
+    <div style="margin-top: 24px; padding-top: 18px; border-top: 1px solid var(--amu-border); text-align: center; font-size: 13px; color: var(--amu-text-muted);">
+      Need staff portal access? <a href="{% url 'core:register' %}" style="color: var(--amu-emerald-800); font-weight: 600; text-decoration: none;">Register operator profile</a>
+    </div>
   </section>
+</div>
+
 {% endblock %}

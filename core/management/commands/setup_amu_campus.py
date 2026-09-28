@@ -62,15 +62,16 @@ class Command(BaseCommand):
                     if created:
                         self.stdout.write(f'    ✓ Created floor: {floor.label}')
 
-                        # Create rooms for each floor (varies by hall, using generic numbering)
-                        rooms_per_floor = 10 if hall_data['type'] == 'Boys' else 8
+                        # Create rooms for each floor (150 rooms: 50 per floor, numbered 001 to 150)
+                        rooms_per_floor = 50
                         for room_num in range(1, rooms_per_floor + 1):
-                            room_number = f'{floor_num}{room_num:02d}'
+                            global_room_idx = ((floor_num - 1) * rooms_per_floor) + room_num
+                            room_number = f'{global_room_idx:03d}'
                             room, created = Room.objects.get_or_create(
                                 floor=floor,
                                 number=room_number,
                                 defaults={
-                                    'name': f'Room {room_number}',
+                                    'name': f'{hall_data["name"]} · Room {room_number}',
                                     'qr_code_token': f'QR-{hall_data["code"]}-{room_number}'
                                 }
                             )

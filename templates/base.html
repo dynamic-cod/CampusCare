@@ -1,22 +1,214 @@
+{% load static %}
 <!doctype html>
 <html lang="en">
   <head>
     <meta charset="utf-8">
     <meta name="viewport" content="width=device-width, initial-scale=1">
-    <title>{% block title %}AMU Care - Aligarh Muslim University{% endblock %}</title>
-    <style>
-      :root { color-scheme: light; --navy: #1a5490; --gold: #d4a017; --green: #2e7d32; --pale: #f5f7f6; }
-      * { box-sizing: border-box; } body { margin: 0; font: 16px system-ui, sans-serif; background: var(--pale); color: #1c3346; }
-      nav { padding: 1rem max(5vw, 1.5rem); background: white; display: flex; justify-content: space-between; align-items: center; border-bottom: 1px solid #e6e9e8; }
-      .brand { font-weight: 800; color: var(--navy); text-decoration: none; font-size: 1.2rem; } .brand span { color: var(--gold); }
-      nav a { color: var(--navy); margin-left: 1rem; text-decoration: none; font-weight: 600; } nav form { display: inline; } nav form button { margin: 0 0 0 1rem; padding: 0; color: var(--navy); background: transparent; font: inherit; } main { max-width: 1000px; margin: 4rem auto; padding: 0 1.5rem; }
-      .card { background: white; padding: 2rem; border-radius: 14px; border: 1px solid #e6e9e8; } h1 { color: var(--navy); } label { display: block; margin-top: 1rem; font-weight: 650; }
-      input { display: block; margin-top: .4rem; width: 100%; padding: .65rem; border: 1px solid #bfcad0; border-radius: 6px; } button { margin-top: 1.4rem; background: var(--navy); color: white; border: 0; padding: .7rem 1rem; border-radius: 6px; font-weight: 700; cursor: pointer; }
-      .helptext, .errorlist { font-size: .85rem; color: #6b7680; padding-left: 0; list-style: none; } .errorlist { color: #ac3131; } .message { background: #e4f5ec; color: #26734d; padding: .8rem 1rem; border-radius: 6px; } .grid { display: grid; grid-template-columns: repeat(4, 1fr); gap: 1rem; margin: 1.5rem 0; } .metric { background: white; border: 1px solid #e6e9e8; padding: 1.25rem; border-radius: 10px; } .metric strong { display: block; font-size: 1.8rem; color: var(--navy); } .metric span { color: #6b7680; font-size: .9rem; } .actions a { display: inline-block; margin: .4rem .8rem .4rem 0; } .directory { margin-top: 1.5rem; } .directory details { background: white; border: 1px solid #e6e9e8; border-radius: 8px; padding: 1rem; margin: .7rem 0; } .directory summary { cursor: pointer; color: var(--navy); font-weight: 700; } .directory ul { line-height: 1.65; } table th, table td { padding:.7rem; white-space:nowrap; } @media (max-width: 700px) { .grid { grid-template-columns: repeat(2, 1fr); } } 
-    </style>
+    <title>{% block title %}AMU CampusCare · Aligarh Muslim University{% endblock %}</title>
+    <link rel="stylesheet" href="{% static 'styles.css' %}">
+    {% block extra_head %}{% endblock %}
   </head>
   <body>
-    <nav><a class="brand" href="{% url 'core:home' %}">AMU<span>Care</span></a><div>{% if user.is_authenticated %}<a href="{% url 'core:dashboard' %}">Dashboard</a><a href="{% url 'core:complaint_list' %}">Complaints</a>{% if user.profile.role == 'staff' or user.profile.role == 'admin' or user.is_staff %}<a href="{% url 'core:analytics_dashboard' %}">Analytics</a><a href="{% url 'core:campus_directory' %}">Campus directory</a>{% endif %}{% if user.is_staff %}<a href="/admin/">Admin</a>{% endif %}<form action="{% url 'core:logout' %}" method="post">{% csrf_token %}<button type="submit">Log out</button></form>{% else %}<a href="{% url 'core:complaint_create' %}">Report an issue</a><a href="{% url 'core:tracking_form' %}">Track complaint</a><a href="{% url 'core:login' %}">Staff log in</a>{% endif %}</div></nav>
-    <main>{% for message in messages %}<p class="message">{{ message }}</p>{% endfor %}{% block content %}{% endblock %}</main>
+    <!-- Institutional Top Banner -->
+    <div class="university-topbar">
+      <div style="display: flex; align-items: center; gap: 8px;">
+        <span>🏛️</span>
+        <span><strong>Aligarh Muslim University</strong> · Maintenance &amp; Public Works Portal</span>
+      </div>
+      <div style="display: flex; align-items: center; gap: 14px;">
+        <span>📞 Central Dispatch: <strong>+91 (0571) 2700920</strong></span>
+        <span style="opacity: 0.4;">•</span>
+        <span style="font-size: 11px; opacity: 0.9; letter-spacing: 0.3px;">24/7 Rapid Response Desk</span>
+      </div>
+    </div>
+
+    <!-- Sticky University Navigation Bar -->
+    <header class="amu-navbar">
+      <div class="amu-navbar-inner">
+        <!-- University Brand Emblem -->
+        <a class="amu-brand" href="{% url 'core:home' %}">
+          <div class="amu-brand-crest">AMU</div>
+          <div>
+            <div>Campus<span class="highlight">Care</span></div>
+            <small>EST. 1875 · ALIGARH</small>
+          </div>
+        </a>
+
+        <!-- Mobile Menu Toggle Button -->
+        <button type="button" class="mobile-menu-btn" id="mobileMenuToggle" aria-label="Toggle navigation menu">
+          ☰
+        </button>
+
+        <!-- Navigation Links -->
+        <nav class="amu-nav-links" id="amuNavLinks">
+          <a class="amu-nav-link" href="{% url 'core:home' %}">
+            <span>🏠</span> Public Board
+          </a>
+          <a class="amu-nav-link" href="{% url 'core:complaint_create' %}">
+            <span>✍️</span> Report an Issue
+          </a>
+          <a class="amu-nav-link" href="{% url 'core:tracking_form' %}">
+            <span>🔍</span> Track Ticket
+          </a>
+          <a class="amu-nav-link" href="{% url 'core:campus_directory' %}">
+            <span>🏛️</span> Campus Directory
+          </a>
+
+          {% if user.is_authenticated %}
+            <a class="amu-nav-link" href="{% url 'core:dashboard' %}">
+              <span>📊</span> Console
+            </a>
+            <a class="amu-nav-link" href="{% url 'core:complaint_list' %}">
+              <span>⚡</span> Queue
+            </a>
+
+            {% if user.profile.role == 'staff' or user.profile.role == 'admin' or user.is_staff or user.is_superuser %}
+              <a class="amu-nav-link" href="{% url 'core:analytics_dashboard' %}">
+                <span>📈</span> Analytics
+              </a>
+            {% endif %}
+
+            {% if user.is_superuser or user.profile.role == 'registrar' or user.profile.role == 'admin' %}
+              <a class="amu-nav-link" href="{% url 'core:campus_heatmap' %}" style="color: var(--amu-gold-700); font-weight: 700;">
+                <span>🗺️</span> Heatmap
+              </a>
+            {% endif %}
+
+            <!-- User Session Details -->
+            <div style="display: flex; align-items: center; gap: 8px; margin-left: 8px;">
+              <span class="user-session-chip" title="Signed in as {{ user.get_full_name|default:user.username }}">
+                <span class="user-avatar-badge">{{ user.username|slice:":1"|upper }}</span>
+                <strong>{{ user.get_full_name|default:user.username|truncatechars:18 }}</strong>
+                <span style="font-size: 11px; background: #e2e8f0; color: #475569; padding: 2px 6px; border-radius: 9999px;">
+                  {{ user.profile.role|default:"Staff"|capfirst }}
+                </span>
+              </span>
+
+              <form action="{% url 'core:logout' %}" method="post" style="display: inline; margin: 0;">
+                {% csrf_token %}
+                <button type="submit" class="btn-unified btn-unified-secondary" style="height: 34px; min-height: 34px; padding: 0 12px; font-size: 13px;">
+                  Logout
+                </button>
+              </form>
+            </div>
+          {% else %}
+            <div style="margin-left: 8px;">
+              <a href="{% url 'core:login' %}" class="btn-unified btn-unified-emerald" style="height: 36px; min-height: 36px; padding: 0 16px; font-size: 13px;">
+                <span>🔐</span> Staff Login
+              </a>
+            </div>
+          {% endif %}
+        </nav>
+      </div>
+    </header>
+
+    <!-- Main Page Content -->
+    <main class="amu-container">
+      {% if messages %}
+        <div style="margin-bottom: 20px;">
+          {% for message in messages %}
+            <div class="alert-box {% if message.tags == 'error' or message.level == DEFAULT_MESSAGE_LEVELS.ERROR %}alert-error{% elif message.tags == 'success' %}alert-success{% elif message.tags == 'warning' %}alert-warning{% else %}alert-info{% endif %}">
+              <div style="display: flex; align-items: center; gap: 10px;">
+                <span>{% if message.tags == 'error' or message.level == DEFAULT_MESSAGE_LEVELS.ERROR %}⚠️{% elif message.tags == 'success' %}✓{% else %}ℹ️{% endif %}</span>
+                <span>{{ message }}</span>
+              </div>
+              <button type="button" onclick="this.parentElement.remove()" style="background:none; border:none; color:inherit; font-size:16px; cursor:pointer; padding:0; line-height:1;" title="Dismiss">✕</button>
+            </div>
+          {% endfor %}
+        </div>
+      {% endif %}
+
+      {% block content %}{% endblock %}
+    </main>
+
+    <!-- University Institutional Footer -->
+    <footer class="amu-footer">
+      <div class="amu-footer-inner">
+        <!-- Col 1: About -->
+        <div class="amu-footer-col">
+          <h4>🏛️ Aligarh Muslim University</h4>
+          <p style="margin: 0 0 12px 0; line-height: 1.6; color: #94a3b8; font-size: 13px;">
+            AMU CampusCare is the automated maintenance, triage, and facility resolution platform for students, faculty, and residential halls across the AMU campus.
+          </p>
+          <div style="display: flex; gap: 8px; flex-wrap: wrap;">
+            <span style="background: rgba(5, 150, 105, 0.2); color: #34d399; padding: 3px 8px; border-radius: 4px; font-size: 11px; font-weight: 600;">
+              Zero-Login Tracking
+            </span>
+            <span style="background: rgba(217, 119, 6, 0.2); color: #fbbf24; padding: 3px 8px; border-radius: 4px; font-size: 11px; font-weight: 600;">
+              SLA Accountability
+            </span>
+          </div>
+        </div>
+
+        <!-- Col 2: Quick Links -->
+        <div class="amu-footer-col">
+          <h4>📌 Quick Portals</h4>
+          <ul>
+            <li><a href="{% url 'core:home' %}">Public Issue Board</a></li>
+            <li><a href="{% url 'core:complaint_create' %}">Lodge Maintenance Ticket</a></li>
+            <li><a href="{% url 'core:tracking_form' %}">Zero-Login Receipt Tracking</a></li>
+            <li><a href="{% url 'core:campus_directory' %}">Campus Directory &amp; Halls</a></li>
+            <li><a href="{% url 'core:login' %}">Staff Administration Login</a></li>
+          </ul>
+        </div>
+
+        <!-- Col 3: Maintenance Wings -->
+        <div class="amu-footer-col">
+          <h4>🔧 Facilities &amp; Maintenance</h4>
+          <ul>
+            <li>Electricity Maintenance Sub-Station</li>
+            <li>Estate Water Supply &amp; Plumbing Wing</li>
+            <li>Hostel Sanitation &amp; Residential Services</li>
+            <li>Campus Network &amp; Wi-Fi Operations</li>
+            <li>Building Civil &amp; Carpentry Works</li>
+          </ul>
+        </div>
+
+        <!-- Col 4: Campus Helplines -->
+        <div class="amu-footer-col">
+          <h4>🚨 Emergency Helplines</h4>
+          <ul>
+            <li>Proctor Office Control: <strong>+91 (0571) 2700920</strong></li>
+            <li>Estate Maintenance Helpdesk: <strong>Ext. 1122 / 1124</strong></li>
+            <li>Electrical Emergency: <strong>Ext. 1040</strong></li>
+            <li>Medical Attendance (JNMCH): <strong>+91 (0571) 2720001</strong></li>
+          </ul>
+        </div>
+      </div>
+
+      <div class="amu-footer-bottom">
+        <div>
+          © 2026 Aligarh Muslim University (AMU), Aligarh, UP 202002, India · All Rights Reserved.
+        </div>
+        <div style="display: flex; gap: 16px;">
+          <span>Official University Portal</span>
+          <span>Privacy &amp; Security</span>
+          <span>Terms of Service</span>
+        </div>
+      </div>
+    </footer>
+
+    <script>
+      // Responsive Mobile Menu Toggle
+      document.addEventListener('DOMContentLoaded', function() {
+        const toggleBtn = document.getElementById('mobileMenuToggle');
+        const navLinks = document.getElementById('amuNavLinks');
+        if (toggleBtn && navLinks) {
+          toggleBtn.addEventListener('click', function() {
+            navLinks.classList.toggle('open');
+          });
+        }
+
+        // Active link highlighting
+        const currentPath = window.location.pathname;
+        document.querySelectorAll('.amu-nav-link').forEach(function(link) {
+          const href = link.getAttribute('href');
+          if (href === currentPath || (href !== '/' && currentPath.startsWith(href))) {
+            link.classList.add('active');
+          }
+        });
+      });
+    </script>
+    {% block extra_scripts %}{% endblock %}
   </body>
 </html>

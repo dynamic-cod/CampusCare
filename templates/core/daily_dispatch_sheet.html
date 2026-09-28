@@ -257,11 +257,13 @@
     </a>
     <div style="display:flex; gap:10px; align-items:center;">
       <span style="font-size:13px; color:#64748b;">Ready for standard A4 paper printing</span>
-      <button onclick="window.print()" class="btn btn-print">
+      <button onclick="handlePrintDispatch()" id="printDispatchBtn" class="btn btn-print">
         🖨️ Print Dispatch Sheet (Ctrl + P)
       </button>
     </div>
   </div>
+
+  <div id="dispatchSuccessBanner" class="no-print" style="display:none; background: #dcfce7; border: 1px solid #86efac; color: #166534; padding: 12px 18px; border-radius: 8px; margin-bottom: 20px; font-weight: 600; font-size: 0.95rem;"></div>
 
   <div class="instructions-box no-print">
     <strong>📋 Hall Caretaker / Supervisor Protocol:</strong>
@@ -376,5 +378,87 @@
   </div>
 </div>
 
+<script>
+  let isLoggingDispatch = false;
+  let dispatchAlreadyLogged = false;
+
+  function getCookie(name) {
+    let cookieValue = null;
+    if (document.cookie && document.cookie !== '') {
+      const cookies = document.cookie.split(';');
+      for (let i = 0; i < cookies.length; i++) {
+        const cookie = cookies[i].trim();
+        if (cookie.substring(0, name.length + 1) === (name + '=')) {
+          cookieValue = decodeURIComponent(cookie.substring(name.length + 1));
+          break;
+        }
+      }
+    }
+    return cookieValue;
+  }
+
+  function showDispatchBanner(msg) {
+    const banner = document.getElementById("dispatchSuccessBanner");
+    if (banner) {
+      banner.textContent = msg;
+      banner.style.display = "block";
+    }
+  }
+
+  async function handlePrintDispatch() {
+    if (dispatchAlreadyLogged) {
+      window.print();
+      return;
+    }
+    
+    const btn = document.getElementById("printDispatchBtn");
+    const originalText = btn ? btn.innerHTML : "";
+    if (btn) btn.innerHTML = "⏳ Logging &amp; Dispatching...";
+
+    try {
+      const csrfToken = getCookie("csrftoken");
+      const response = await fetch("{% url 'core:log_dispatch_print' %}", {
+        method: "POST",
+        headers: {
+          "X-CSRFToken": csrfToken,
+          "Content-Type": "application/json",
+          "Accept": "application/json",
+        },
+        body: JSON.stringify({ action: "print_dispatch" }),
+      });
+
+      if (response.ok) {
+        const data = await response.json();
+        dispatchAlreadyLogged = true;
+        showDispatchBanner("✅ " + data.message);
+      }
+    } catch (err) {
+      console.warn("Could not log dispatch print:", err);
+    } finally {
+      if (btn) btn.innerHTML = originalText;
+      window.print();
+    }
+  }
+
+  window.addEventListener("beforeprint", function() {
+    if (!dispatchAlreadyLogged && !isLoggingDispatch) {
+      isLoggingDispatch = true;
+      const csrfToken = getCookie("csrftoken");
+      fetch("{% url 'core:log_dispatch_print' %}", {
+        method: "POST",
+        headers: {
+          "X-CSRFToken": csrfToken,
+          "Content-Type": "application/json",
+          "Accept": "application/json",
+        },
+        body: JSON.stringify({ action: "print_dispatch" }),
+      }).then(function(res) {
+        if (res.ok) {
+          dispatchAlreadyLogged = true;
+        }
+      }).catch(function(e) {});
+    }
+  });
+</script>
 </body>
 </html>

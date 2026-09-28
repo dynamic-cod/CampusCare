@@ -59,6 +59,8 @@ def suggest_category(text, categories):
     best_cat, best_score = None, 0
     for cat in categories:
         cat_lower = cat.name.lower()
+        if ("dining" in cat_lower or "mess" in cat_lower) and not any(k in normalized for k in ("dining", "mess", "canteen", "cafeteria", "food", "kitchen", "ration", "cook", "meal", "tiffin")):
+            continue
         score = 0
         for kw, weight in SPECIFIC_KEYWORD_WEIGHTS.items():
             if re.search(r"\b" + re.escape(kw) + r"\b", normalized):
@@ -169,11 +171,32 @@ def find_potential_duplicate(complaint):
     else:
         return None
 
-    source = f"{complaint.title} {complaint.description}".lower()
+    # Focus on the most recent 15 open complaints at this specific location
+    candidates = candidates.order_by("-created_at")[:15]
+
+    source = f"{complaint.title} {complaint.description}".lower().strip()
+    source_words = set(source.split())
+    if not source_words:
+        return None
+
     best_match, best_score = None, 0
-    for candidate in candidates[:100]:
-        target = f"{candidate.title} {candidate.description}".lower()
+    for candidate in candidates:
+        target = f"{candidate.title} {candidate.description}".lower().strip()
+        # Fast path 1: Exact match
+        if target == source or (complaint.title and candidate.title and complaint.title.strip().lower() == candidate.title.strip().lower()):
+            return candidate
+
+        # Fast path 2: Require token intersection before executing Ratcliff/Obershelp SequenceMatcher
+        target_words = set(target.split())
+        shared_words = source_words & target_words
+        if not shared_words or len(shared_words) / max(min(len(source_words), len(target_words)), 1) < 0.2:
+            continue
+
         score = SequenceMatcher(None, source, target).ratio()
         if score > best_score:
             best_match, best_score = candidate, score
+            if score >= 0.90:  # Confident duplicate found, early return
+                return best_match
+
     return best_match if best_score >= 0.58 else None
+
