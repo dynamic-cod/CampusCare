@@ -45,7 +45,7 @@ from .helpers import _can_student_modify_complaint, is_rate_limited
 
 def complaint_create(request):
     if request.method == "POST":
-        if is_rate_limited(request, key_prefix="complaint_submit", max_requests=60, window_seconds=60):
+        if is_rate_limited(request, key_prefix="complaint_submit", max_requests=10, window_seconds=60, ip_only=True):
             messages.error(request, "Too many complaint submissions. Please wait a minute before lodging another issue.")
             form = ComplaintSubmissionForm(request.POST, request.FILES)
             return render(
@@ -282,15 +282,19 @@ def complaint_detail(request, reference):
     )
 
 
+@admin_only_required
 def admin_complaint_detail_by_id(request, complaint_id):
-    complaint = get_object_or_404(Complaint, pk=complaint_id)
+    complaint = get_object_or_404(get_scoped_complaints_for_user(request.user), pk=complaint_id)
     return complaint_detail(request, reference=complaint.reference)
 
 
 def tracking_form(request):
     """Form page for users to enter their tracking token."""
+    if is_rate_limited(request, key_prefix="track_ip", max_requests=25, window_seconds=60, ip_only=True):
+        messages.error(request, "Too many lookup attempts. Please wait a moment before trying again.")
+        return render(request, "core/tracking_form.html", status=429)
     if request.method == "POST":
-        if is_rate_limited(request, key_prefix="track_lookup", max_requests=35, window_seconds=60):
+        if is_rate_limited(request, key_prefix="track_lookup", max_requests=25, window_seconds=60, ip_only=True):
             messages.error(request, "Too many lookup attempts. Please wait a moment before trying again.")
             return render(request, "core/tracking_form.html", status=429)
         tracking_token = request.POST.get("tracking_token", "").strip()
@@ -307,6 +311,12 @@ def tracking_form(request):
 
 def complaint_tracking(request, tracking_token):
     """Private no-account tracking page reached from the student's submission receipt."""
+    if is_rate_limited(request, key_prefix="track_direct", max_requests=30, window_seconds=60, ip_only=True):
+        if request.GET.get("format") == "json" or request.headers.get("Accept") == "application/json":
+            return JsonResponse({"error": "Too many requests. Please wait a moment."}, status=429)
+        messages.error(request, "Too many tracking requests. Please wait a moment before trying again.")
+        return render(request, "core/tracking_form.html", status=429)
+
     complaint = get_object_or_404(
         Complaint.objects.select_related(
             "category__department", "room__floor__building__parent", "assigned_to__profile", "assigned_by"
@@ -486,8 +496,9 @@ def complaint_update_status(request, reference):
             return redirect("core:complaint_detail", reference=reference)
 
 
+@admin_only_required
 def admin_update_status_by_id(request, complaint_id):
-    complaint = get_object_or_404(Complaint, pk=complaint_id)
+    complaint = get_object_or_404(get_scoped_complaints_for_user(request.user), pk=complaint_id)
     return complaint_update_status(request, reference=complaint.reference)
 
 

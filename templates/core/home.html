@@ -31,37 +31,37 @@
   </div>
 
   <div class="stats-grid">
-    <a href="{% url 'core:home' %}" class="stat-card" style="border-top: 4px solid var(--amu-navy-800); {% if not selected_status %}box-shadow: 0 0 0 2px var(--amu-emerald-600);{% endif %}">
+    <a href="{% url 'core:home' %}" class="stat-card {% if not selected_status %}stat-active-navy{% endif %}" style="border-top: 4px solid var(--amu-navy-800);">
       <strong id="kpi-total" class="counter" data-target="{{ total }}">{{ total }}</strong>
       <span>Total Filed</span>
     </a>
 
-    <a href="{% url 'core:home' %}?status=active" class="stat-card" style="border-top: 4px solid var(--amu-gold-600); {% if selected_status == 'active' %}box-shadow: 0 0 0 2px var(--amu-gold-600);{% endif %}">
+    <a href="{% url 'core:home' %}?status=active" class="stat-card {% if selected_status == 'active' %}stat-active-gold{% endif %}" style="border-top: 4px solid var(--amu-gold-600);">
       <strong id="kpi-active" class="counter" data-target="{{ count_active }}" style="color: var(--amu-gold-700);">{{ count_active }}</strong>
       <span>Active Queue</span>
     </a>
 
-    <a href="{% url 'core:home' %}?status=open" class="stat-card" style="border-top: 4px solid #0284c7; {% if selected_status == 'open' %}box-shadow: 0 0 0 2px #0284c7;{% endif %}">
+    <a href="{% url 'core:home' %}?status=open" class="stat-card {% if selected_status == 'open' %}stat-active-blue{% endif %}" style="border-top: 4px solid #0284c7;">
       <strong id="kpi-open" class="counter" data-target="{{ count_open }}" style="color: #0284c7;">{{ count_open }}</strong>
       <span>Open</span>
     </a>
 
-    <a href="{% url 'core:home' %}?status=in_progress" class="stat-card" style="border-top: 4px solid #7c3aed; {% if selected_status == 'in_progress' %}box-shadow: 0 0 0 2px #7c3aed;{% endif %}">
+    <a href="{% url 'core:home' %}?status=in_progress" class="stat-card {% if selected_status == 'in_progress' %}stat-active-purple{% endif %}" style="border-top: 4px solid #7c3aed;">
       <strong id="kpi-in-progress" class="counter" data-target="{{ count_in_progress }}" style="color: #7c3aed;">{{ count_in_progress }}</strong>
       <span>In Progress</span>
     </a>
 
-    <a href="{% url 'core:home' %}?status=resolved" class="stat-card" style="border-top: 4px solid var(--amu-emerald-600); {% if selected_status == 'resolved' %}box-shadow: 0 0 0 2px var(--amu-emerald-600);{% endif %}">
+    <a href="{% url 'core:home' %}?status=resolved" class="stat-card {% if selected_status == 'resolved' %}stat-active-emerald{% endif %}" style="border-top: 4px solid var(--amu-emerald-600);">
       <strong id="kpi-resolved" class="counter" data-target="{{ count_resolved }}" style="color: var(--amu-emerald-700);">{{ count_resolved }}</strong>
       <span>Resolved</span>
     </a>
 
-    <a href="{% url 'core:home' %}?status=reopened" class="stat-card" style="border-top: 4px solid #dc2626; {% if selected_status == 'reopened' %}box-shadow: 0 0 0 2px #dc2626;{% endif %}">
+    <a href="{% url 'core:home' %}?status=reopened" class="stat-card {% if selected_status == 'reopened' %}stat-active-red{% endif %}" style="border-top: 4px solid #dc2626;">
       <strong id="kpi-reopened" class="counter" data-target="{{ count_reopened }}" style="color: #dc2626;">{{ count_reopened }}</strong>
       <span>Reopened</span>
     </a>
 
-    <a href="{% url 'core:home' %}?status=closed" class="stat-card" style="border-top: 4px solid #64748b; {% if selected_status == 'closed' %}box-shadow: 0 0 0 2px #64748b;{% endif %}">
+    <a href="{% url 'core:home' %}?status=closed" class="stat-card {% if selected_status == 'closed' %}stat-active-slate{% endif %}" style="border-top: 4px solid #64748b;">
       <strong id="kpi-closed" class="counter" data-target="{{ count_closed }}" style="color: #475569;">{{ count_closed }}</strong>
       <span>Closed</span>
     </a>
@@ -116,7 +116,7 @@
   <div id="complaintContainer" style="display:flex; flex-direction:column; gap:12px;">
     {% if recent_complaints %}
       {% for complaint in recent_complaints %}
-        <div class="card card-interactive complaint-searchable-item" style="padding: 16px 20px; border-left: 4px solid {% if complaint.priority == 'urgent' %}#dc2626{% elif complaint.priority == 'high' %}#ea580c{% elif complaint.priority == 'normal' %}#0284c7{% else %}#16a34a{% endif %};" data-search="{{ complaint.reference|lower }} {{ complaint.title|lower }} {{ complaint.category.name|lower }} {{ complaint.location_description|lower }} {{ complaint.room|default:''|lower }}" data-complaint-id="{{ complaint.id }}">
+        <div class="card card-interactive complaint-searchable-item prio-border-{{ complaint.priority }}" style="padding: 16px 20px;" data-search="{{ complaint.reference|lower }} {{ complaint.title|lower }} {{ complaint.category.name|lower }} {{ complaint.location_description|lower }} {{ complaint.room|default:''|lower }}" data-complaint-id="{{ complaint.id }}">
           <div style="display:flex; align-items:flex-start; gap:16px; flex-wrap:wrap;">
             
             <div style="flex:1; min-width:240px;">
@@ -129,7 +129,7 @@
                   {% if complaint.status == 'resolved' %}⚡ Pending Student Verification{% else %}{{ complaint.get_status_display }}{% endif %}
                 </span>
 
-                <span style="font-size: 11px; font-weight: 600; padding: 2px 8px; border-radius: 9999px; background: {% if complaint.priority == 'urgent' %}#fee2e2; color:#b91c1c; border:1px solid #fca5a5;{% elif complaint.priority == 'high' %}#ffedd5; color:#c2410c; border:1px solid #fed7aa;{% elif complaint.priority == 'normal' %}#e0f2fe; color:#0369a1; border:1px solid #bae6fd;{% else %}#dcfce7; color:#15803d; border:1px solid #86efac;{% endif %};">
+                <span class="prio-badge prio-badge-{{ complaint.priority }}" style="font-size: 11px; font-weight: 600; padding: 2px 8px; border-radius: 9999px;">
                   {{ complaint.get_priority_display }} Priority
                 </span>
               </div>
@@ -163,7 +163,7 @@
               <form method="post" action="{% url 'core:complaint_toggle_support' complaint.reference %}" style="margin: 0;">
                 {% csrf_token %}
                 <input type="hidden" name="next" value="/">
-                <button type="submit" class="btn-unified" style="height: 38px; min-height: 38px; padding: 0 14px; font-size: 14px; background: {% if complaint.id in supported_ids %}#dcfce7; color: #15803d; border-color: #86efac;{% else %}#f8fafc; color: var(--amu-navy-700); border-color: #cbd5e1;{% endif %};" title="{% if complaint.id in supported_ids %}You supported this. Click to remove support{% else %}Show your support for this issue{% endif %}">
+                <button type="submit" class="btn-unified {% if complaint.id in supported_ids %}btn-support-active{% else %}btn-support-inactive{% endif %}" style="height: 38px; min-height: 38px; padding: 0 14px; font-size: 14px;" title="{% if complaint.id in supported_ids %}You supported this. Click to remove support{% else %}Show your support for this issue{% endif %}">
                   <span>👍</span> <span>{{ complaint.support_count }}</span>
                 </button>
               </form>
@@ -218,12 +218,45 @@
 .new-complaint-highlight {
   animation: highlightPulse 2.8s ease-out;
 }
+
+/* Priority Left Accent Borders */
+.prio-border-urgent { border-left: 4px solid #dc2626 !important; }
+.prio-border-high   { border-left: 4px solid #ea580c !important; }
+.prio-border-normal { border-left: 4px solid #0284c7 !important; }
+.prio-border-low    { border-left: 4px solid #16a34a !important; }
+
+/* Priority Badge Styles */
+.prio-badge-urgent { background: #fee2e2; color: #b91c1c; border: 1px solid #fca5a5; }
+.prio-badge-high   { background: #ffedd5; color: #c2410c; border: 1px solid #fed7aa; }
+.prio-badge-normal { background: #e0f2fe; color: #0369a1; border: 1px solid #bae6fd; }
+.prio-badge-low    { background: #dcfce7; color: #15803d; border: 1px solid #86efac; }
+
+/* Endorsement Button Dynamic States */
+.btn-support-active {
+  background: #dcfce7 !important;
+  color: #15803d !important;
+  border-color: #86efac !important;
+}
+.btn-support-inactive {
+  background: #f8fafc !important;
+  color: var(--amu-navy-700) !important;
+  border-color: #cbd5e1 !important;
+}
+
+/* Stat Card Active State Box Shadows */
+.stat-active-navy    { box-shadow: 0 0 0 2px var(--amu-emerald-600); }
+.stat-active-gold    { box-shadow: 0 0 0 2px var(--amu-gold-600); }
+.stat-active-blue    { box-shadow: 0 0 0 2px #0284c7; }
+.stat-active-purple  { box-shadow: 0 0 0 2px #7c3aed; }
+.stat-active-emerald { box-shadow: 0 0 0 2px var(--amu-emerald-600); }
+.stat-active-red     { box-shadow: 0 0 0 2px #dc2626; }
+.stat-active-slate   { box-shadow: 0 0 0 2px #64748b; }
 </style>
 
 <!-- Interactive Live Search, KPI Counter, and Real-Time Polling Script -->
 <script>
   document.addEventListener('DOMContentLoaded', function() {
-    let currentLatestId = {{ latest_id|default:0 }};
+    let currentLatestId = parseInt("{{ latest_id|default:0 }}", 10) || 0;
     const selectedStatus = "{{ selected_status|default:'' }}";
     const csrfToken = document.querySelector('[name=csrfmiddlewaretoken]')?.value || '{{ csrf_token }}';
 

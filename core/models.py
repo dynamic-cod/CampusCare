@@ -276,6 +276,21 @@ class Complaint(TimestampedModel):
             raise ValidationError("Provide either a campus room or a location description.")
         if self.assigned_to and not (self.assigned_to.is_staff or self.assigned_to.profile.role == UserProfile.Role.STAFF):
             raise ValidationError({"assigned_to": "Complaints can only be assigned to maintenance staff."})
+        if self.reporter_enrollment_number and self.reporter_enrollment_number not in ("LEGACY", "legacy"):
+            if self.status not in (Complaint.Status.RESOLVED, Complaint.Status.CLOSED):
+                active_qs = Complaint.objects.filter(
+                    reporter_enrollment_number__iexact=self.reporter_enrollment_number
+                ).exclude(
+                    status__in=[Complaint.Status.RESOLVED, Complaint.Status.CLOSED]
+                )
+                if self.pk:
+                    active_qs = active_qs.exclude(pk=self.pk)
+                if active_qs.count() >= 3:
+                    raise ValidationError({
+                        "reporter_enrollment_number": (
+                            f"Enrollment number {self.reporter_enrollment_number} has reached the maximum cap of 3 concurrent active tickets."
+                        )
+                    })
 
     def save(self, *args, **kwargs):
         if not kwargs.get("update_fields") and not self.room_id and not getattr(self, "_spatial_bound", False):

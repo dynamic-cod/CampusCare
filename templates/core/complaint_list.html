@@ -60,7 +60,7 @@
   <!-- Queue Items Container -->
   <div id="queueItemsList" style="display: flex; flex-direction: column; gap: 12px;">
     {% for complaint in complaints %}
-      <div class="card card-interactive queue-search-item" style="padding: 16px 20px; border-left: 4px solid {% if complaint.priority == 'urgent' %}#dc2626{% elif complaint.priority == 'high' %}#ea580c{% elif complaint.priority == 'normal' %}#0284c7{% else %}#16a34a{% endif %};" data-search="{{ complaint.reference|lower }} {{ complaint.title|lower }} {{ complaint.category.name|lower }} {{ complaint.location_description|lower }} {{ complaint.room|default:''|lower }} {{ complaint.assigned_to.get_full_name|default:complaint.assigned_to.username|default:''|lower }}">
+      <div class="card card-interactive queue-search-item" style="padding: 16px 20px; border-left: 4px solid {% if complaint.priority == 'urgent' %}#dc2626{% elif complaint.priority == 'high' %}#ea580c{% elif complaint.priority == 'normal' %}#0284c7{% else %}#16a34a{% endif %};" data-search="{{ complaint.reference|lower }} {{ complaint.title|lower }} {{ complaint.category.name|lower }} {{ complaint.location_description|lower }} {{ complaint.room|default:''|lower }} {% if complaint.assigned_to %}{{ complaint.assigned_to.get_full_name|default:complaint.assigned_to.username|lower }}{% endif %}">
         <div style="display: flex; justify-content: space-between; align-items: flex-start; gap: 16px; flex-wrap: wrap;">
           <div style="flex: 1; min-width: 240px;">
             <div style="display: flex; align-items: center; gap: 8px; flex-wrap: wrap; margin-bottom: 6px;">

@@ -17,7 +17,7 @@ def _can_student_modify_complaint(request, complaint):
     return False
 
 
-def is_rate_limited(request, key_prefix="rate_limit", max_requests=60, window_seconds=60):
+def is_rate_limited(request, key_prefix="rate_limit", max_requests=60, window_seconds=60, ip_only=False):
     """
     Check if a client IP or session is exceeding max_requests within window_seconds.
     Uses Django's configured cache (LocMemCache in memory).
@@ -32,7 +32,11 @@ def is_rate_limited(request, key_prefix="rate_limit", max_requests=60, window_se
     else:
         client_ip = request.META.get("REMOTE_ADDR", "127.0.0.1")
 
-    client_id = f"user:{request.user.id}" if getattr(request, "user", None) and request.user.is_authenticated else f"ip:{client_ip}"
+    if ip_only or not getattr(request, "user", None) or not request.user.is_authenticated:
+        client_id = f"ip:{client_ip}"
+    else:
+        client_id = f"user:{request.user.id}"
+
     cache_key = f"{key_prefix}:{client_id}"
     current_time = time.time()
 

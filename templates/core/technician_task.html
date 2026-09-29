@@ -81,10 +81,18 @@
     </div>
   {% else %}
     <div style="margin-top:18px; padding:16px; background:#f1f5f9; border-radius:10px; border:1px solid #e2e8f0;">
-      <strong>Task Status:</strong> <span class="pill pill-{{ complaint.status }}">{{ complaint.get_status_display }}</span>
+      <div style="display:flex; align-items:center; gap:8px; flex-wrap:wrap;">
+        <span>🔒</span>
+        <strong>Task Status:</strong> <span class="pill pill-{{ complaint.status }}">{{ complaint.get_status_display }}</span>
+        <span style="font-size:12px; color:#64748b; font-weight:600; background:#e2e8f0; padding:2px 8px; border-radius:12px; margin-left:auto;">READ-ONLY</span>
+      </div>
       {% if complaint.status == "resolved" %}
         <p style="margin: 8px 0 0 0; font-size:13px; color:#475569;">
-          Waiting for student verification before final closure. Technicians cannot mark complaints as Closed.
+          Waiting for student verification before final closure. This technician task link is now read-only to prevent token reuse.
+        </p>
+      {% elif complaint.status == "closed" %}
+        <p style="margin: 8px 0 0 0; font-size:13px; color:#475569;">
+          This complaint has been verified and closed by the student. No further technician actions can be taken.
         </p>
       {% endif %}
     </div>

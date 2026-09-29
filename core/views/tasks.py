@@ -35,12 +35,15 @@ def technician_task_view(request, task_token):
     if request.method == "POST":
         action = request.POST.get("action", "").strip().lower()
 
-        if complaint.status == Complaint.Status.CLOSED:
-            error_message = "This complaint has already been closed and verified. No further technician actions can be taken."
+        if complaint.status in [Complaint.Status.RESOLVED, Complaint.Status.CLOSED]:
+            error_message = (
+                f"This complaint has already been {complaint.get_status_display().lower()}. "
+                "The technician task link is now read-only and no further actions can be taken."
+            )
             return render(
                 request,
                 "core/technician_task.html",
-                {"complaint": complaint, "error_message": error_message},
+                {"complaint": complaint, "error_message": error_message, "is_read_only": True},
                 status=400,
             )
 
@@ -137,8 +140,9 @@ def technician_task_view(request, task_token):
             messages.success(request, "Task marked as Resolved and awaiting student verification.")
             return redirect("core:technician_task_view", task_token=complaint.staff_task_token)
 
+    is_read_only = complaint.status in [Complaint.Status.RESOLVED, Complaint.Status.CLOSED]
     return render(
         request,
         "core/technician_task.html",
-        {"complaint": complaint, "error_message": error_message},
+        {"complaint": complaint, "error_message": error_message, "is_read_only": is_read_only},
     )

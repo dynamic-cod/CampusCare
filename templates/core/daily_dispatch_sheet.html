@@ -416,7 +416,7 @@
     if (btn) btn.innerHTML = "⏳ Logging &amp; Dispatching...";
 
     try {
-      const csrfToken = getCookie("csrftoken");
+      const csrfToken = "{{ csrf_token }}" || getCookie("csrftoken");
       const response = await fetch("{% url 'core:log_dispatch_print' %}", {
         method: "POST",
         headers: {
@@ -443,7 +443,7 @@
   window.addEventListener("beforeprint", function() {
     if (!dispatchAlreadyLogged && !isLoggingDispatch) {
       isLoggingDispatch = true;
-      const csrfToken = getCookie("csrftoken");
+      const csrfToken = "{{ csrf_token }}" || getCookie("csrftoken");
       fetch("{% url 'core:log_dispatch_print' %}", {
         method: "POST",
         headers: {

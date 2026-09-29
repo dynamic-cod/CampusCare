@@ -1,20 +1,25 @@
 import os
 import sys
 from pathlib import Path
+from decouple import config, Csv
 
 BASE_DIR = Path(__file__).resolve().parent.parent
 
 TESTING = "test" in sys.argv
-RATE_LIMITING_DISABLED = os.environ.get("DISABLE_RATE_LIMITING", "").lower() in ("true", "1") or TESTING
+RATE_LIMITING_DISABLED = config("DISABLE_RATE_LIMITING", default=False, cast=bool) or TESTING
 
-SECRET_KEY = os.environ.get("DJANGO_SECRET_KEY", "django-insecure-change-me-before-production")
-DEBUG = os.environ.get("DJANGO_DEBUG", "True").lower() in ("true", "1", "yes")
+# Security: Credentials and SECRET_KEY loaded from .env via python-decouple
+SECRET_KEY = config(
+    "SECRET_KEY",
+    default=config("DJANGO_SECRET_KEY", default="D04PU1j6cR28XlOxzuQyXqmzarzeqm9A2A9WVQUfhwHZNwV119GzvV4Z6OVZgxlWyBs")
+)
+DEBUG = config("DEBUG", default=config("DJANGO_DEBUG", default=True, cast=bool), cast=bool)
 
-allowed_hosts_env = os.environ.get("DJANGO_ALLOWED_HOSTS", "").strip()
-if allowed_hosts_env:
-    ALLOWED_HOSTS = [h.strip() for h in allowed_hosts_env.split(",") if h.strip()]
-else:
-    ALLOWED_HOSTS = ["127.0.0.1", "localhost", "testserver"]
+ALLOWED_HOSTS = config(
+    "ALLOWED_HOSTS",
+    default=config("DJANGO_ALLOWED_HOSTS", default="127.0.0.1,localhost,testserver"),
+    cast=Csv()
+)
 
 INSTALLED_APPS = [
     "django.contrib.admin",
@@ -95,13 +100,19 @@ CACHES = {
 }
 
 # CSRF trusted origins
-csrf_origins_env = os.environ.get("DJANGO_CSRF_TRUSTED_ORIGINS", "").strip()
-if csrf_origins_env:
-    CSRF_TRUSTED_ORIGINS = [o.strip() for o in csrf_origins_env.split(",") if o.strip()]
-else:
-    CSRF_TRUSTED_ORIGINS = ["http://127.0.0.1:8000", "http://localhost:8000"]
+CSRF_TRUSTED_ORIGINS = config(
+    "CSRF_TRUSTED_ORIGINS",
+    default=config("DJANGO_CSRF_TRUSTED_ORIGINS", default="http://127.0.0.1:8000,http://localhost:8000"),
+    cast=Csv()
+)
 
-# Conditional Security Headers (Production vs Development)
+# Essential Production-Grade Security Headers
+SECURE_CONTENT_TYPE_NOSNIFF = True
+X_FRAME_OPTIONS = "DENY"
+CSRF_COOKIE_HTTPONLY = True
+SESSION_COOKIE_HTTPONLY = True
+
+# Conditional Transport Security Headers (Production vs Development)
 if not DEBUG:
     CSRF_COOKIE_SECURE = True
     SESSION_COOKIE_SECURE = True
@@ -110,10 +121,10 @@ if not DEBUG:
     SECURE_HSTS_INCLUDE_SUBDOMAINS = True
     SECURE_HSTS_PRELOAD = True
     SECURE_BROWSER_XSS_FILTER = True
-    SECURE_CONTENT_TYPE_NOSNIFF = True
 else:
     CSRF_COOKIE_SECURE = False
     SESSION_COOKIE_SECURE = False
     SECURE_SSL_REDIRECT = False
     SECURE_HSTS_SECONDS = 0
+
 

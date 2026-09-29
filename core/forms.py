@@ -120,14 +120,31 @@ class ComplaintSubmissionForm(forms.ModelForm):
 
         # Allow test suite enrollment numbers (e.g., DRILL-SSN-2026, QA-001)
         if raw_val.upper().startswith(("DRILL-", "QA-", "TEST-")):
-            return raw_val.upper()
+            enrollment = raw_val.upper()
+        else:
+            # Exactly 6 characters: first 2 characters are alphabetic letters, remaining 4 characters are numeric digits
+            if len(raw_val) != 6 or not re.match(r"^[a-zA-Z]{2}\d{4}$", raw_val):
+                raise forms.ValidationError(
+                    "Invalid Enrollment Number. It must be exactly 6 characters: 2 letters followed by 4 digits (e.g., gq1234 or AA0001)."
+                )
+            enrollment = raw_val.upper()
 
-        # Exactly 6 characters: first 2 characters are alphabetic letters, remaining 4 characters are numeric digits
-        if len(raw_val) != 6 or not re.match(r"^[a-zA-Z]{2}\d{4}$", raw_val):
+        # Enforce max cap of 3 concurrent active tickets per enrollment number
+        active_tickets = Complaint.objects.filter(
+            reporter_enrollment_number__iexact=enrollment
+        ).exclude(
+            status__in=[Complaint.Status.RESOLVED, Complaint.Status.CLOSED]
+        )
+        if self.instance and self.instance.pk:
+            active_tickets = active_tickets.exclude(pk=self.instance.pk)
+
+        if active_tickets.count() >= 3:
             raise forms.ValidationError(
-                "Invalid Enrollment Number. It must be exactly 6 characters: 2 letters followed by 4 digits (e.g., gq1234 or AA0001)."
+                f"Active ticket limit reached: You currently have 3 open maintenance issues registered under enrollment number {enrollment}. "
+                "Please wait until existing tickets are resolved or closed before submitting a new complaint."
             )
-        return raw_val.upper()
+
+        return enrollment
 
     def clean(self):
         cleaned_data = super().clean()
