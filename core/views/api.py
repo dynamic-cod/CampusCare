@@ -11,40 +11,48 @@ from django.http import JsonResponse
 from django.shortcuts import get_object_or_404
 from django.utils import timezone
 
+from django.views.decorators.csrf import csrf_exempt
+
 from core.ai_triage import extract_building_and_department
 from core.decorators import superuser_or_registrar_required
 from core.models import Building, Complaint, ComplaintCategory, Department, Floor, Room, UserProfile
-from core.smart import is_mess_complaint, score_priority, suggest_category
+from core.smart import is_mess_complaint, score_priority, suggest_categories, suggest_category
 from core.staff_matcher import suggest_staff
 
 
+@csrf_exempt
 def suggest_category_api(request):
-    """API endpoint for real-time category suggestions based on complaint text."""
+    """API endpoint for real-time category suggestions based on complaint text and optional location."""
+    location = ""
     if request.method == "POST":
         try:
             data = json.loads(request.body)
             text = data.get("text", "").strip()
+            location = data.get("location", "").strip()
         except (json.JSONDecodeError, ValueError):
             text = request.POST.get("text", "").strip()
+            location = request.POST.get("location", "").strip()
     else:
         text = request.GET.get("text", "").strip()
+        location = request.GET.get("location", "").strip()
     
     if not text or len(text) < 3:
         return JsonResponse({"suggestions": []})
     
     active_categories = ComplaintCategory.objects.filter(is_active=True).select_related("department")
-    suggested_category, confidence = suggest_category(text, active_categories)
+    suggestions_data = suggest_categories(text, active_categories, location=location, limit=3)
     
-    if suggested_category:
+    if suggestions_data:
         return JsonResponse({
             "suggestions": [
                 {
-                    "id": suggested_category.id,
-                    "name": suggested_category.name,
-                    "description": suggested_category.description,
-                    "confidence": confidence,
-                    "department": suggested_category.department.name if suggested_category.department else "",
+                    "id": cat.id,
+                    "name": cat.name,
+                    "description": cat.description,
+                    "confidence": conf,
+                    "department": cat.department.name if cat.department else "",
                 }
+                for cat, conf in suggestions_data
             ]
         })
     

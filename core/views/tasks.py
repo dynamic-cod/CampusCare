@@ -7,14 +7,30 @@ from django.contrib import messages
 from django.shortcuts import get_object_or_404, redirect, render
 from django.utils import timezone
 
-from core.models import Complaint, ComplaintStatusHistory
+from core.models import Complaint, ComplaintStatusHistory, UserProfile
 from core.utils import compress_uploaded_image
 
 
 def technician_task_view(request, task_token):
-    """Zero-login technician task execution portal accessed via UUID staff_task_token."""
+    """Technician task execution portal accessed via UUID staff_task_token."""
     complaint = get_object_or_404(Complaint, staff_task_token=task_token)
     error_message = None
+
+    # Access Control: Students must NEVER have access to the technician portal
+    if request.user.is_authenticated:
+        profile = getattr(request.user, "profile", None)
+        role = getattr(profile, "role", None)
+        if role == UserProfile.Role.STUDENT or (complaint.reporter_id and request.user.id == complaint.reporter_id and not request.user.is_staff):
+            error_message = (
+                "Access Denied: Students are not permitted to access the technician task portal. "
+                "This portal is strictly reserved for assigned maintenance technicians and authorized administrators."
+            )
+            return render(
+                request,
+                "core/technician_task.html",
+                {"complaint": complaint, "error_message": error_message, "access_denied": True},
+                status=403,
+            )
 
     if request.method == "POST":
         action = request.POST.get("action", "").strip().lower()

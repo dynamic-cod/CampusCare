@@ -625,3 +625,118 @@ class ComplaintWorkflowTests(TestCase):
         self.assertIsInstance(data_sup["points"], list)
 
 
+class AISuggestionAndFacultyLocationTests(TestCase):
+    def setUp(self):
+        self.sci_dept = Department.objects.create(name="Science", code="SCI")
+        self.mgmt_dept = Department.objects.create(name="Management Studies", code="MGMT")
+        self.it_dept = Department.objects.create(name="IT Services", code="IT")
+        
+        self.cat_sci = ComplaintCategory.objects.create(
+            name="Science Computer Systems", department=self.sci_dept
+        )
+        self.cat_mgmt = ComplaintCategory.objects.create(
+            name="Management Projector Equipment", department=self.mgmt_dept
+        )
+        self.cat_it = ComplaintCategory.objects.create(
+            name="IT Server Maintenance", department=self.it_dept
+        )
+
+    def test_suggest_category_computer_science_projector_accuracy(self):
+        from core.smart import suggest_category, suggest_categories
+        categories = ComplaintCategory.objects.filter(is_active=True).select_related("department")
+        
+        # Test 1: Description contains "Department of Computer Science"
+        text = "Projector is not working in Department of Computer Science"
+        cat, conf = suggest_category(text, categories)
+        self.assertIsNotNone(cat)
+        self.assertEqual(cat.name, "Science Computer Systems")
+        self.assertNotEqual(cat.name, "Management Projector Equipment")
+
+        # Test 2: Multi-suggestions include Science Computer Systems and do NOT include Management Projector Equipment
+        suggestions = suggest_categories(text, categories, limit=3)
+        suggested_names = [c.name for c, _ in suggestions]
+        self.assertIn("Science Computer Systems", suggested_names)
+        self.assertNotIn("Management Projector Equipment", suggested_names)
+
+    def test_suggest_category_with_location_parameter(self):
+        from core.smart import suggest_category
+        categories = ComplaintCategory.objects.filter(is_active=True).select_related("department")
+        
+        text = "Projector is not working"
+        location = "Department of Computer Science · Faculty of Science"
+        cat, conf = suggest_category(text, categories, location=location)
+        self.assertIsNotNone(cat)
+        self.assertEqual(cat.name, "Science Computer Systems")
+        self.assertNotEqual(cat.name, "Management Projector Equipment")
+
+    def test_faculties_with_departments_helper(self):
+        from core.faculty_directory import get_faculties_with_departments
+        faculties = get_faculties_with_departments()
+        self.assertEqual(len(faculties), 13)
+        sci_fac = next((f for f in faculties if f["code"] == "SCI"), None)
+        self.assertIsNotNone(sci_fac)
+        cs_dept = next((d for d in sci_fac["departments"] if d["code"] == "SCI_CS"), None)
+        self.assertIsNotNone(cs_dept)
+        self.assertEqual(cs_dept["name"], "Computer Science")
+
+    def test_complaint_form_renders_academic_faculties(self):
+        response = self.client.get("/complaints/new/")
+        self.assertEqual(response.status_code, 200)
+        self.assertIn("active_faculties", response.context)
+        self.assertContains(response, "Select Academic Faculty or Teaching Department")
+        self.assertContains(response, "Department of Computer Science")
+
+    def test_student_tracking_does_not_expose_technician_portal(self):
+        """Verify that student tracking page NEVER exposes technician execution portal or tokens."""
+        category = ComplaintCategory.objects.first()
+        complaint = Complaint.objects.create(
+            title="Broken projector in Lab 2",
+            description="Projector is not turning on.",
+            category=category,
+            location_description="Department of Computer Science",
+            reporter_name="Student User",
+            reporter_enrollment_number="GL1234",
+            status=Complaint.Status.ASSIGNED,
+        )
+        response = self.client.get(f"/track/{complaint.tracking_token}/")
+        self.assertEqual(response.status_code, 200)
+        # Must NOT leak technician links or actions to students
+        self.assertNotContains(response, "Open Technician Portal to Mark Resolved")
+        self.assertNotContains(response, "Open Technician Task Portal")
+        self.assertNotContains(response, str(complaint.staff_task_token))
+
+    def test_technician_task_portal_blocks_students(self):
+        """Verify that logged-in students are forbidden (HTTP 403) from accessing the technician portal."""
+        category = ComplaintCategory.objects.first()
+        student_user = User.objects.create_user(username="student_tester", password="password")
+        student_user.profile.role = UserProfile.Role.STUDENT
+        student_user.profile.save()
+
+        complaint = Complaint.objects.create(
+            title="Broken projector in Lab 2",
+            description="Projector is not turning on.",
+            category=category,
+            location_description="Department of Computer Science",
+            reporter=student_user,
+            reporter_name="Student Tester",
+            reporter_enrollment_number="GL5678",
+            status=Complaint.Status.ASSIGNED,
+        )
+
+        # 1. Student attempting to access technician task portal
+        self.client.force_login(student_user)
+        response = self.client.get(f"/task/{complaint.staff_task_token}/")
+        self.assertEqual(response.status_code, 403)
+        self.assertContains(response, "Access Denied", status_code=403)
+        self.assertContains(response, "Students are not permitted to access the technician task portal", status_code=403)
+
+        # 2. Staff / Admin accessing technician portal succeeds
+        staff_user = User.objects.create_user(username="staff_tech", password="password", is_staff=True)
+        staff_user.profile.role = UserProfile.Role.STAFF
+        staff_user.profile.save()
+        self.client.force_login(staff_user)
+        resp_staff = self.client.get(f"/task/{complaint.staff_task_token}/")
+        self.assertEqual(resp_staff.status_code, 200)
+
+
+

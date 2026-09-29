@@ -2,6 +2,7 @@
 from difflib import SequenceMatcher
 import re
 
+from .faculty_directory import detect_department, detect_faculty
 from .models import Complaint
 
 SPECIFIC_KEYWORD_WEIGHTS = {
@@ -53,37 +54,292 @@ MESS_KEYWORDS = {
 }
 
 
-def suggest_category(text, categories):
-    """Return the strongest matching active category and a confidence percentage."""
-    normalized = text.lower()
-    best_cat, best_score = None, 0
+ACADEMIC_FACULTY_CODES = {
+    "AGRI", "ARTS", "COMM", "ENGG", "INTL", "LAW", "LIFE", "MGMT", "SCI", "SOC", "THEO", "MED", "UNANI"
+}
+
+
+def suggest_categories(text, categories, location="", limit=3):
+    """
+    Return top matching active categories with calibrated confidence percentages.
+    
+    Fine-tuned AI routing features:
+    - Academic Faculty & Department context binding:
+      Strictly avoids cross-faculty classification errors (e.g. suggesting
+      'Management Projector Equipment' for 'Department of Computer Science').
+    - Comprehensive domain & semantic keyword mapping across IT, AV, Electrical,
+      Plumbing, Civil, Sanitation, Dining, Labs, Libraries, and Security.
+    - Calibrated confidence scoring (50% - 95%).
+    """
+    combined_raw = f"{text or ''} {location or ''}".strip()
+    if not combined_raw or len(combined_raw) < 3:
+        return []
+
+    normalized = combined_raw.lower()
+
+    # Detect academic context
+    detected_dept = detect_department(combined_raw)
+    detected_fac = detect_faculty(combined_raw)
+    detected_fac_code = None
+    if detected_dept:
+        detected_fac_code = detected_dept.get("faculty", "").upper()
+    elif detected_fac:
+        detected_fac_code = detected_fac.get("code", "").upper()
+
+    # Is dining / mess complaint? (Use word boundaries to avoid false positives like 'ration' in 'administration')
+    is_dining = bool(re.search(
+        r"\b(dining|mess|canteen|cafeteria|food|kitchen|ration|rations|cook|meal|meals|"
+        r"tiffin|roti|rotis|rice|daal|dal|sabzi|biryani|breakfast|lunch|dinner)\b",
+        normalized
+    ))
+
+    scored_categories = []
+
     for cat in categories:
         cat_lower = cat.name.lower()
-        if ("dining" in cat_lower or "mess" in cat_lower) and not any(k in normalized for k in ("dining", "mess", "canteen", "cafeteria", "food", "kitchen", "ration", "cook", "meal", "tiffin")):
+        dept_code = (cat.department.code or "").upper() if (cat.department and cat.department.code) else ""
+
+        # 1. STRICT CROSS-FACULTY ISOLATION:
+        # If an academic faculty is identified (e.g. SCI for Computer Science),
+        # any category from an incompatible academic faculty (e.g. MGMT, ARTS, ENGG, etc.) is strictly filtered out.
+        if detected_fac_code and dept_code in ACADEMIC_FACULTY_CODES and dept_code != detected_fac_code:
             continue
+
+        # 2. If it's NOT a dining complaint, do not suggest dining/mess categories
+        if not is_dining and (dept_code == "MESS" or "dining" in cat_lower or "mess" in cat_lower):
+            continue
+
         score = 0
+
+        # Faculty affinity boost
+        if detected_fac_code and dept_code == detected_fac_code:
+            score += 15
+
+        # --- A. PROJECTOR / AUDIO-VISUAL / SMART CLASS ---
+        if re.search(r"\b(projector|smart class|smart board|audio visual|av equipment|podium|display screen|overhead projector)\b", normalized):
+            if detected_fac_code == "SCI":
+                if cat.name == "Science Computer Systems":
+                    score += 45
+                elif cat.name == "Science Laboratory Equipment":
+                    score += 30
+            elif detected_fac_code == "ENGG":
+                if cat.name == "Engineering Computer Systems":
+                    score += 45
+                elif cat.name == "Engineering Laboratory Equipment":
+                    score += 30
+            elif detected_fac_code == "ARTS":
+                if cat.name == "Arts Audio-Visual Equipment":
+                    score += 50
+            elif detected_fac_code == "MGMT":
+                if cat.name == "Management Projector Equipment":
+                    score += 50
+            elif detected_fac_code == "COMM":
+                if cat.name == "Commerce Computer Lab Equipment":
+                    score += 45
+                elif cat.name == "Commerce Classroom Maintenance":
+                    score += 35
+            elif detected_fac_code == "SOC":
+                if cat.name == "Social Computer Lab":
+                    score += 45
+                elif cat.name == "Social Classroom Maintenance":
+                    score += 35
+            elif detected_fac_code == "LAW":
+                if cat.name == "Law Classroom Maintenance":
+                    score += 45
+                elif cat.name == "Law Computer Lab":
+                    score += 35
+            else:
+                if cat.name in ("Arts Audio-Visual Equipment", "IT Services", "IT Software & Portals", "Campus Wi-Fi & Network Services"):
+                    score += 30
+                elif cat.name == "Electrical & Wiring Maintenance":
+                    score += 20
+
+        # --- B. WI-FI & NETWORK ---
+        if re.search(r"\b(wifi|wi-fi|internet|router|broadband|lan|ethernet|network|connectivity|signal|hotspot|modem)\b", normalized):
+            if cat.name == "Campus Wi-Fi & Network Services":
+                score += 50
+            elif cat.name == "IT Network & Connectivity":
+                score += 45
+            elif cat.name == "IT Server Maintenance":
+                score += 25
+
+        # --- C. COMPUTERS, LAB HARDWARE & SOFTWARE ---
+        if re.search(r"\b(computer|pc|desktop|laptop|cpu|monitor|mouse|keyboard|printer|scanner|ups|hard disk|ram|motherboard|software|portal|erp|login|crash|server)\b", normalized):
+            if detected_fac_code == "SCI" and cat.name == "Science Computer Systems":
+                score += 45
+            elif detected_fac_code == "ENGG" and cat.name == "Engineering Computer Systems":
+                score += 45
+            elif detected_fac_code == "COMM" and cat.name == "Commerce Computer Lab Equipment":
+                score += 45
+            elif detected_fac_code == "MGMT" and cat.name == "Management Computer Lab":
+                score += 45
+            elif detected_fac_code == "SOC" and cat.name == "Social Computer Lab":
+                score += 45
+            elif detected_fac_code == "LAW" and cat.name == "Law Computer Lab":
+                score += 45
+            elif detected_fac_code == "INTL" and cat.name == "International Language Lab Equipment":
+                score += 45
+            elif cat.name in ("IT Server Maintenance", "IT Software & Portals"):
+                score += 40
+            elif cat.name == "IT Network & Connectivity":
+                score += 30
+
+        # --- D. ELECTRICAL & WIRING ---
+        if re.search(r"\b(spark|sparking|shock|electric shock|short circuit|mcb|fuse|bulb|tube light|light|fan|wiring|electric|electrical|switch|switchboard|socket|power|blackout|voltage|ac|air conditioner|cooler|geyser|heater|inverter)\b", normalized):
+            if detected_fac_code == "ENGG" and cat.name == "Engineering Electrical Systems":
+                score += 45
+            elif cat.name == "Electrical & Wiring Maintenance":
+                score += 45
+            elif cat.name == "Estate Electrical Maintenance":
+                score += 35
+            elif ("hostel" in normalized or "hall" in normalized) and cat.name == "Hostel Room Maintenance":
+                score += 30
+
+        # --- E. PLUMBING & WATER ---
+        if re.search(r"\b(leak|leaking|pipe|pipeline|tap|faucet|water|drain|drainage|sewer|sewage|flush|cistern|tank|submersible|motor|clogged|choked|overflow)\b", normalized):
+            if is_dining and cat.name in ("Dining Hall Water & Utilities", "Water Cooler & Dining Hall Maintenance"):
+                score += 50
+            elif cat.name == "Estate Plumbing":
+                score += 60 if re.search(r"\b(pipe|pipeline|leak|leaking|tap|faucet|plumb|plumbing|drain|drainage|sewer|sewage|flush)\b", normalized) else 45
+            elif ("hostel" in normalized or "hall" in normalized) and cat.name == "Hostel Water Supply":
+                score += 40
+            elif cat.name == "Hostel Water Supply":
+                score += 35
+
+        # --- F. CIVIL & CARPENTRY & FURNITURE ---
+        if re.search(r"\b(door|window|lock|latches|hinges|carpentry|carpenter|furniture|desk|bench|chair|table|masonry|plaster|wall|ceiling|roof|tile|paint|seepage|dampness|cracked wall|broken glass|window pane|cupboard|almirah)\b", normalized):
+            if detected_fac_code == "ARTS" and cat.name == "Arts Classroom Furniture":
+                score += 45
+            elif detected_fac_code == "COMM" and cat.name == "Commerce Classroom Maintenance":
+                score += 45
+            elif detected_fac_code == "SOC" and cat.name == "Social Classroom Maintenance":
+                score += 45
+            elif detected_fac_code == "LAW" and cat.name == "Law Classroom Maintenance":
+                score += 45
+            elif detected_fac_code == "THEO" and cat.name == "Theology Classroom Maintenance":
+                score += 45
+            elif ("hostel" in normalized or "hall" in normalized) and cat.name in ("Hostel Room Maintenance", "Hostel Common Area Maintenance"):
+                score += 40
+            elif cat.name == "Civil & Carpentry Works":
+                score += 45
+            elif cat.name in ("Estate Civil Works", "Estate Carpentry"):
+                score += 35
+
+        # --- G. SANITATION & CLEANING ---
+        if re.search(r"\b(garbage|trash|waste|dirty|toilet|washroom|bathroom|urinal|cleaning|sanitation|dustbin|sweeper|sweep|broom|mop|stink|foul smell|litter)\b", normalized):
+            if is_dining and cat.name == "Dining Hall Maintenance & Hygiene":
+                score += 45
+            elif cat.name == "Hostel Sanitation":
+                score += 45
+
+        # --- H. MESS & DINING ---
+        if is_dining:
+            if re.search(r"\b(insect|worm|cockroach|contamination|contaminated|food poisoning|stale|tasteless|undercooked|raw|uncooked|ill after|sick after|vomiting|hygiene)\b", normalized):
+                if cat.name == "Food Quality & Hygiene":
+                    score += 50
+                elif cat.name == "Food Quality & Preparation":
+                    score += 45
+            elif re.search(r"\b(timing|late|early|quantity|portion|ration|menu|caterer)\b", normalized):
+                if cat.name == "Mess Timings & Quantity":
+                    score += 50
+                elif cat.name == "Mess Timings & Ration Supply":
+                    score += 45
+            elif re.search(r"\b(water cooler|drinking water|cooler)\b", normalized):
+                if cat.name == "Water Cooler & Dining Hall Maintenance":
+                    score += 50
+                elif cat.name == "Dining Hall Water & Utilities":
+                    score += 45
+            else:
+                if cat.name in ("Dining Hall Maintenance & Hygiene", "Food Quality & Hygiene"):
+                    score += 40
+
+        # --- I. LABORATORY APPARATUS & CHEMICAL SAFETY ---
+        if re.search(r"\b(chemical|acid|reagent|hazard|spill|safety|fume hood)\b", normalized):
+            if detected_fac_code == "SCI" and cat.name == "Science Chemical Safety":
+                score += 50
+            elif detected_fac_code == "LIFE" and cat.name == "Life Sciences Chemical Safety":
+                score += 50
+        if re.search(r"\b(microscope|specimen|slides|lens)\b", normalized):
+            if detected_fac_code == "LIFE" and cat.name == "Life Sciences Microscope Maintenance":
+                score += 50
+        if re.search(r"\b(lab|laboratory|apparatus|centrifuge|autoclave|incubator|test tube|pipette)\b", normalized):
+            if detected_fac_code == "SCI" and cat.name == "Science Laboratory Equipment":
+                score += 45
+            elif detected_fac_code == "ENGG" and cat.name == "Engineering Laboratory Equipment":
+                score += 45
+            elif detected_fac_code == "LIFE" and cat.name == "Life Sciences Laboratory Equipment":
+                score += 45
+            elif detected_fac_code == "MED" and cat.name == "JNMC Laboratory Equipment":
+                score += 45
+            elif detected_fac_code == "UNANI" and cat.name == "Unani Laboratory Equipment":
+                score += 45
+
+        # --- J. MEDICAL & HOSPITAL (JNMC & UNANI) ---
+        if re.search(r"\b(hospital|patient|doctor|ward|bed|stretcher|ambulance|medical|stethoscope|ecg|x-ray)\b", normalized):
+            if detected_fac_code == "MED" or "jnmc" in normalized:
+                if cat.name == "JNMC Medical Equipment":
+                    score += 50
+                elif cat.name == "JNMC Hospital Infrastructure":
+                    score += 45
+            elif detected_fac_code == "UNANI" or "tibbiya" in normalized:
+                if cat.name == "Unani Medical Equipment":
+                    score += 50
+        if re.search(r"\b(herbal|medicinal plant|herbal garden)\b", normalized):
+            if cat.name == "Unani Herbal Garden Maintenance":
+                score += 50
+
+        # --- K. AGRICULTURE ---
+        if re.search(r"\b(farm|tractor|plough|crop|irrigation|tubewell|sprinkler)\b", normalized):
+            if cat.name == "Farm Equipment":
+                score += 50
+            elif cat.name == "Irrigation Systems":
+                score += 50
+
+        # --- L. LIBRARY ---
+        if re.search(r"\b(library|maulana azad|book|journal|reading room|stack|circulation|catalog)\b", normalized):
+            if cat.name == "Central Library Services":
+                score += 45
+            elif cat.name == "Central Library Reading Room Maintenance":
+                score += 45
+
+        # --- M. SECURITY ---
+        if re.search(r"\b(security|guard|gate|entry|trespassing|stolen|theft|cycle|bike|cctv|camera)\b", normalized):
+            if "gate" in normalized and cat.name == "Gate Maintenance":
+                score += 50
+            elif cat.name == "Campus Security":
+                score += 45
+
+        # Fallback keyword matching
         for kw, weight in SPECIFIC_KEYWORD_WEIGHTS.items():
             if re.search(r"\b" + re.escape(kw) + r"\b", normalized):
-                if kw in cat_lower or any(part in cat_lower for part in kw.split()):
-                    score += weight
-                elif "network" in cat_lower and kw in ("wifi", "wi-fi", "internet", "router", "lan", "broadband"):
-                    score += weight
-                elif "electrical" in cat_lower and kw in ("bulb", "light", "fan", "switch", "socket", "power", "spark", "sparking", "shock", "wiring"):
-                    score += weight
-                elif "plumbing" in cat_lower and kw in ("leak", "leaking", "pipe", "tap", "faucet", "water", "drain", "drainage", "sewer", "flush"):
-                    score += weight
-                elif "dining incharge" in cat_lower and kw in ("food poisoning", "contamination", "insect in food","food","roti","dal","sabzi","tasteless","stale","undercooked","raw","uncooked","insect","worm","cockroach","caterer","diet","ration","portion","food quantity","food menu","dining water cooler","mess timing","mess"):
-                    score += weight
-                elif "water" in cat_lower and kw in ("water", "tap", "pipe", "leak", "leaking"):
-                    score += weight
-                elif "sanitation" in cat_lower and kw in ("garbage", "trash", "waste", "dirty", "toilet", "washroom", "cleaning", "sanitation", "dustbin"):
-                    score += weight
-                elif ("carpentry" in cat_lower or "civil" in cat_lower) and kw in ("door", "window", "lock", "latches", "carpentry", "furniture", "masonry"):
-                    score += weight
-        if score > best_score:
-            best_cat, best_score = cat, score
-    conf = min(95, 50 + best_score * 2) if best_cat and best_score >= 15 else 0
-    return (best_cat, conf) if conf > 0 else (None, 0)
+                if kw in cat_lower:
+                    if not (detected_fac_code and dept_code in ACADEMIC_FACULTY_CODES and dept_code != detected_fac_code):
+                        score += min(weight, 15)
+
+        if score > 0:
+            scored_categories.append((cat, score))
+
+    scored_categories.sort(key=lambda x: x[1], reverse=True)
+
+    results = []
+    seen_ids = set()
+    for cat, score in scored_categories:
+        if cat.id in seen_ids:
+            continue
+        seen_ids.add(cat.id)
+        conf = min(95, 50 + score) if score >= 15 else 0
+        if conf > 0:
+            results.append((cat, conf))
+        if len(results) >= limit:
+            break
+
+    return results
+
+
+def suggest_category(text, categories, location=""):
+    """Return the strongest matching active category and a confidence percentage."""
+    results = suggest_categories(text, categories, location=location, limit=1)
+    return results[0] if results else (None, 0)
 
 
 def get_ai_sla_hours(priority):
@@ -99,7 +355,7 @@ def get_ai_sla_hours(priority):
 def is_mess_complaint(text, title="", description="", category_name=""):
     """Return True if text signals a mess/dining issue."""
     combined = f"{title} {description} {text} {category_name}".lower()
-    return any(kw in combined for kw in MESS_KEYWORDS)
+    return any(re.search(r"\b" + re.escape(kw) + r"\b", combined) for kw in MESS_KEYWORDS)
 
 
 def score_priority(text, title="", description="", category_name="", location=""):
@@ -197,6 +453,5 @@ def find_potential_duplicate(complaint):
             best_match, best_score = candidate, score
             if score >= 0.90:  # Confident duplicate found, early return
                 return best_match
-
     return best_match if best_score >= 0.58 else None
 

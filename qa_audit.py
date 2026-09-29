@@ -589,8 +589,8 @@ def audit_multitenant_scoping():
         qs = get_scoped_complaints_for_user(provost)
         scoped = qs.count()
         
-        # Verify no complaints from other buildings are included
-        cross_building = qs.exclude(room__floor__building=building).exclude(room__isnull=True).count()
+        # Verify no complaints from other buildings are included (allowing hall and its constituent hostels)
+        cross_building = qs.exclude(room__floor__building=building).exclude(room__floor__building__parent=building).exclude(room__isnull=True).count()
         if cross_building > 0:
             issues.append(f"Data leak: Provost for {building.name} sees {cross_building} complaints from OTHER buildings!")
             print(f"  ❌ DATA LEAK: Provost ({building.name}) sees {cross_building} complaints from other buildings!")

@@ -27,6 +27,7 @@ from core.accountability import set_sla_due_date
 from core.ai_triage import bind_complaint_spatial_origin
 from core.decorators import admin_only_required
 from core.dispatcher import auto_dispatch_complaint, record_staff_assignment
+from core.faculty_directory import get_faculties_with_departments
 from core.forms import (
     AdminResolutionForm, ComplaintAssignmentForm, ComplaintFeedbackForm, ComplaintReopenForm,
     ComplaintStatusForm, ComplaintSubmissionForm, ResolutionVerificationForm,
@@ -54,6 +55,7 @@ def complaint_create(request):
                     "form": form,
                     "active_halls": Building.objects.filter(is_active=True, parent__isnull=True, building_type="hall").prefetch_related("hostels").order_by("name"),
                     "active_hostels": Building.objects.filter(is_active=True, parent__isnull=False).select_related("parent").order_by("parent__name", "short_name"),
+                    "active_faculties": get_faculties_with_departments(),
                 },
                 status=429,
             )
@@ -120,6 +122,7 @@ def complaint_create(request):
                         "form": form,
                         "active_halls": Building.objects.filter(is_active=True, parent__isnull=True, building_type="hall").prefetch_related("hostels").order_by("name"),
                         "active_hostels": Building.objects.filter(is_active=True, parent__isnull=False).select_related("parent").order_by("parent__name", "short_name"),
+                        "active_faculties": get_faculties_with_departments(),
                     },
                 )
             complaint.save()
@@ -153,6 +156,7 @@ def complaint_create(request):
             "form": form,
             "active_halls": Building.objects.filter(is_active=True, parent__isnull=True, building_type="hall").prefetch_related("hostels").order_by("name"),
             "active_hostels": Building.objects.filter(is_active=True, parent__isnull=False).select_related("parent").order_by("parent__name", "short_name"),
+            "active_faculties": get_faculties_with_departments(),
         },
     )
 

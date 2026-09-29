@@ -79,7 +79,7 @@ FACULTIES: Dict[str, dict] = {
         "aliases": [
             "faculty of management studies & research",
             "faculty of management studies and research",
-            "faculty of management studies", "management studies", "fmsr"
+            "faculty of management studies", "management studies", "fmsr", "mba"
         ],
     },
     "SCI": {
@@ -183,7 +183,7 @@ STRUCTURED_TEACHING_DEPARTMENTS: List[dict] = [
     {"name": "Zoology", "code": "LIFE_ZOOLOGY", "faculty": "LIFE", "building": "LIFE", "aliases": ["department of zoology"]},
 
     # Faculty of Management Studies & Research (MGMT)
-    {"name": "Business Administration", "code": "MGMT_BA", "faculty": "MGMT", "building": "MGMT", "aliases": ["department of business administration", "mba department"]},
+    {"name": "Business Administration", "code": "MGMT_BA", "faculty": "MGMT", "building": "MGMT", "aliases": ["department of business administration", "mba department", "mba", "business administration"]},
     {"name": "Business Administration - Malappuram", "code": "MGMT_BAMAL", "faculty": "MGMT", "building": "MGMT", "aliases": []},
     {"name": "Business Administration - Murshidabad", "code": "MGMT_BAMUR", "faculty": "MGMT", "building": "MGMT", "aliases": []},
 
@@ -487,3 +487,20 @@ def verify_hostel_and_hall(text: str) -> Tuple[bool, Optional[str]]:
             return False, msg
 
     return True, None
+
+
+def get_faculties_with_departments() -> List[dict]:
+    """
+    Returns a sorted list of canonical AMU faculties, each with its designated
+    teaching departments sorted alphabetically.
+    """
+    fac_list = []
+    for code, fac_data in sorted(FACULTIES.items(), key=lambda x: x[1]["name"]):
+        depts = [d for d in STRUCTURED_TEACHING_DEPARTMENTS if d.get("faculty") == code]
+        fac_list.append({
+            "code": code,
+            "name": fac_data["name"],
+            "building_code": fac_data.get("building_code", code),
+            "departments": sorted(depts, key=lambda x: x["name"]),
+        })
+    return fac_list

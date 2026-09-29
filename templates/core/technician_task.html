@@ -23,11 +23,20 @@
   </p>
 
   {% if error_message %}
-    <div style="margin:14px 0; padding:12px; background:#fee2e2; border-left:4px solid #dc2626; color:#991b1b; border-radius:4px;">
-      <strong>Action Blocked:</strong> {{ error_message }}
+    <div style="margin:14px 0; padding:16px; background:#fee2e2; border-left:4px solid #dc2626; color:#991b1b; border-radius:6px;">
+      <strong style="display:block; font-size:15px; margin-bottom:4px;">🚫 Access Restricted</strong>
+      {{ error_message }}
+      {% if complaint.tracking_token %}
+        <div style="margin-top:12px;">
+          <a href="{% url 'core:complaint_tracking' complaint.tracking_token %}" class="btn-unified btn-unified-primary" style="display:inline-block; font-size:13px; padding:6px 14px; text-decoration:none;">
+            ← Return to Student Tracking Page
+          </a>
+        </div>
+      {% endif %}
     </div>
   {% endif %}
 
+  {% if not access_denied %}
   {% if complaint.status == "open" or complaint.status == "assigned" or complaint.status == "reopened" %}
     <form method="post" style="margin-top:18px;">
       {% csrf_token %}
@@ -79,6 +88,7 @@
         </p>
       {% endif %}
     </div>
+  {% endif %}
   {% endif %}
 </section>
 {% endblock %}

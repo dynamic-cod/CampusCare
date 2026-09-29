@@ -390,10 +390,10 @@
         {% if complaint.assigned_at %}
           <small style="color: #64748b; display: block; margin-top: 4px;">Assigned on {{ complaint.assigned_at|date:"j M Y, H:i" }}</small>
         {% endif %}
-        {% if complaint.staff_task_token %}
+        {% if can_manage and complaint.staff_task_token %}
           <div style="margin-top: 10px; padding-top: 8px; border-top: 1px dashed #bbf7d0;">
             <a href="{% url 'core:technician_task_view' complaint.staff_task_token %}" target="_blank" class="btn-unified btn-unified-secondary" style="height: 38px; min-height: 38px; font-size: 0.88rem;">
-              🔧 Open Technician Zero-Login Task Portal
+              🔧 Open Technician Task Portal
             </a>
           </div>
         {% endif %}
@@ -410,7 +410,7 @@
           <h3 style="margin: 0 0 6px 0; color: #0369a1; font-size: 1.15rem; font-weight: 700;">
             Current Status: {{ complaint.get_status_display }}
           </h3>
-          <p style="margin: 0 0 10px 0; color: #0c4a6e; font-size: 0.95rem; line-height: 1.55;">
+          <p style="margin: 0; color: #0c4a6e; font-size: 0.95rem; line-height: 1.55;">
             {% if complaint.assigned_to %}
               This ticket is currently assigned to <strong>{{ complaint.assigned_to.get_full_name|default:complaint.assigned_to.username }}</strong>.
             {% else %}
@@ -418,16 +418,6 @@
             {% endif %}
             Once maintenance staff inspects the site and marks the task as <strong>Resolved</strong>, the <strong>"✅ Confirm Resolution &amp; Close Complaint"</strong> button and rating form will appear right here for you.
           </p>
-          {% if complaint.staff_task_token %}
-            <div style="margin-top: 12px; padding: 12px 14px; background: #e0f2fe; border-radius: 8px;">
-              <span style="font-weight: 600; color: #0369a1; display: block; margin-bottom: 6px; font-size: 0.88rem;">
-                🛠️ Technician Simulation / Test Action:
-              </span>
-              <a href="{% url 'core:technician_task_view' complaint.staff_task_token %}" target="_blank" class="btn-unified btn-unified-primary" style="height: 38px; min-height: 38px; font-size: 0.88rem;">
-                Open Technician Portal to Mark Resolved →
-              </a>
-            </div>
-          {% endif %}
         </div>
       </div>
     </section>
