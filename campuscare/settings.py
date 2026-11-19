@@ -17,7 +17,7 @@ DEBUG = config("DEBUG", default=config("DJANGO_DEBUG", default=True, cast=bool),
 
 ALLOWED_HOSTS = config(
     "ALLOWED_HOSTS",
-    default=config("DJANGO_ALLOWED_HOSTS", default="127.0.0.1,localhost,testserver"),
+    default=config("DJANGO_ALLOWED_HOSTS", default="127.0.0.1,localhost,testserver,.onrender.com,.trycloudflare.com"),
     cast=Csv()
 )
 

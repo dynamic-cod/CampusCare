@@ -1,0 +1,20 @@
+services:
+  - type: web
+    name: campuscare
+    runtime: python
+    plan: free
+    buildCommand: "./build.sh"
+    startCommand: "gunicorn campuscare.wsgi:application"
+    envVars:
+      - key: PYTHON_VERSION
+        value: 3.9.16
+      - key: DEBUG
+        value: "false"
+      - key: SECRET_KEY
+        generateValue: true
+      - key: DJANGO_ALLOWED_HOSTS
+        value: ".onrender.com,127.0.0.1,localhost"
+      - key: DJANGO_CSRF_TRUSTED_ORIGINS
+        value: "https://*.onrender.com"
+      - key: DISABLE_RATE_LIMITING
+        value: "false"
