@@ -24,7 +24,7 @@ def _safe_redirect_target(request, next_url, fallback="core:home"):
     return fallback
 
 from core.accountability import set_sla_due_date
-from core.ai_triage import bind_complaint_spatial_origin
+from core.ai_triage import bind_complaint_spatial_origin, check_safety_guardrail
 from core.decorators import admin_only_required
 from core.dispatcher import auto_dispatch_complaint, record_staff_assignment
 from core.faculty_directory import get_faculties_with_departments
@@ -78,13 +78,45 @@ def complaint_create(request):
             bind_complaint_spatial_origin(complaint)
             set_sla_due_date(complaint)
 
+            # ── Safety Guardrail (runs BEFORE ML assignment) ──────────────────
+            # Even if student chose the wrong category in panic, life-safety
+            # keywords force URGENT priority and EMERG department routing.
+            safety = check_safety_guardrail(
+                title=complaint.title or "",
+                description=complaint.description or "",
+                location=complaint.location_description or "",
+            )
+            if safety.get("matched"):
+                complaint.priority = Complaint.Priority.URGENT
+                complaint.priority_score = 100
+                complaint.priority_reason = safety["reason"]
+                # Override category to EMERG if the student picked wrong dept
+                from core.models import ComplaintCategory, Department
+                try:
+                    emerg_dept = Department.objects.get(code="EMERG")
+                    emerg_cat = ComplaintCategory.objects.filter(
+                        department=emerg_dept, is_active=True
+                    ).order_by("default_sla_hours").first()
+                    if emerg_cat:
+                        complaint.category = emerg_cat
+                except (Department.DoesNotExist, ComplaintCategory.DoesNotExist):
+                    pass
+                # 30-minute SLA override
+                from django.utils import timezone as tz_util
+                import datetime
+                complaint.sla_due_at = tz_util.now() + datetime.timedelta(minutes=30)
+            # ─────────────────────────────────────────────────────────────────
+
             # ── AI Staff Auto-Assignment ──────────────────────────────────────
             category_name = complaint.category.name if complaint.category_id else ""
             dept_code = complaint.category.department.code if (complaint.category_id and complaint.category.department_id) else ""
 
+            # EMERG complaints: route directly to emergency rapid-response staff
+            if dept_code == "EMERG" or safety.get("matched"):
+                auto_dispatch_complaint(complaint, save=False)
             # For MESS / Dining categories: always use the hall's Dining Incharge
             # directly from the DB — never fall through to the JSON roster matcher.
-            if dept_code in ("MESS", "DINING"):
+            elif dept_code in ("MESS", "DINING"):
                 auto_dispatch_complaint(complaint, save=False)
             else:
                 location_text = complaint.location_description or ""

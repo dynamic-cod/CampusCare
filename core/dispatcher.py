@@ -9,6 +9,9 @@ from .staff_matcher import suggest_staff
 # Department codes that route exclusively to the hall's Dining Incharge
 MESS_DEPT_CODES = frozenset({"MESS", "DINING"})
 
+# Emergency department code — routes exclusively to EMERG rapid-response staff
+EMERG_DEPT_CODE = "EMERG"
+
 _ACTIVE_LOAD_CACHE = None
 _ACTIVE_LOAD_TIMESTAMP = 0.0
 
@@ -89,7 +92,34 @@ def select_best_technician(complaint: Complaint):
         except Exception:
             pass
 
-    # 0. MESS / DINING fast-path — route directly to the hall's Dining Incharge
+    # 0a. EMERG fast-path — route directly to least-loaded Emergency rapid-response staff
+    #     Triggers when: (a) complaint category is EMERG, OR
+    #                    (b) the safety guardrail already overrode priority to URGENT+EMERG
+    is_emerg = (dept and dept.code == EMERG_DEPT_CODE)
+    if not is_emerg:
+        # Also check if the safety guardrail fired (stored on the complaint instance)
+        from .ai_triage import check_safety_guardrail
+        safety = check_safety_guardrail(
+            title=complaint.title or "",
+            description=complaint.description or "",
+            location=complaint.location_description or "",
+        )
+        is_emerg = safety.get("matched", False)
+
+    if is_emerg:
+        emerg_staff = pick_least_loaded_staff(
+            staff_base.filter(username__startswith="emerg_centra_")
+        )
+        if emerg_staff:
+            return emerg_staff
+        # Wider EMERG fallback: any staff in EMERG department
+        emerg_dept_staff = pick_least_loaded_staff(
+            staff_base.filter(profile__department__code=EMERG_DEPT_CODE)
+        )
+        if emerg_dept_staff:
+            return emerg_dept_staff
+
+    # 0b. MESS / DINING fast-path — route directly to the hall's Dining Incharge
     if dept and dept.code in MESS_DEPT_CODES:
         if target_buildings:
             dining_user = pick_least_loaded_staff(

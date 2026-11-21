@@ -30,4 +30,6 @@ else:
 # Seed campus infrastructure, sub-admins, and demo complaints
 python manage.py setup_amu_campus
 python manage.py seed_subadmins
+python manage.py seed_emergency_dept
+python retrain_urgency_model.py
 python seed_237_realistic_complaints.py
