@@ -446,6 +446,43 @@ def complaint_toggle_support(request, reference):
     return redirect(_safe_redirect_target(request, next_url, fallback="core:home"))
 
 
+def complaint_support_api(request, reference):
+    """
+    JSON endpoint: POST to toggle support, returns updated count + state.
+    Used by the AJAX upvote button on the homepage dropdown panel.
+    """
+    if request.method != "POST":
+        return JsonResponse({"error": "Method not allowed"}, status=405)
+
+    complaint = get_object_or_404(Complaint, reference=reference)
+
+    if request.user.is_authenticated:
+        support, created = ComplaintSupport.objects.get_or_create(
+            complaint=complaint, user=request.user, defaults={"session_key": ""}
+        )
+        if not created:
+            support.delete()
+    else:
+        if not request.session.session_key:
+            request.session.create()
+        session_key = request.session.session_key or ""
+        if not session_key:
+            return JsonResponse({"error": "Session unavailable"}, status=400)
+        support, created = ComplaintSupport.objects.get_or_create(
+            complaint=complaint, session_key=session_key, defaults={"user": None}
+        )
+        if not created:
+            support.delete()
+
+    new_count = complaint.supports.count()
+    return JsonResponse({
+        "success": True,
+        "supported": created,
+        "count": new_count,
+        "reference": reference,
+    })
+
+
 @admin_only_required
 def complaint_assign(request, reference):
     complaint = get_object_or_404(Complaint, reference=reference)

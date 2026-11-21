@@ -1,498 +1,526 @@
 {% extends "base.html" %}
-{% block title %}AMU CampusCare · Public Issue Dashboard · Aligarh Muslim University{% endblock %}
+{% block title %}AMU CampusCare · Campus Maintenance Portal{% endblock %}
+
 {% block content %}
+<div style="max-width:960px; margin:0 auto; padding:0 16px;">
 
-<!-- Collegiate Identity & Hero Card -->
-<section class="card" style="border-left: 5px solid var(--amu-emerald-700); padding: 26px 30px; margin-bottom: 24px; background: linear-gradient(135deg, #ffffff 0%, #f0fdf4 100%);">
-  <div>
-    <div style="display: inline-flex; align-items: center; gap: 6px; background: rgba(5, 150, 105, 0.12); color: var(--amu-emerald-800); padding: 4px 12px; border-radius: 9999px; font-size: 12px; font-weight: 700; margin-bottom: 8px;">
-      <span>🏛️</span> ALIGARH MUSLIM UNIVERSITY · FACILITY DISPATCH SYSTEM
+  {# ═══════════════════════════════════════════════════════
+     HERO SECTION — crisp, minimal, action-first
+  ═══════════════════════════════════════════════════════ #}
+  <section style="padding:52px 0 40px; text-align:center;">
+    <div style="display:inline-flex; align-items:center; gap:6px; background:#f0fdf4; color:#065f46; padding:5px 14px; border-radius:9999px; font-size:12px; font-weight:700; letter-spacing:.4px; border:1px solid #bbf7d0; margin-bottom:18px;">
+      <span class="live-dot"></span> LIVE SYSTEM · AMU CAMPUS MAINTENANCE
     </div>
-    <h1 style="margin: 0 0 8px; font-size: 1.85rem; color: var(--amu-navy-950); font-weight: 800;">
-      AMU Care — Campus Maintenance &amp; Public Issue Board
+
+    <h1 style="margin:0 0 12px; font-size:clamp(1.75rem,4vw,2.6rem); font-weight:800; color:var(--amu-navy-950); line-height:1.2; letter-spacing:-.5px;">
+      Report. Track. Resolve.<br>
+      <span style="color:var(--amu-emerald-700);">Campus issues handled fast.</span>
     </h1>
-    <p style="margin: 0; color: var(--amu-navy-700); font-size: 15px; line-height: 1.55; max-width: 880px;">
-      Transparent public reporting for students, faculty, and residents. Lodge maintenance issues, track resolution live with zero login, and support peer reports across all AMU residential halls and academic faculties.
+    <p style="margin:0 auto 32px; max-width:520px; font-size:1rem; color:var(--amu-navy-700); line-height:1.65;">
+      Lodge a maintenance complaint or track your ticket instantly — no login required.
     </p>
-  </div>
-</section>
 
-<!-- KPI Metrics Dashboard -->
-<section style="margin-bottom: 28px;">
-  <div style="display:flex; align-items:center; justify-content:space-between; margin-bottom: 14px; flex-wrap:wrap; gap:8px;">
-    <h2 style="margin:0; font-size: 1.15rem; color: var(--amu-navy-900); display: flex; align-items: center; gap: 8px;">
-      <span>📊</span> Real-Time Campus Incident Statistics
-    </h2>
-    {% if selected_status %}
-      <a href="{% url 'core:home' %}" class="btn-unified btn-unified-secondary" style="height: 32px; min-height: 32px; padding: 0 12px; font-size: 12px;">
-        ✕ Clear filter (showing {{ selected_status|capfirst }})
+    {# Primary CTA + Track bar #}
+    <div style="display:flex; flex-direction:column; align-items:center; gap:14px; max-width:540px; margin:0 auto;">
+
+      {# Lodge complaint button #}
+      <a href="{% url 'core:complaint_create' %}"
+         style="display:inline-flex; align-items:center; justify-content:center; gap:8px;
+                width:100%; padding:14px 28px; border-radius:10px; font-size:1rem; font-weight:700;
+                background:var(--amu-emerald-700); color:#ffffff; text-decoration:none;
+                box-shadow:0 4px 14px rgba(5,150,105,.35); transition:all .2s ease;"
+         onmouseover="this.style.background='#047857'; this.style.boxShadow='0 6px 20px rgba(5,150,105,.45)'"
+         onmouseout="this.style.background='var(--amu-emerald-700)'; this.style.boxShadow='0 4px 14px rgba(5,150,105,.35)'">
+        ✍️ &nbsp;Lodge a Complaint
       </a>
-    {% endif %}
-  </div>
 
-  <div class="stats-grid">
-    <a href="{% url 'core:home' %}" class="stat-card {% if not selected_status %}stat-active-navy{% endif %}" style="border-top: 4px solid var(--amu-navy-800);">
-      <strong id="kpi-total" class="counter" data-target="{{ total }}">{{ total }}</strong>
-      <span>Total Filed</span>
-    </a>
+      {# Track ticket inline bar #}
+      <form action="{% url 'core:tracking_form' %}" method="get"
+            style="display:flex; width:100%; border-radius:10px; overflow:hidden; border:1.5px solid #cbd5e1; background:#fff; box-shadow:0 2px 8px rgba(0,0,0,.06);">
+        <input type="text" name="token"
+               placeholder="Paste your tracking token to check status…"
+               style="flex:1; padding:12px 16px; border:none; outline:none; font-size:0.9rem; color:var(--amu-navy-900); background:transparent;"
+               aria-label="Tracking token">
+        <button type="submit"
+                style="padding:12px 20px; background:#f8fafc; border:none; border-left:1.5px solid #cbd5e1; cursor:pointer; font-size:0.85rem; font-weight:700; color:var(--amu-navy-700); white-space:nowrap;"
+                onmouseover="this.style.background='#f1f5f9'" onmouseout="this.style.background='#f8fafc'">
+          🔍 Track
+        </button>
+      </form>
 
-    <a href="{% url 'core:home' %}?status=active" class="stat-card {% if selected_status == 'active' %}stat-active-gold{% endif %}" style="border-top: 4px solid var(--amu-gold-600);">
-      <strong id="kpi-active" class="counter" data-target="{{ count_active }}" style="color: var(--amu-gold-700);">{{ count_active }}</strong>
-      <span>Active Queue</span>
-    </a>
-
-    <a href="{% url 'core:home' %}?status=open" class="stat-card {% if selected_status == 'open' %}stat-active-blue{% endif %}" style="border-top: 4px solid #0284c7;">
-      <strong id="kpi-open" class="counter" data-target="{{ count_open }}" style="color: #0284c7;">{{ count_open }}</strong>
-      <span>Open</span>
-    </a>
-
-    <a href="{% url 'core:home' %}?status=in_progress" class="stat-card {% if selected_status == 'in_progress' %}stat-active-purple{% endif %}" style="border-top: 4px solid #7c3aed;">
-      <strong id="kpi-in-progress" class="counter" data-target="{{ count_in_progress }}" style="color: #7c3aed;">{{ count_in_progress }}</strong>
-      <span>In Progress</span>
-    </a>
-
-    <a href="{% url 'core:home' %}?status=resolved" class="stat-card {% if selected_status == 'resolved' %}stat-active-emerald{% endif %}" style="border-top: 4px solid var(--amu-emerald-600);">
-      <strong id="kpi-resolved" class="counter" data-target="{{ count_resolved }}" style="color: var(--amu-emerald-700);">{{ count_resolved }}</strong>
-      <span>Resolved</span>
-    </a>
-
-    <a href="{% url 'core:home' %}?status=reopened" class="stat-card {% if selected_status == 'reopened' %}stat-active-red{% endif %}" style="border-top: 4px solid #dc2626;">
-      <strong id="kpi-reopened" class="counter" data-target="{{ count_reopened }}" style="color: #dc2626;">{{ count_reopened }}</strong>
-      <span>Reopened</span>
-    </a>
-
-    <a href="{% url 'core:home' %}?status=closed" class="stat-card {% if selected_status == 'closed' %}stat-active-slate{% endif %}" style="border-top: 4px solid #64748b;">
-      <strong id="kpi-closed" class="counter" data-target="{{ count_closed }}" style="color: #475569;">{{ count_closed }}</strong>
-      <span>Closed</span>
-    </a>
-  </div>
-</section>
-
-<!-- Public Complaints Section with Real-Time Interactive Search & Live Auto-Sync -->
-<section>
-  <div style="display:flex; align-items:center; justify-content:space-between; margin-bottom: 12px; flex-wrap:wrap; gap:10px;">
-    <div>
-      <h2 style="margin: 0; font-size: 1.25rem; color: var(--amu-navy-950); display: flex; align-items: center; gap: 8px;">
-        <span>📋</span> Recent Public Issues &amp; Student Endorsements
-      </h2>
-      <p style="margin: 2px 0 0 0; font-size: 13px; color: var(--amu-text-muted);">
-        Click 👍 to support an issue affecting your hostel, lab, or department. Campus caretakers prioritize issues with multiple endorsements.
-      </p>
     </div>
-    
-    <div style="display:flex; align-items:center; gap:8px; flex-wrap:wrap;">
-      <span id="liveSyncBadge" style="display:inline-flex; align-items:center; gap:6px; font-size: 12px; font-weight: 600; color: #15803d; background: #dcfce7; padding: 4px 10px; border-radius: 6px; border: 1px solid #86efac;">
-        <span class="live-dot"></span> Live Auto-Sync
-      </span>
-      <button id="manualRefreshBtn" type="button" class="btn-unified" style="height: 30px; min-height: 30px; padding: 0 10px; font-size: 12px; background: #ffffff; border: 1px solid #cbd5e1; cursor: pointer; color: var(--amu-navy-800);" title="Refresh board now">
-        <span id="refreshSpinner" style="display:inline-block; transition: transform 0.4s ease;">🔄</span> Refresh
-      </button>
-      <div id="filterResultCount" style="font-size: 12px; font-weight: 600; color: var(--amu-emerald-800); background: var(--amu-emerald-50); padding: 4px 10px; border-radius: 6px; border: 1px solid var(--amu-emerald-100);">
-        Showing {{ recent_complaints|length }} incident{{ recent_complaints|length|pluralize }}
+  </section>
+
+  {# ═══════════════════════════════════════════════════════
+     KPI STAT PILLS — compact horizontal row
+  ═══════════════════════════════════════════════════════ #}
+  <section style="margin-bottom:40px;">
+    <div style="display:flex; flex-wrap:wrap; justify-content:center; gap:10px;">
+
+      {% with pills=count_active|add:0 %}
+      <div style="display:flex; align-items:center; gap:8px; background:#fff7ed; border:1.5px solid #fed7aa; border-radius:8px; padding:9px 16px; min-width:110px;">
+        <span style="font-size:1.1rem; font-weight:800; color:#c2410c;">{{ count_active }}</span>
+        <span style="font-size:12px; font-weight:600; color:#9a3412; line-height:1.2;">Active<br>Queue</span>
       </div>
+      {% endwith %}
+
+      <div style="display:flex; align-items:center; gap:8px; background:#eff6ff; border:1.5px solid #bfdbfe; border-radius:8px; padding:9px 16px; min-width:110px;">
+        <span style="font-size:1.1rem; font-weight:800; color:#1d4ed8;">{{ count_open }}</span>
+        <span style="font-size:12px; font-weight:600; color:#1e40af; line-height:1.2;">Open</span>
+      </div>
+
+      <div style="display:flex; align-items:center; gap:8px; background:#faf5ff; border:1.5px solid #e9d5ff; border-radius:8px; padding:9px 16px; min-width:110px;">
+        <span style="font-size:1.1rem; font-weight:800; color:#7c3aed;">{{ count_in_progress }}</span>
+        <span style="font-size:12px; font-weight:600; color:#6d28d9; line-height:1.2;">In Progress</span>
+      </div>
+
+      <div style="display:flex; align-items:center; gap:8px; background:#f0fdf4; border:1.5px solid #bbf7d0; border-radius:8px; padding:9px 16px; min-width:110px;">
+        <span style="font-size:1.1rem; font-weight:800; color:var(--amu-emerald-700);">{{ count_resolved }}</span>
+        <span style="font-size:12px; font-weight:600; color:#065f46; line-height:1.2;">Resolved</span>
+      </div>
+
+      <div style="display:flex; align-items:center; gap:8px; background:#f8fafc; border:1.5px solid #e2e8f0; border-radius:8px; padding:9px 16px; min-width:110px;">
+        <span style="font-size:1.1rem; font-weight:800; color:#475569;">{{ total }}</span>
+        <span style="font-size:12px; font-weight:600; color:#64748b; line-height:1.2;">Total Filed</span>
+      </div>
+
     </div>
-  </div>
+  </section>
 
-  <!-- Interactive Live Filter Search Bar -->
-  <div class="interactive-search-bar" style="margin-bottom: 14px;">
-    <span class="search-icon">🔍</span>
-    <input 
-      type="text" 
-      id="publicSearchInput" 
-      placeholder="Type to filter by issue title, location, hostel, category, or reference (e.g. WiFi, Water, Room 001, Sir Syed Hall)..."
-      aria-label="Filter complaints"
-    >
-  </div>
+  {# ═══════════════════════════════════════════════════════
+     ACTIVE COMPLAINTS DROPDOWN / ACCORDION PANEL
+  ═══════════════════════════════════════════════════════ #}
+  <section id="activeComplaintsSection" style="margin-bottom:52px;">
 
-  <!-- Flash Notification Banner for New Complaints -->
-  <div id="liveNewAlert" style="display:none; background: #ecfdf5; color: #065f46; border: 1px solid #a7f3d0; border-radius: 8px; padding: 10px 16px; margin-bottom: 14px; font-size: 13px; font-weight: 600; align-items: center; justify-content: space-between;">
-    <span id="liveNewAlertText" style="display:inline-flex; align-items:center; gap:8px;">
-      <span>⚡</span> <span>New complaint lodged — feed refreshed!</span>
-    </span>
-    <span style="font-size: 11px; opacity: 0.8; font-weight: 500;">Live Feed</span>
-  </div>
+    {# ── Accordion Header / Toggle Button ── #}
+    <button id="activeToggle" onclick="toggleActivePanel()"
+            style="width:100%; display:flex; align-items:center; justify-content:space-between;
+                   background:#fff; border:1.5px solid #e2e8f0; border-radius:12px;
+                   padding:16px 20px; cursor:pointer; text-align:left;
+                   box-shadow:0 1px 4px rgba(0,0,0,.06); transition:all .2s ease;"
+            aria-expanded="false" aria-controls="activePanel">
+      <div style="display:flex; align-items:center; gap:12px;">
+        <span style="font-size:1.05rem; font-weight:700; color:var(--amu-navy-950);">
+          📋 Active Campus Complaints
+        </span>
+        <span id="activeBadge"
+              style="display:inline-flex; align-items:center; gap:5px; background:{% if count_active > 0 %}#fff7ed{% else %}#f1f5f9{% endif %};
+                     color:{% if count_active > 0 %}#c2410c{% else %}#64748b{% endif %};
+                     border:1px solid {% if count_active > 0 %}#fed7aa{% else %}#e2e8f0{% endif %};
+                     border-radius:9999px; font-size:12px; font-weight:700; padding:3px 10px;">
+          {% if count_active > 0 %}<span class="live-dot" style="background:#ea580c;"></span>{% endif %}
+          {{ count_active }} Open
+        </span>
+      </div>
+      <svg id="chevron" xmlns="http://www.w3.org/2000/svg" width="20" height="20" viewBox="0 0 24 24"
+           fill="none" stroke="currentColor" stroke-width="2.5" stroke-linecap="round" stroke-linejoin="round"
+           style="color:#94a3b8; transition:transform .3s ease; flex-shrink:0;">
+        <polyline points="6 9 12 15 18 9"></polyline>
+      </svg>
+    </button>
 
-  <!-- Complaints List Container -->
-  <div id="complaintContainer" style="display:flex; flex-direction:column; gap:12px;">
-    {% if recent_complaints %}
-      {% for complaint in recent_complaints %}
-        <div class="card card-interactive complaint-searchable-item prio-border-{{ complaint.priority }}" style="padding: 16px 20px;" data-search="{{ complaint.reference|lower }} {{ complaint.title|lower }} {{ complaint.category.name|lower }} {{ complaint.location_description|lower }} {{ complaint.room|default:''|lower }}" data-complaint-id="{{ complaint.id }}">
-          <div style="display:flex; align-items:flex-start; gap:16px; flex-wrap:wrap;">
-            
-            <div style="flex:1; min-width:240px;">
-              <div style="display:flex; align-items:center; gap:8px; flex-wrap:wrap; margin-bottom: 6px;">
-                <a href="{% url 'core:complaint_detail' complaint.reference %}" style="font-size: 13px; font-family: ui-monospace, SFMono-Regular, monospace; font-weight: 700; color: var(--amu-navy-900); text-decoration: none; background: #f1f5f9; padding: 2px 8px; border-radius: 4px; border: 1px solid #e2e8f0;">
-                  {{ complaint.reference }}
-                </a>
+    {# ── Collapsible Panel Body ── #}
+    <div id="activePanel"
+         style="overflow:hidden; max-height:0; transition:max-height .4s cubic-bezier(0.4,0,0.2,1); border-radius:0 0 12px 12px;">
+      <div style="border:1.5px solid #e2e8f0; border-top:none; border-radius:0 0 12px 12px;
+                  background:#fff; padding:20px;">
 
-                <span class="pill pill-{{ complaint.status }}">
-                  {% if complaint.status == 'resolved' %}⚡ Pending Student Verification{% else %}{{ complaint.get_status_display }}{% endif %}
-                </span>
-
-                <span class="prio-badge prio-badge-{{ complaint.priority }}" style="font-size: 11px; font-weight: 600; padding: 2px 8px; border-radius: 9999px;">
-                  {{ complaint.get_priority_display }} Priority
-                </span>
-              </div>
-
-              <h3 style="margin: 0 0 6px 0; font-size: 1.05rem;">
-                <a href="{% url 'core:complaint_detail' complaint.reference %}" style="color: var(--amu-navy-950); text-decoration: none;" onmouseover="this.style.color='#047857'" onmouseout="this.style.color='var(--amu-navy-950)'">
-                  {{ complaint.title }}
-                </a>
-              </h3>
-
-              <div style="font-size: 13px; color: var(--amu-navy-700); line-height: 1.5;">
-                <span style="font-weight: 600; color: var(--amu-emerald-800);">{{ complaint.category.name }}</span>
-                {% if complaint.room %}
-                  &middot; <span>📍 {{ complaint.room }}</span>
-                {% elif complaint.location_description %}
-                  &middot; <span>📍 {{ complaint.location_description|truncatechars:45 }}</span>
-                {% endif %}
-                {% if complaint.sla_due_at %}
-                  &middot; <span style="color: var(--amu-text-muted);">Due: {{ complaint.sla_due_at|date:"j M, H:i" }}</span>
-                {% endif %}
-              </div>
-
-              <div style="font-size: 12px; color: var(--amu-text-muted); margin-top: 6px;">
-                Reported {{ complaint.created_at|timesince }} ago
-                {% if complaint.closed_at %} &middot; <span style="color: #16a34a; font-weight: 600;">Closed {{ complaint.closed_at|date:"j M" }}</span>{% endif %}
-              </div>
-            </div>
-
-            <!-- Support / Endorsement Action -->
-            <div style="display:flex; flex-direction:column; align-items:center; gap:4px; min-width:80px;">
-              <form method="post" action="{% url 'core:complaint_toggle_support' complaint.reference %}" style="margin: 0;">
-                {% csrf_token %}
-                <input type="hidden" name="next" value="/">
-                <button type="submit" class="btn-unified {% if complaint.id in supported_ids %}btn-support-active{% else %}btn-support-inactive{% endif %}" style="height: 38px; min-height: 38px; padding: 0 14px; font-size: 14px;" title="{% if complaint.id in supported_ids %}You supported this. Click to remove support{% else %}Show your support for this issue{% endif %}">
-                  <span>👍</span> <span>{{ complaint.support_count }}</span>
-                </button>
-              </form>
-              <span style="font-size: 11px; color: var(--amu-text-muted); font-weight: 500;">
-                {% if complaint.id in supported_ids %}<strong style="color: #15803d;">Supported</strong>{% else %}Endorse{% endif %}
-              </span>
-            </div>
-
+        {# ── Mini Dept Breakdown Bar ── #}
+        {% if dept_breakdown %}
+        <div style="margin-bottom:20px;">
+          <p style="font-size:12px; font-weight:600; color:#94a3b8; text-transform:uppercase; letter-spacing:.6px; margin:0 0 10px;">
+            Active Issues by Department
+          </p>
+          <div style="display:flex; flex-wrap:wrap; gap:8px;">
+            {% for d in dept_breakdown %}
+            <span style="display:inline-flex; align-items:center; gap:5px; background:#f8fafc;
+                         border:1px solid #e2e8f0; border-radius:6px; padding:4px 10px; font-size:12px; font-weight:600; color:var(--amu-navy-800);">
+              {{ d.cnt }}
+              <span style="font-weight:400; color:#64748b;">{{ d.category__department__name|default:d.category__department__code|default:"General"|truncatechars:20 }}</span>
+            </span>
+            {% endfor %}
           </div>
         </div>
-      {% endfor %}
-    {% else %}
-      <div id="emptyBoardCard" class="card" style="text-align:center; padding: 48px 20px; color: var(--amu-text-muted);">
-        <div style="font-size: 2.5rem; margin-bottom: 10px;">🎉</div>
-        <h3 style="margin: 0 0 8px; color: var(--amu-navy-900); font-size: 1.3rem;">No active maintenance complaints</h3>
-        <p style="margin: 0 0 16px; font-size: 0.95rem;">All reported facilities are currently running smoothly across campus.</p>
-        <a href="{% url 'core:complaint_create' %}" class="btn-unified btn-unified-emerald">
-          <span>✍️</span> Lodge First Report
-        </a>
+        {% endif %}
+
+        {# ── Quick Filter Bar ── #}
+        <div style="display:flex; flex-wrap:wrap; gap:10px; margin-bottom:18px; align-items:center;">
+          <div style="position:relative; flex:1; min-width:200px;">
+            <span style="position:absolute; left:11px; top:50%; transform:translateY(-50%); font-size:14px; pointer-events:none;">🔍</span>
+            <input id="activeSearch" type="text" placeholder="Filter by title, hall, category…"
+                   oninput="filterActiveComplaints()"
+                   style="width:100%; padding:9px 12px 9px 34px; border:1.5px solid #e2e8f0; border-radius:8px;
+                          font-size:0.875rem; outline:none; color:var(--amu-navy-900); background:#f8fafc;
+                          box-sizing:border-box;"
+                   onfocus="this.style.borderColor='var(--amu-emerald-600)'; this.style.background='#fff'"
+                   onblur="this.style.borderColor='#e2e8f0'; this.style.background='#f8fafc'">
+          </div>
+
+          <select id="activeFilterCat" onchange="filterActiveComplaints()"
+                  style="padding:9px 12px; border:1.5px solid #e2e8f0; border-radius:8px;
+                         font-size:0.875rem; color:var(--amu-navy-700); background:#f8fafc; cursor:pointer; outline:none;">
+            <option value="">All Categories</option>
+            {% for cat in filter_categories %}
+            <option value="{{ cat|lower }}">{{ cat }}</option>
+            {% endfor %}
+          </select>
+
+          <select id="activeFilterBldg" onchange="filterActiveComplaints()"
+                  style="padding:9px 12px; border:1.5px solid #e2e8f0; border-radius:8px;
+                         font-size:0.875rem; color:var(--amu-navy-700); background:#f8fafc; cursor:pointer; outline:none;">
+            <option value="">All Halls/Buildings</option>
+            {% for b in filter_buildings %}
+            <option value="{{ b|lower }}">{{ b }}</option>
+            {% endfor %}
+          </select>
+
+          <span id="activeCount" style="font-size:12px; font-weight:600; color:var(--amu-emerald-800); background:#f0fdf4;
+                                        border:1px solid #bbf7d0; border-radius:6px; padding:5px 10px; white-space:nowrap;">
+            {{ active_complaints|length }} issue{{ active_complaints|length|pluralize }}
+          </span>
+        </div>
+
+        {# ── Active Issue Cards ── #}
+        <div id="activeList" style="display:flex; flex-direction:column; gap:10px;">
+          {% if active_complaints %}
+            {% for c in active_complaints %}
+            <div class="active-item"
+                 data-search="{{ c.reference|lower }} {{ c.title|lower }} {{ c.category.name|lower }} {{ c.location_description|lower }} {% if c.room %}{{ c.room.floor.building.name|lower }}{% endif %}"
+                 data-cat="{{ c.category.name|lower }}"
+                 data-bldg="{% if c.room %}{{ c.room.floor.building.name|lower }}{% endif %}"
+                 style="display:flex; align-items:flex-start; justify-content:space-between; gap:14px; flex-wrap:wrap;
+                        padding:14px 16px; border-radius:10px; border:1px solid #f1f5f9;
+                        border-left:4px solid {% if c.priority == 'urgent' %}#dc2626{% elif c.priority == 'high' %}#ea580c{% elif c.priority == 'normal' %}#0284c7{% else %}#16a34a{% endif %};
+                        background:#fafafa; transition:background .15s;">
+
+              <div style="flex:1; min-width:200px;">
+                {# Title + ref #}
+                <div style="display:flex; align-items:center; flex-wrap:wrap; gap:6px; margin-bottom:5px;">
+                  <a href="{% url 'core:complaint_detail' c.reference %}"
+                     style="font-size:12px; font-family:ui-monospace,monospace; font-weight:700;
+                            color:var(--amu-navy-700); background:#f1f5f9; padding:1px 7px;
+                            border-radius:4px; border:1px solid #e2e8f0; text-decoration:none;">
+                    {{ c.reference }}
+                  </a>
+
+                  {# Priority badge #}
+                  <span style="font-size:11px; font-weight:700; padding:2px 8px; border-radius:9999px;
+                               {% if c.priority == 'urgent' %}background:#fee2e2; color:#b91c1c; border:1px solid #fca5a5;
+                               {% elif c.priority == 'high' %}background:#ffedd5; color:#c2410c; border:1px solid #fed7aa;
+                               {% elif c.priority == 'normal' %}background:#e0f2fe; color:#0369a1; border:1px solid #bae6fd;
+                               {% else %}background:#dcfce7; color:#15803d; border:1px solid #86efac;{% endif %}">
+                    {% if c.priority == 'urgent' %}🚨 {% endif %}{{ c.get_priority_display }}
+                  </span>
+
+                  {# Status badge #}
+                  <span class="pill pill-{{ c.status }}" style="font-size:11px;">{{ c.get_status_display }}</span>
+                </div>
+
+                {# Issue title #}
+                <a href="{% url 'core:complaint_detail' c.reference %}"
+                   style="font-size:0.95rem; font-weight:600; color:var(--amu-navy-950); text-decoration:none; display:block; margin-bottom:4px; line-height:1.3;"
+                   onmouseover="this.style.color='var(--amu-emerald-700)'" onmouseout="this.style.color='var(--amu-navy-950)'">
+                  {{ c.title|truncatechars:90 }}
+                </a>
+
+                {# Location + meta #}
+                <div style="font-size:12px; color:#64748b; display:flex; flex-wrap:wrap; gap:8px; align-items:center;">
+                  <span style="font-weight:600; color:var(--amu-emerald-800);">{{ c.category.name }}</span>
+                  {% if c.room %}
+                    <span>📍 {{ c.room.floor.building.name }}</span>
+                  {% elif c.location_description %}
+                    <span>📍 {{ c.location_description|truncatechars:40 }}</span>
+                  {% endif %}
+                  <span style="color:#94a3b8;">{{ c.created_at|timesince }} ago</span>
+                </div>
+              </div>
+
+              {# ── Support / Upvote Button ── #}
+              <div style="display:flex; flex-direction:column; align-items:center; gap:4px; flex-shrink:0;">
+                <button
+                  class="support-btn {% if c.id in supported_ids %}supported{% endif %}"
+                  data-ref="{{ c.reference }}"
+                  data-count="{{ c.support_count }}"
+                  onclick="handleSupport(this)"
+                  style="display:inline-flex; align-items:center; gap:5px; padding:7px 14px; border-radius:8px;
+                         font-size:13px; font-weight:700; cursor:pointer; border:1.5px solid;
+                         transition:all .2s ease;
+                         {% if c.id in supported_ids %}
+                           background:#dcfce7; color:#15803d; border-color:#86efac;
+                         {% else %}
+                           background:#f8fafc; color:var(--amu-navy-700); border-color:#e2e8f0;
+                         {% endif %}"
+                  title="{% if c.id in supported_ids %}Remove support{% else %}Support this issue{% endif %}">
+                  <span class="support-icon">{% if c.id in supported_ids %}✅{% else %}👍{% endif %}</span>
+                  <span class="support-count">{{ c.support_count }}</span>
+                </button>
+                <span style="font-size:10px; color:#94a3b8; font-weight:500;">
+                  {% if c.id in supported_ids %}Supported{% else %}Endorse{% endif %}
+                </span>
+              </div>
+
+            </div>
+            {% endfor %}
+
+            {# No filter match state #}
+            <div id="noActiveMatch" style="display:none; text-align:center; padding:36px 20px; color:#94a3b8;">
+              <div style="font-size:1.8rem; margin-bottom:8px;">🔍</div>
+              <p style="margin:0; font-size:0.9rem; font-weight:500;">No complaints match your filter.</p>
+            </div>
+
+          {% else %}
+            <div style="text-align:center; padding:48px 20px; color:#94a3b8;">
+              <div style="font-size:2.5rem; margin-bottom:12px;">🎉</div>
+              <h3 style="margin:0 0 6px; color:var(--amu-navy-900); font-size:1.1rem; font-weight:700;">No active complaints</h3>
+              <p style="margin:0 0 18px; font-size:0.9rem;">All campus facilities are running smoothly right now.</p>
+              <a href="{% url 'core:complaint_create' %}" class="btn-unified btn-unified-emerald">
+                ✍️ Lodge the first report
+              </a>
+            </div>
+          {% endif %}
+        </div>
+
       </div>
-    {% endif %}
+    </div>
+
+  </section>
+
+  {# ═══════════════════════════════════════════════════════
+     FOOTER NOTE
+  ═══════════════════════════════════════════════════════ #}
+  <div style="text-align:center; padding:0 0 40px; color:#94a3b8; font-size:12px; border-top:1px solid #f1f5f9; padding-top:24px;">
+    <p style="margin:0;">
+      AMU CampusCare · Transparent maintenance tracking for Aligarh Muslim University ·
+      <a href="{% url 'core:tracking_form' %}" style="color:var(--amu-emerald-700); font-weight:600; text-decoration:none;">Track your ticket</a>
+    </p>
   </div>
 
-  <!-- Empty State for Live Search -->
-  <div id="noSearchMatchCard" class="card" style="display:none; text-align:center; padding: 36px 20px; color: var(--amu-text-muted); margin-top: 10px;">
-    <span style="font-size: 2rem;">🔍</span>
-    <h3 style="margin: 8px 0 4px 0; color: var(--amu-navy-900);">No matching complaints found</h3>
-    <p style="margin: 0; font-size: 13px;">Try typing a different building name, category, or keyword.</p>
-  </div>
-</section>
+</div><!-- /max-width wrapper -->
 
-<!-- Custom Styles for Live Pulse & Auto-Refresh -->
+{# ═══════════════════════════════════════════════════════
+   STYLES
+═══════════════════════════════════════════════════════ #}
 <style>
 @keyframes pulseDot {
-  0% { transform: scale(0.95); box-shadow: 0 0 0 0 rgba(22, 163, 74, 0.7); }
-  70% { transform: scale(1.15); box-shadow: 0 0 0 6px rgba(22, 163, 74, 0); }
-  100% { transform: scale(0.95); box-shadow: 0 0 0 0 rgba(22, 163, 74, 0); }
+  0%   { transform: scale(.9);  box-shadow: 0 0 0 0   rgba(22,163,74,.7); }
+  70%  { transform: scale(1.15); box-shadow: 0 0 0 6px rgba(22,163,74,0); }
+  100% { transform: scale(.9);  box-shadow: 0 0 0 0   rgba(22,163,74,0); }
 }
 .live-dot {
   display: inline-block;
-  width: 8px;
-  height: 8px;
+  width: 8px; height: 8px;
   border-radius: 50%;
   background: #16a34a;
   animation: pulseDot 2s infinite ease-in-out;
+  flex-shrink: 0;
 }
-@keyframes highlightPulse {
-  0% { background-color: #ecfdf5; transform: translateY(-4px); box-shadow: 0 8px 16px rgba(5, 150, 105, 0.15); }
-  50% { background-color: #d1fae5; }
-  100% { background-color: #ffffff; transform: translateY(0); box-shadow: none; }
-}
-.new-complaint-highlight {
-  animation: highlightPulse 2.8s ease-out;
-}
+.active-item:hover { background: #f8fafc !important; }
+.support-btn.supported { background:#dcfce7 !important; color:#15803d !important; border-color:#86efac !important; }
+.support-btn.supported:hover { background:#bbf7d0 !important; }
+.support-btn:not(.supported):hover { background:#f1f5f9 !important; border-color:#cbd5e1 !important; }
 
-/* Priority Left Accent Borders */
-.prio-border-urgent { border-left: 4px solid #dc2626 !important; }
-.prio-border-high   { border-left: 4px solid #ea580c !important; }
-.prio-border-normal { border-left: 4px solid #0284c7 !important; }
-.prio-border-low    { border-left: 4px solid #16a34a !important; }
+/* Pill statuses */
+.pill { display:inline-block; padding:2px 8px; border-radius:9999px; font-size:11px; font-weight:600; }
+.pill-open        { background:#eff6ff; color:#1d4ed8; border:1px solid #bfdbfe; }
+.pill-assigned    { background:#fef9c3; color:#854d0e; border:1px solid #fde047; }
+.pill-in_progress { background:#faf5ff; color:#7c3aed; border:1px solid #e9d5ff; }
+.pill-resolved    { background:#f0fdf4; color:#15803d; border:1px solid #bbf7d0; }
+.pill-reopened    { background:#fff1f2; color:#be123c; border:1px solid #fda4af; }
+.pill-closed      { background:#f8fafc; color:#475569; border:1px solid #e2e8f0; }
 
-/* Priority Badge Styles */
-.prio-badge-urgent { background: #fee2e2; color: #b91c1c; border: 1px solid #fca5a5; }
-.prio-badge-high   { background: #ffedd5; color: #c2410c; border: 1px solid #fed7aa; }
-.prio-badge-normal { background: #e0f2fe; color: #0369a1; border: 1px solid #bae6fd; }
-.prio-badge-low    { background: #dcfce7; color: #15803d; border: 1px solid #86efac; }
-
-/* Endorsement Button Dynamic States */
-.btn-support-active {
-  background: #dcfce7 !important;
-  color: #15803d !important;
-  border-color: #86efac !important;
+@media (max-width: 600px) {
+  .active-item { flex-direction: column; }
+  .active-item > div:last-child { flex-direction: row; align-items: center; }
 }
-.btn-support-inactive {
-  background: #f8fafc !important;
-  color: var(--amu-navy-700) !important;
-  border-color: #cbd5e1 !important;
-}
-
-/* Stat Card Active State Box Shadows */
-.stat-active-navy    { box-shadow: 0 0 0 2px var(--amu-emerald-600); }
-.stat-active-gold    { box-shadow: 0 0 0 2px var(--amu-gold-600); }
-.stat-active-blue    { box-shadow: 0 0 0 2px #0284c7; }
-.stat-active-purple  { box-shadow: 0 0 0 2px #7c3aed; }
-.stat-active-emerald { box-shadow: 0 0 0 2px var(--amu-emerald-600); }
-.stat-active-red     { box-shadow: 0 0 0 2px #dc2626; }
-.stat-active-slate   { box-shadow: 0 0 0 2px #64748b; }
 </style>
 
-<!-- Interactive Live Search, KPI Counter, and Real-Time Polling Script -->
+{# ═══════════════════════════════════════════════════════
+   JAVASCRIPT — accordion, filter, AJAX upvote
+═══════════════════════════════════════════════════════ #}
 <script>
-  document.addEventListener('DOMContentLoaded', function() {
-    let currentLatestId = parseInt("{{ latest_id|default:0 }}", 10) || 0;
-    const selectedStatus = "{{ selected_status|default:'' }}";
-    const csrfToken = document.querySelector('[name=csrfmiddlewaretoken]')?.value || '{{ csrf_token }}';
+  // ── 1. Accordion toggle ──────────────────────────────
+  function toggleActivePanel() {
+    const panel   = document.getElementById('activePanel');
+    const chevron = document.getElementById('chevron');
+    const btn     = document.getElementById('activeToggle');
+    const isOpen  = btn.getAttribute('aria-expanded') === 'true';
 
-    const searchInput = document.getElementById('publicSearchInput');
-    const container = document.getElementById('complaintContainer');
-    const noMatchCard = document.getElementById('noSearchMatchCard');
-    const countBadge = document.getElementById('filterResultCount');
-    const manualRefreshBtn = document.getElementById('manualRefreshBtn');
-    const refreshSpinner = document.getElementById('refreshSpinner');
-    const liveAlert = document.getElementById('liveNewAlert');
-    const liveAlertText = document.getElementById('liveNewAlertText');
-
-    function escapeHtml(str) {
-      if (!str) return '';
-      return String(str)
-        .replace(/&/g, '&amp;')
-        .replace(/</g, '&lt;')
-        .replace(/>/g, '&gt;')
-        .replace(/"/g, '&quot;')
-        .replace(/'/g, '&#039;');
+    if (isOpen) {
+      panel.style.maxHeight = '0';
+      chevron.style.transform = 'rotate(0deg)';
+      btn.setAttribute('aria-expanded', 'false');
+    } else {
+      // Set to a large pixel value so CSS transition animates correctly
+      panel.style.maxHeight = panel.scrollHeight + 2000 + 'px';
+      chevron.style.transform = 'rotate(180deg)';
+      btn.setAttribute('aria-expanded', 'true');
     }
+  }
 
-    // 1. Instant Client-Side Search Filter
-    function applySearchFilter() {
-      const query = (searchInput?.value || '').trim().toLowerCase();
-      const items = container.querySelectorAll('.complaint-searchable-item');
-      let visibleCount = 0;
+  // ── 2. Quick filter (search + category + building) ──
+  function filterActiveComplaints() {
+    const q    = (document.getElementById('activeSearch')?.value || '').trim().toLowerCase();
+    const cat  = (document.getElementById('activeFilterCat')?.value || '').trim().toLowerCase();
+    const bldg = (document.getElementById('activeFilterBldg')?.value || '').trim().toLowerCase();
 
-      items.forEach(function(item) {
-        const searchData = item.getAttribute('data-search') || '';
-        if (!query || searchData.includes(query)) {
-          item.style.display = 'block';
-          visibleCount++;
+    const items = document.querySelectorAll('.active-item');
+    let visible = 0;
+
+    items.forEach(function(item) {
+      const search  = item.getAttribute('data-search') || '';
+      const itemCat = item.getAttribute('data-cat') || '';
+      const itemBldg= item.getAttribute('data-bldg') || '';
+
+      const matchQ    = !q    || search.includes(q);
+      const matchCat  = !cat  || itemCat.includes(cat);
+      const matchBldg = !bldg || itemBldg.includes(bldg);
+
+      if (matchQ && matchCat && matchBldg) {
+        item.style.display = 'flex';
+        visible++;
+      } else {
+        item.style.display = 'none';
+      }
+    });
+
+    const noMatch = document.getElementById('noActiveMatch');
+    if (noMatch) noMatch.style.display = visible === 0 && items.length > 0 ? 'block' : 'none';
+
+    const countEl = document.getElementById('activeCount');
+    if (countEl) countEl.textContent = visible + ' issue' + (visible === 1 ? '' : 's');
+
+    // Recalculate accordion height for smooth expansion
+    const panel = document.getElementById('activePanel');
+    const btn   = document.getElementById('activeToggle');
+    if (btn.getAttribute('aria-expanded') === 'true') {
+      panel.style.maxHeight = panel.scrollHeight + 400 + 'px';
+    }
+  }
+
+  // ── 3. AJAX Upvote (fetch + localStorage spam guard) ──
+  const CSRF_TOKEN = (function() {
+    // Try meta tag first, then cookie
+    const meta = document.querySelector('meta[name=csrf-token]');
+    if (meta) return meta.getAttribute('content');
+    const cookie = document.cookie.split(';').map(c => c.trim());
+    for (const c of cookie) {
+      if (c.startsWith('csrftoken=')) return c.slice('csrftoken='.length);
+    }
+    // Fall back to hidden field if present
+    const field = document.querySelector('[name=csrfmiddlewaretoken]');
+    return field ? field.value : '';
+  })();
+
+  // Key for localStorage: tracks refs this browser session already supported
+  const LS_KEY = 'campuscare_supported_v2';
+
+  function getLocallySupported() {
+    try { return JSON.parse(localStorage.getItem(LS_KEY) || '{}'); }
+    catch(e) { return {}; }
+  }
+  function setLocallySupported(ref, state) {
+    try {
+      const obj = getLocallySupported();
+      if (state) { obj[ref] = true; }
+      else { delete obj[ref]; }
+      localStorage.setItem(LS_KEY, JSON.stringify(obj));
+    } catch(e) {}
+  }
+
+  async function handleSupport(btn) {
+    const ref = btn.getAttribute('data-ref');
+    if (!ref) return;
+
+    // Optimistic UI update
+    const isNowSupported = !btn.classList.contains('supported');
+    const countEl = btn.querySelector('.support-count');
+    const iconEl  = btn.querySelector('.support-icon');
+    const labelEl = btn.nextElementSibling;
+    const currentCount = parseInt(countEl?.textContent || '0', 10);
+
+    btn.disabled = true;
+    btn.style.opacity = '.6';
+
+    try {
+      const res = await fetch(`/api/complaints/${ref}/support/`, {
+        method: 'POST',
+        headers: {
+          'X-CSRFToken': CSRF_TOKEN,
+          'Content-Type': 'application/json',
+          'X-Requested-With': 'XMLHttpRequest',
+        },
+      });
+
+      if (!res.ok) throw new Error('HTTP ' + res.status);
+      const data = await res.json();
+
+      if (data.success) {
+        // Update count from server truth
+        if (countEl) countEl.textContent = data.count;
+
+        if (data.supported) {
+          btn.classList.add('supported');
+          if (iconEl) iconEl.textContent = '✅';
+          if (labelEl) labelEl.textContent = 'Supported';
+          btn.title = 'Remove support';
+          setLocallySupported(ref, true);
         } else {
-          item.style.display = 'none';
+          btn.classList.remove('supported');
+          if (iconEl) iconEl.textContent = '👍';
+          if (labelEl) labelEl.textContent = 'Endorse';
+          btn.title = 'Support this issue';
+          setLocallySupported(ref, false);
         }
-      });
 
-      if (noMatchCard) {
-        noMatchCard.style.display = (visibleCount === 0 && query !== '') ? 'block' : 'none';
+        // Brief green flash feedback
+        btn.style.transform = 'scale(1.12)';
+        setTimeout(() => { btn.style.transform = 'scale(1)'; }, 200);
       }
+    } catch(err) {
+      console.warn('Support toggle failed:', err);
+      // Revert optimistic UI
+      if (countEl) countEl.textContent = currentCount;
+    } finally {
+      btn.disabled = false;
+      btn.style.opacity = '1';
+    }
+  }
 
-      if (countBadge) {
-        countBadge.textContent = `Showing ${visibleCount} incident${visibleCount === 1 ? '' : 's'}`;
+  // ── 4. Restore localStorage support state on load ──
+  document.addEventListener('DOMContentLoaded', function() {
+    const supported = getLocallySupported();
+    document.querySelectorAll('.support-btn').forEach(function(btn) {
+      const ref = btn.getAttribute('data-ref');
+      if (ref && supported[ref] && !btn.classList.contains('supported')) {
+        btn.classList.add('supported');
+        const iconEl  = btn.querySelector('.support-icon');
+        const labelEl = btn.nextElementSibling;
+        if (iconEl) iconEl.textContent = '✅';
+        if (labelEl) labelEl.textContent = 'Supported';
       }
-    }
-
-    if (searchInput) {
-      searchInput.addEventListener('input', applySearchFilter);
-    }
-
-    // 2. Animated Number Counter Update
-    function updateCounter(elementId, newValue) {
-      const el = document.getElementById(elementId);
-      if (!el || newValue === undefined || newValue === null) return;
-      const current = parseInt(el.textContent, 10);
-      if (isNaN(current) || current !== newValue) {
-        el.textContent = newValue;
-        el.style.transition = 'transform 0.25s ease, color 0.25s ease';
-        el.style.transform = 'scale(1.25)';
-        setTimeout(() => { el.style.transform = 'scale(1)'; }, 280);
-      }
-    }
-
-    // 3. Helper to Build New Complaint Card DOM Node
-    function buildComplaintCard(c) {
-      const div = document.createElement('div');
-      div.className = 'card card-interactive complaint-searchable-item new-complaint-highlight';
-      
-      let borderCol = '#16a34a';
-      let badgeBg = '#dcfce7';
-      let badgeCol = '#15803d';
-      let badgeBdr = '#86efac';
-
-      if (c.priority === 'urgent') {
-        borderCol = '#dc2626'; badgeBg = '#fee2e2'; badgeCol = '#b91c1c'; badgeBdr = '#fca5a5';
-      } else if (c.priority === 'high') {
-        borderCol = '#ea580c'; badgeBg = '#ffedd5'; badgeCol = '#c2410c'; badgeBdr = '#fed7aa';
-      } else if (c.priority === 'normal') {
-        borderCol = '#0284c7'; badgeBg = '#e0f2fe'; badgeCol = '#0369a1'; badgeBdr = '#bae6fd';
-      }
-
-      div.style.cssText = `padding: 16px 20px; border-left: 4px solid ${borderCol};`;
-      const searchAttr = `${(c.reference || '').toLowerCase()} ${(c.title || '').toLowerCase()} ${(c.category || '').toLowerCase()} ${(c.location || '').toLowerCase()}`;
-      div.setAttribute('data-search', searchAttr);
-      div.setAttribute('data-complaint-id', c.id);
-
-      div.innerHTML = `
-        <div style="display:flex; align-items:flex-start; gap:16px; flex-wrap:wrap;">
-          <div style="flex:1; min-width:240px;">
-            <div style="display:flex; align-items:center; gap:8px; flex-wrap:wrap; margin-bottom: 6px;">
-              <a href="${escapeHtml(c.detail_url)}" style="font-size: 13px; font-family: ui-monospace, SFMono-Regular, monospace; font-weight: 700; color: var(--amu-navy-900); text-decoration: none; background: #f1f5f9; padding: 2px 8px; border-radius: 4px; border: 1px solid #e2e8f0;">
-                ${escapeHtml(c.reference)}
-              </a>
-              <span class="pill pill-${escapeHtml(c.status)}">
-                ${escapeHtml(c.status_display)}
-              </span>
-              <span style="font-size: 11px; font-weight: 600; padding: 2px 8px; border-radius: 9999px; background: ${badgeBg}; color:${badgeCol}; border:1px solid ${badgeBdr};">
-                ${escapeHtml(c.priority_display)} Priority
-              </span>
-              <span style="font-size: 11px; font-weight: 700; color: #15803d; background: #dcfce7; padding: 2px 7px; border-radius: 4px; border: 1px solid #86efac;">
-                ✨ Just Lodged
-              </span>
-            </div>
-
-            <h3 style="margin: 0 0 6px 0; font-size: 1.05rem;">
-              <a href="${escapeHtml(c.detail_url)}" style="color: var(--amu-navy-950); text-decoration: none;">
-                ${escapeHtml(c.title)}
-              </a>
-            </h3>
-
-            <div style="font-size: 13px; color: var(--amu-navy-700); line-height: 1.5;">
-              <span style="font-weight: 600; color: var(--amu-emerald-800);">${escapeHtml(c.category)}</span>
-              ${c.location ? `&middot; <span>📍 ${escapeHtml(c.location)}</span>` : ''}
-              ${c.sla_due_at ? `&middot; <span style="color: var(--amu-text-muted);">Due: ${escapeHtml(c.sla_due_at)}</span>` : ''}
-            </div>
-
-            <div style="font-size: 12px; color: var(--amu-text-muted); margin-top: 6px;">
-              Reported just now &middot; ${escapeHtml(c.created_at_display)}
-              ${c.closed_at ? `&middot; <span style="color: #16a34a; font-weight: 600;">Closed ${escapeHtml(c.closed_at)}</span>` : ''}
-            </div>
-          </div>
-
-          <div style="display:flex; flex-direction:column; align-items:center; gap:4px; min-width:80px;">
-            <form method="post" action="/complaints/${escapeHtml(c.reference)}/support/" style="margin: 0;">
-              <input type="hidden" name="csrfmiddlewaretoken" value="${csrfToken}">
-              <input type="hidden" name="next" value="/">
-              <button type="submit" class="btn-unified" style="height: 38px; min-height: 38px; padding: 0 14px; font-size: 14px; background: #f8fafc; color: var(--amu-navy-700); border-color: #cbd5e1;" title="Show your support for this issue">
-                <span>👍</span> <span>${c.support_count || 0}</span>
-              </button>
-            </form>
-            <span style="font-size: 11px; color: var(--amu-text-muted); font-weight: 500;">
-              Endorse
-            </span>
-          </div>
-        </div>
-      `;
-      return div;
-    }
-
-    // 4. Real-Time Auto-Refresh Poller
-    let isPolling = false;
-    async function pollLatestComplaints(isManual = false) {
-      if (isPolling) return;
-      isPolling = true;
-
-      if (isManual && refreshSpinner) {
-        refreshSpinner.style.transform = 'rotate(360deg)';
-      }
-
-      try {
-        const url = `/api/latest-complaints/?since_id=${currentLatestId}&status=${encodeURIComponent(selectedStatus)}`;
-        const res = await fetch(url, {
-          headers: { 'Accept': 'application/json' },
-          cache: 'no-store'
-        });
-
-        if (!res.ok) throw new Error(`HTTP ${res.status}`);
-        const data = await res.json();
-
-        if (data && data.success) {
-          // Update KPI stats
-          if (data.stats) {
-            updateCounter('kpi-total', data.stats.total);
-            updateCounter('kpi-active', data.stats.count_active);
-            updateCounter('kpi-open', data.stats.count_open);
-            updateCounter('kpi-in-progress', data.stats.count_in_progress);
-            updateCounter('kpi-resolved', data.stats.count_resolved);
-            updateCounter('kpi-reopened', data.stats.count_reopened);
-            updateCounter('kpi-closed', data.stats.count_closed);
-          }
-
-          // Prepend newly lodged complaints if available
-          if (data.has_new && data.complaints && data.complaints.length > 0) {
-            // Remove empty state card if present
-            const emptyCard = document.getElementById('emptyBoardCard');
-            if (emptyCard) {
-              emptyCard.remove();
-            }
-
-            // Loop in reverse so highest id ends up at very top
-            for (let i = data.complaints.length - 1; i >= 0; i--) {
-              const c = data.complaints[i];
-              // Avoid duplicates
-              if (!container.querySelector(`[data-complaint-id="${c.id}"]`)) {
-                const card = buildComplaintCard(c);
-                container.prepend(card);
-              }
-            }
-
-            // Show flash alert banner
-            if (liveAlert) {
-              const count = data.complaints.length;
-              if (liveAlertText) {
-                liveAlertText.innerHTML = `<span>⚡</span> <span>${count} new complaint${count === 1 ? '' : 's'} lodged — board updated!</span>`;
-              }
-              liveAlert.style.display = 'flex';
-              setTimeout(() => {
-                liveAlert.style.display = 'none';
-              }, 4500);
-            }
-
-            applySearchFilter();
-          }
-
-          if (data.latest_id && data.latest_id > currentLatestId) {
-            currentLatestId = data.latest_id;
-          }
-        }
-      } catch (err) {
-        console.warn('Real-time poll warning:', err);
-      } finally {
-        isPolling = false;
-        if (isManual && refreshSpinner) {
-          setTimeout(() => {
-            refreshSpinner.style.transform = 'none';
-          }, 400);
-        }
-      }
-    }
-
-    // Polling schedule: check for new complaints every 4 seconds
-    const pollInterval = setInterval(() => {
-      pollLatestComplaints(false);
-    }, 4000);
-
-    // Manual refresh button listener
-    if (manualRefreshBtn) {
-      manualRefreshBtn.addEventListener('click', function() {
-        pollLatestComplaints(true);
-      });
-    }
-
-    // Run initial filter count sync
-    applySearchFilter();
+    });
   });
+
+  // ── 5. Live Poll: update active badge count every 10s ──
+  (function() {
+    const badge    = document.getElementById('activeBadge');
+    let latestId   = parseInt("{{ latest_id|default:0 }}", 10) || 0;
+
+    setInterval(async function() {
+      try {
+        const res = await fetch('/api/latest-complaints/?since_id=' + latestId + '&status=active', {
+          headers: { 'Accept': 'application/json' }, cache: 'no-store'
+        });
+        if (!res.ok) return;
+        const data = await res.json();
+        if (data?.stats?.count_active !== undefined && badge) {
+          const n = data.stats.count_active;
+          badge.innerHTML = (n > 0 ? '<span class="live-dot" style="background:#ea580c;"></span>' : '') + n + ' Open';
+        }
+        if (data?.latest_id > latestId) latestId = data.latest_id;
+      } catch(e) {}
+    }, 10000);
+  })();
 </script>
 
 {% endblock %}

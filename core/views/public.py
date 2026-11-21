@@ -10,7 +10,7 @@ from core.models import Building, Campus, Complaint, ComplaintSupport, Departmen
 
 
 def home(request):
-    """Public homepage — shows the community complaint dashboard to everyone."""
+    """Public homepage — minimal hero + collapsible active complaints panel."""
     stats = Complaint.objects.aggregate(
         total=Count("id"),
         count_open=Count("id", filter=Q(status=Complaint.Status.OPEN)),
@@ -33,37 +33,59 @@ def home(request):
         request.session.create()
     session_key = request.session.session_key or ""
 
-    status_filter = request.GET.get("status", "").strip().lower()
-    complaints_qs = Complaint.objects.filter(is_public=True)
-    if status_filter == "active":
-        complaints_qs = complaints_qs.filter(status__in=[
-            Complaint.Status.OPEN, Complaint.Status.ASSIGNED,
-            Complaint.Status.IN_PROGRESS, Complaint.Status.REOPENED,
-        ])
-    elif status_filter in Complaint.Status.values:
-        complaints_qs = complaints_qs.filter(status=status_filter)
+    # Active complaints only — sorted by urgency then support count
+    ACTIVE_STATUSES = [
+        Complaint.Status.OPEN,
+        Complaint.Status.ASSIGNED,
+        Complaint.Status.IN_PROGRESS,
+        Complaint.Status.REOPENED,
+    ]
+    PRIORITY_ORDER = {"urgent": 0, "high": 1, "normal": 2, "low": 3}
 
-    recent_complaints = (
-        complaints_qs
-        .select_related("category", "room__floor__building__campus")
+    active_complaints_qs = (
+        Complaint.objects.filter(is_public=True, status__in=ACTIVE_STATUSES)
+        .select_related("category__department", "room__floor__building")
         .annotate(support_count=Count("supports"))
-        .order_by("-created_at")[:50]
+        .order_by("-created_at")[:80]
+    )
+    # Sort: urgent first, then by support count desc
+    active_complaints = sorted(
+        active_complaints_qs,
+        key=lambda c: (PRIORITY_ORDER.get(c.priority, 9), -c.support_count),
+    )
+
+    # Department/category breakdown for the mini summary bar
+    dept_breakdown = (
+        Complaint.objects.filter(is_public=True, status__in=ACTIVE_STATUSES)
+        .values("category__department__code", "category__department__name")
+        .annotate(cnt=Count("id"))
+        .order_by("-cnt")[:8]
     )
 
     if request.user.is_authenticated:
         supported_ids = set(
-            ComplaintSupport.objects.filter(user=request.user, complaint__in=recent_complaints)
+            ComplaintSupport.objects.filter(user=request.user, complaint__in=active_complaints)
             .values_list("complaint_id", flat=True)
         )
     elif session_key:
         supported_ids = set(
-            ComplaintSupport.objects.filter(session_key=session_key, complaint__in=recent_complaints)
+            ComplaintSupport.objects.filter(session_key=session_key, complaint__in=active_complaints)
             .values_list("complaint_id", flat=True)
         )
     else:
         supported_ids = set()
 
-    latest_complaint = complaints_qs.order_by("-id").first()
+    # Collect unique categories and buildings for the quick filter dropdowns
+    filter_categories = sorted(set(
+        c.category.name for c in active_complaints if c.category_id
+    ))
+    filter_buildings = sorted(set(
+        c.room.floor.building.name
+        for c in active_complaints
+        if c.room_id and c.room and c.room.floor and c.room.floor.building
+    ))
+
+    latest_complaint = Complaint.objects.filter(is_public=True).order_by("-id").first()
     latest_id = latest_complaint.id if latest_complaint else 0
 
     context = {
@@ -75,10 +97,15 @@ def home(request):
         "count_resolved": count_resolved,
         "count_closed": count_closed,
         "count_reopened": count_reopened,
-        "recent_complaints": recent_complaints,
+        "active_complaints": active_complaints,
         "supported_ids": supported_ids,
-        "selected_status": status_filter,
+        "dept_breakdown": dept_breakdown,
+        "filter_categories": filter_categories,
+        "filter_buildings": filter_buildings,
         "latest_id": latest_id,
+        # keep for backward compat with live-poll JS
+        "recent_complaints": active_complaints,
+        "selected_status": "",
     }
     return render(request, "core/home.html", context)
 

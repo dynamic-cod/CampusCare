@@ -47,4 +47,5 @@ urlpatterns = [
     path("dashboard/heatmap/", views.campus_heatmap_view, name="campus_heatmap"),
     path("api/heatmap-data/", views.heatmap_data_api, name="heatmap_data_api"),
     path("api/latest-complaints/", views.latest_public_complaints_api, name="latest_public_complaints_api"),
+    path("api/complaints/<str:reference>/support/", views.complaint_support_api, name="complaint_support_api"),
 ]

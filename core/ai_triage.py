@@ -14,6 +14,73 @@ from .models import Building, Complaint, ComplaintCategory, Department, Floor, R
 # ============================================================
 
 # Compiled once at import time for zero-overhead repeated calls.
+# Covers: snakes/reptiles, scorpions, bees/wasps/hornets, fire/gas/smoke, animal attacks, structural/electrical
+_SAFETY_PATTERNS = re.compile(
+    r"\b("
+    r"snake|saanp|saap|saamp|cobra|viper|python|adder|mamba|krait|anaconda"
+    r"|reptile|reptiles|slithering|slithered|serpent"
+    r"|scorpion|bichhu"
+    r"|beehive|hornet|hornets|wasp|wasps"
+    r"|fire|flames|flame|blaze|arson"
+    r"|smoke|smoking|smoldering"
+    r"|gas.leak|cylinder.leak|lpg.leak|gas.smell|burning.smell"
+    r"|explosion|exploding"
+    r"|dog.bite|dogbite|rabid|rabies"
+    r"|monkey.attack|monkey.bite"
+    r"|wild.animal|aggressive.animal"
+    r"|electrocution|electric.shock|live.wire|live.electrical"
+    r"|ceiling.collapse|wall.collapse|roof.collapse|building.collapse"
+    r"|structural.collapse"
+    r")\b",
+    re.IGNORECASE,
+)
+
+# SLA for safety emergencies: 30 minutes expressed as fractional hours
+SAFETY_EMERGENCY_SLA_HOURS = 0.5  # = 30 minutes
+
+
+def check_safety_guardrail(title: str = "", description: str = "", location: str = "") -> dict:
+    """
+    Run deterministic safety-keyword scan on complaint text.
+
+    Returns a dict with:
+        matched      (bool)   – True if any safety keyword was detected
+        keywords     (list)   – All matched keywords (deduplicated, lowercase)
+        priority     (str)    – Always 'urgent' when matched
+        confidence   (float)  – Always 1.0 when matched
+        dept_code    (str)    – 'EMERG' (the override department code)
+        reason       (str)    – Human-readable explanation
+    """
+    combined = f"{title} {description} {location}"
+    matches = _SAFETY_PATTERNS.findall(combined)
+    if not matches:
+        return {"matched": False}
+
+    unique_kw = list(dict.fromkeys(kw.lower() for kw in matches))
+    return {
+        "matched": True,
+        "keywords": unique_kw,
+        "priority": "urgent",
+        "confidence": 1.0,
+        "dept_code": "EMERG",
+        "sla_hours": SAFETY_EMERGENCY_SLA_HOURS,
+        "reason": (
+            f"⚠ SAFETY OVERRIDE: Life-safety keywords detected "
+            f"({', '.join(unique_kw[:3])}{'…' if len(unique_kw) > 3 else ''}). "
+            f"Auto-escalated to Campus Safety & Emergency Response (EMERG). "
+            f"Rapid response SLA: 30 minutes."
+        ),
+    }
+
+# ============================================================
+# SAFETY KEYWORD GUARDRAIL
+# Deterministic override that fires *before* ML inference.
+# Any match forces priority=URGENT, confidence=1.0, dept=EMERG.
+# Covers English, transliterated Urdu/Hindi (Hinglish), and
+# descriptive phrasing that the TF-IDF model might misclassify.
+# ============================================================
+
+# Compiled once at import time for zero-overhead repeated calls.
 _SAFETY_PATTERNS = re.compile(
     r"\b("
     # Snakes / reptiles
