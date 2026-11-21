@@ -1,0 +1,293 @@
+/* ==========================================================================
+   CampusCare Design System · Lightweight Modern Motion & Polish
+   Compositor-accelerated (60fps), pure CSS, zero heavy JS, mobile optimized.
+   ========================================================================== */
+
+:root {
+  --ease-spring: linear(0, 0.006 0.2%, 0.024 0.5%, 0.096 1%, 0.404 2.1%, 0.812 3.4%, 1.096 4.6%, 1.258 5.7%, 1.332 6.7%, 1.338 7.3%, 1.326 7.8%, 1.246 8.9%, 1.042 10.9%, 0.941 12.1%, 0.887 13.3%, 0.875 14.2%, 0.886 15.2%, 0.925 16.3%, 1.018 19.3%, 1.046 20.8%, 1.052 22.1%, 1.04 23.4%, 1.015 25.1%, 0.992 27.2%, 0.983 29.1%, 0.987 31.2%, 1.003 34.6%, 1.007 37.3%, 0.999 43.1%, 1);
+  --ease-out-expo: cubic-bezier(0.16, 1, 0.3, 1);
+  --ease-soft: cubic-bezier(0.25, 1, 0.5, 1);
+  --spotlight-color: rgba(5, 150, 105, 0.08);
+}
+
+/* ── 1. Blur-to-Sharp Staggered Entrances ── */
+.reveal-up {
+  opacity: 0;
+  transform: translateY(14px);
+  filter: blur(4px);
+  transition: opacity 0.65s var(--ease-out-expo),
+              transform 0.65s var(--ease-out-expo),
+              filter 0.65s var(--ease-out-expo);
+  will-change: opacity, transform, filter;
+}
+
+.reveal-up.is-revealed {
+  opacity: 1;
+  transform: translateY(0);
+  filter: blur(0);
+}
+
+/* Stagger Delays (80ms increments) */
+.delay-1 { transition-delay: 80ms; }
+.delay-2 { transition-delay: 160ms; }
+.delay-3 { transition-delay: 240ms; }
+.delay-4 { transition-delay: 320ms; }
+.delay-5 { transition-delay: 400ms; }
+.delay-6 { transition-delay: 480ms; }
+
+/* ── 2. Ambient Architectural Hero Background ── */
+.hero-ambient-wrap {
+  position: relative;
+  overflow: hidden;
+  border-radius: 20px;
+}
+
+.hero-ambient-grid {
+  position: absolute;
+  inset: 0;
+  pointer-events: none;
+  z-index: 0;
+  background-image: radial-gradient(circle, #cbd5e1 1px, transparent 1px);
+  background-size: 24px 24px;
+  -webkit-mask-image: radial-gradient(ellipse 65% 60% at 50% 35%, black 20%, transparent 80%);
+  mask-image: radial-gradient(ellipse 65% 60% at 50% 35%, black 20%, transparent 80%);
+  opacity: 0.65;
+}
+
+.hero-ambient-glow {
+  position: absolute;
+  top: -80px;
+  left: 50%;
+  transform: translateX(-50%);
+  width: 580px;
+  height: 340px;
+  border-radius: 50%;
+  background: radial-gradient(ellipse at center, rgba(5, 150, 105, 0.12), rgba(16, 185, 129, 0.04) 50%, transparent 72%);
+  filter: blur(54px);
+  pointer-events: none;
+  z-index: 0;
+  animation: floatAmbient 14s ease-in-out infinite alternate;
+}
+
+@keyframes floatAmbient {
+  0% { transform: translate(-50%, 0) scale(1); }
+  50% { transform: translate(-47%, 14px) scale(1.06); }
+  100% { transform: translate(-53%, -8px) scale(0.97); }
+}
+
+/* ── 3. Interactive Cursor-Tracking Card Glow ── */
+.spotlight-card {
+  position: relative;
+  transition: transform 0.25s var(--ease-out-expo), box-shadow 0.25s var(--ease-out-expo), border-color 0.25s ease;
+}
+
+.spotlight-card::before {
+  content: "";
+  position: absolute;
+  inset: -1px;
+  border-radius: inherit;
+  background: radial-gradient(
+    380px circle at var(--mouse-x, -200px) var(--mouse-y, -200px),
+    var(--spotlight-color, rgba(5, 150, 105, 0.12)),
+    transparent 70%
+  );
+  opacity: 0;
+  transition: opacity 0.3s ease;
+  pointer-events: none;
+  z-index: 1;
+}
+
+.spotlight-card:hover::before {
+  opacity: 1;
+}
+
+/* ── 4. Tactile Micro-Interactions ── */
+.btn-tactile {
+  transition: transform 0.2s var(--ease-out-expo),
+              box-shadow 0.2s var(--ease-out-expo),
+              background-color 0.2s ease,
+              border-color 0.2s ease;
+  will-change: transform;
+}
+
+.btn-tactile:hover {
+  transform: translateY(-1.5px);
+}
+
+.btn-tactile:active {
+  transform: scale(0.98);
+}
+
+/* Sliding Arrow on CTA */
+.cta-slide-arrow {
+  display: inline-flex;
+  align-items: center;
+  transition: transform 0.25s var(--ease-out-expo);
+}
+
+.btn-tactile:hover .cta-slide-arrow {
+  transform: translateX(4px);
+}
+
+/* Smooth Focus Rings */
+.input-smooth-focus {
+  transition: border-color 0.2s ease, box-shadow 0.2s ease, background-color 0.2s ease;
+}
+
+.input-smooth-focus:focus {
+  outline: none;
+  border-color: #059669 !important;
+  box-shadow: 0 0 0 3px rgba(5, 150, 105, 0.15) !important;
+}
+
+/* ── 5. Fluid Dropdown (CSS Grid technique) ── */
+.grid-accordion {
+  display: grid;
+  grid-template-rows: 0fr;
+  transition: grid-template-rows 0.38s cubic-bezier(0.16, 1, 0.3, 1);
+}
+
+.grid-accordion.is-open {
+  grid-template-rows: 1fr;
+}
+
+.grid-accordion-inner {
+  overflow: hidden;
+}
+
+.chevron-rotate {
+  transition: transform 0.35s cubic-bezier(0.16, 1, 0.3, 1);
+  will-change: transform;
+}
+
+.is-open .chevron-rotate {
+  transform: rotate(180deg);
+}
+
+/* ── 6. Pulsing Radar Dots & Live Indicators ── */
+.radar-pulse-wrap {
+  position: relative;
+  display: inline-flex;
+  align-items: center;
+  justify-content: center;
+  width: 10px;
+  height: 10px;
+}
+
+.radar-ping {
+  position: absolute;
+  inset: 0;
+  border-radius: 9999px;
+  opacity: 0.75;
+  animation: radarPing 1.8s cubic-bezier(0, 0, 0.2, 1) infinite;
+}
+
+.radar-core {
+  position: relative;
+  width: 6px;
+  height: 6px;
+  border-radius: 9999px;
+}
+
+@keyframes radarPing {
+  0% { transform: scale(0.9); opacity: 0.8; }
+  75%, 100% { transform: scale(2.4); opacity: 0; }
+}
+
+/* Upvote Spring Pop Animation */
+.upvote-pop {
+  animation: springPop 0.45s var(--ease-spring);
+}
+
+@keyframes springPop {
+  0% { transform: scale(1); }
+  40% { transform: scale(1.18); }
+  70% { transform: scale(0.95); }
+  100% { transform: scale(1); }
+}
+
+/* ── 7. Animated SVG Checkmark & Success Polish ── */
+.success-checkmark-svg {
+  width: 64px;
+  height: 64px;
+  margin: 0 auto 16px;
+  display: block;
+}
+
+.checkmark-circle {
+  stroke-dasharray: 166;
+  stroke-dashoffset: 166;
+  stroke-width: 2.5;
+  stroke-miterlimit: 10;
+  stroke: #10b981;
+  fill: #ecfdf5;
+  animation: strokeCircle 0.6s cubic-bezier(0.65, 0, 0.45, 1) forwards;
+}
+
+.checkmark-check {
+  transform-origin: 50% 50%;
+  stroke-dasharray: 48;
+  stroke-dashoffset: 48;
+  stroke: #059669;
+  stroke-width: 3.5;
+  stroke-linecap: round;
+  stroke-linejoin: round;
+  animation: strokeCheck 0.35s cubic-bezier(0.65, 0, 0.45, 1) 0.5s forwards;
+}
+
+@keyframes strokeCircle {
+  100% { stroke-dashoffset: 0; }
+}
+
+@keyframes strokeCheck {
+  100% { stroke-dashoffset: 0; }
+}
+
+/* Copied Toast Pill */
+.copied-toast {
+  display: inline-flex;
+  align-items: center;
+  gap: 5px;
+  background: #10b981;
+  color: #ffffff;
+  padding: 4px 10px;
+  border-radius: 9999px;
+  font-size: 11px;
+  font-weight: 700;
+  letter-spacing: 0.3px;
+  animation: toastFade 0.3s var(--ease-out-expo);
+}
+
+@keyframes toastFade {
+  0% { opacity: 0; transform: translateY(4px) scale(0.92); }
+  100% { opacity: 1; transform: translateY(0) scale(1); }
+}
+
+/* ── 8. Accessibility: prefers-reduced-motion fallback ── */
+@media (prefers-reduced-motion: reduce) {
+  .reveal-up {
+    opacity: 1 !important;
+    transform: none !important;
+    filter: none !important;
+    transition: none !important;
+  }
+  .hero-ambient-glow {
+    animation: none !important;
+  }
+  .radar-ping {
+    display: none !important;
+  }
+  .checkmark-circle,
+  .checkmark-check {
+    stroke-dashoffset: 0 !important;
+    animation: none !important;
+  }
+  .btn-tactile:hover,
+  .btn-tactile:active,
+  .cta-slide-arrow {
+    transform: none !important;
+  }
+  .spotlight-card::before {
+    display: none !important;
+  }
+}

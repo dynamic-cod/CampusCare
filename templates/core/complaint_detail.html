@@ -229,42 +229,18 @@
   <script>
     function copyTrackingToken() {
       const token = "{{ complaint.tracking_token }}";
-      const copyText = document.getElementById("copyText");
-      const copyBtn = document.getElementById("copyTokenBtn");
-      
-      function showSuccess() {
-        if (copyText) copyText.textContent = "Copied!";
+      if (window.copyTokenWithFeedback) {
+        window.copyTokenWithFeedback(token, "copyTokenBtn", "copyText");
+      } else {
+        const copyText = document.getElementById("copyText");
+        const copyBtn = document.getElementById("copyTokenBtn");
+        if (copyText) copyText.textContent = "Copied ✓";
         if (copyBtn) copyBtn.style.background = "#16a34a";
+        navigator.clipboard.writeText(token);
         setTimeout(function() {
           if (copyText) copyText.textContent = "Copy Token";
           if (copyBtn) copyBtn.style.background = "#2563eb";
         }, 2500);
-      }
-
-      if (navigator.clipboard && window.isSecureContext) {
-        navigator.clipboard.writeText(token).then(showSuccess).catch(function() {
-          fallbackCopy(token);
-        });
-      } else {
-        fallbackCopy(token);
-      }
-
-      function fallbackCopy(text) {
-        const textArea = document.createElement("textarea");
-        textArea.value = text;
-        textArea.style.position = "fixed";
-        textArea.style.left = "-999999px";
-        textArea.style.top = "-999999px";
-        document.body.appendChild(textArea);
-        textArea.focus();
-        textArea.select();
-        try {
-          document.execCommand('copy');
-          showSuccess();
-        } catch (err) {
-          alert("Tracking Token: " + text);
-        }
-        textArea.remove();
       }
     }
   </script>

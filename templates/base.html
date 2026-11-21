@@ -6,6 +6,7 @@
     <meta name="viewport" content="width=device-width, initial-scale=1">
     <title>{% block title %}AMU CampusCare · Aligarh Muslim University{% endblock %}</title>
     <link rel="stylesheet" href="{% static 'styles.css' %}">
+    <link rel="stylesheet" href="{% static 'css/animations.css' %}">
     {% block extra_head %}{% endblock %}
   </head>
   <body>
@@ -209,6 +210,7 @@
         });
       });
     </script>
+    <script src="{% static 'js/animations.js' %}"></script>
     {% block extra_scripts %}{% endblock %}
   </body>
 </html>

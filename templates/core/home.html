@@ -5,77 +5,86 @@
 <div style="max-width:960px; margin:0 auto; padding:0 16px;">
 
   {# Hero Section #}
-  <section style="padding:52px 0 40px; text-align:center;">
-    <div style="display:inline-flex; align-items:center; gap:6px; background:#f0fdf4; color:#065f46; padding:5px 14px; border-radius:9999px; font-size:12px; font-weight:700; letter-spacing:.4px; border:1px solid #bbf7d0; margin-bottom:18px;">
-      <span class="live-dot"></span> LIVE SYSTEM · AMU CAMPUS MAINTENANCE
-    </div>
+  <div class="hero-ambient-wrap" style="margin-bottom: 32px; border: 1px solid rgba(226, 232, 240, 0.6); background: rgba(255, 255, 255, 0.7); backdrop-filter: blur(8px);">
+    <div class="hero-ambient-grid"></div>
+    <div class="hero-ambient-glow"></div>
 
-    <h1 style="margin:0 0 12px; font-size:clamp(1.75rem,4vw,2.6rem); font-weight:800; color:var(--amu-navy-950); line-height:1.2; letter-spacing:-.5px;">
-      Report. Track. Resolve.<br>
-      <span style="color:var(--amu-emerald-700);">Campus issues handled fast.</span>
-    </h1>
-    <p style="margin:0 auto 32px; max-width:520px; font-size:1rem; color:var(--amu-navy-700); line-height:1.65;">
-      Lodge a maintenance complaint or track your ticket instantly — no login required.
-    </p>
+    <section style="position: relative; z-index: 1; padding: 48px 16px 36px; text-align: center;">
+      <div class="reveal-up" style="display:inline-flex; align-items:center; gap:8px; background:#f0fdf4; color:#065f46; padding:5px 14px; border-radius:9999px; font-size:12px; font-weight:700; letter-spacing:.4px; border:1px solid #bbf7d0; margin-bottom:18px;">
+        <span class="radar-pulse-wrap">
+          <span class="radar-ping"></span>
+          <span class="radar-dot"></span>
+        </span>
+        LIVE SYSTEM · AMU CAMPUS MAINTENANCE
+      </div>
 
-    {# Primary CTA + Track bar #}
-    <div style="display:flex; flex-direction:column; align-items:center; gap:14px; max-width:540px; margin:0 auto;">
+      <h1 class="reveal-up delay-1" style="margin:0 0 12px; font-size:clamp(1.75rem,4vw,2.6rem); font-weight:800; color:var(--amu-navy-950); line-height:1.2; letter-spacing:-.5px;">
+        Report. Track. Resolve.<br>
+        <span style="color:var(--amu-emerald-700);">Campus issues handled fast.</span>
+      </h1>
+      <p class="reveal-up delay-2" style="margin:0 auto 32px; max-width:520px; font-size:1rem; color:var(--amu-navy-700); line-height:1.65;">
+        Lodge a maintenance complaint or track your ticket instantly — no login required.
+      </p>
 
-      {# Lodge complaint button #}
-      <a href="{% url 'core:complaint_create' %}"
-         style="display:inline-flex; align-items:center; justify-content:center; gap:8px;
-                width:100%; padding:14px 28px; border-radius:10px; font-size:1rem; font-weight:700;
-                background:var(--amu-emerald-700); color:#ffffff; text-decoration:none;
-                box-shadow:0 4px 14px rgba(5,150,105,.35); transition:all .2s ease;"
-         onmouseover="this.style.background='#047857'; this.style.boxShadow='0 6px 20px rgba(5,150,105,.45)'"
-         onmouseout="this.style.background='var(--amu-emerald-700)'; this.style.boxShadow='0 4px 14px rgba(5,150,105,.35)'">
-        ✍️ &nbsp;Lodge a Complaint
-      </a>
+      {# Primary CTA + Track bar #}
+      <div class="reveal-up delay-3" style="display:flex; flex-direction:column; align-items:center; gap:14px; max-width:540px; margin:0 auto;">
 
-      {# Track ticket inline bar #}
-      <form action="{% url 'core:tracking_form' %}" method="get"
-            style="display:flex; width:100%; border-radius:10px; overflow:hidden; border:1.5px solid #cbd5e1; background:#fff; box-shadow:0 2px 8px rgba(0,0,0,.06);">
-        <input type="text" name="token"
-               placeholder="Paste your tracking token to check status…"
-               style="flex:1; padding:12px 16px; border:none; outline:none; font-size:0.9rem; color:var(--amu-navy-900); background:transparent;"
-               aria-label="Tracking token">
-        <button type="submit"
-                style="padding:12px 20px; background:#f8fafc; border:none; border-left:1.5px solid #cbd5e1; cursor:pointer; font-size:0.85rem; font-weight:700; color:var(--amu-navy-700); white-space:nowrap;"
-                onmouseover="this.style.background='#f1f5f9'" onmouseout="this.style.background='#f8fafc'">
-          🔍 Track
-        </button>
-      </form>
+        {# Lodge complaint button #}
+        <a href="{% url 'core:complaint_create' %}"
+           class="btn-tactile cta-arrow-hover"
+           style="display:inline-flex; align-items:center; justify-content:center; gap:10px;
+                  width:100%; padding:14px 28px; border-radius:10px; font-size:1rem; font-weight:700;
+                  background:var(--amu-emerald-700); color:#ffffff; text-decoration:none;
+                  box-shadow:0 4px 14px rgba(5,150,105,.35);">
+          <span>Lodge a Complaint</span>
+          <span class="cta-slide-arrow" style="font-size:1.15rem; font-weight:400; line-height:1;">→</span>
+        </a>
 
-    </div>
-  </section>
+        {# Track ticket inline bar #}
+        <form action="{% url 'core:tracking_form' %}" method="get"
+              style="display:flex; width:100%; border-radius:10px; overflow:hidden; border:1.5px solid #cbd5e1; background:#fff; box-shadow:0 2px 8px rgba(0,0,0,.06);">
+          <input type="text" name="token"
+                 placeholder="Paste your tracking token to check status…"
+                 style="flex:1; padding:12px 16px; border:none; outline:none; font-size:0.9rem; color:var(--amu-navy-900); background:transparent;"
+                 aria-label="Tracking token">
+          <button type="submit"
+                  class="btn-tactile"
+                  style="padding:12px 20px; background:#f8fafc; border:none; border-left:1.5px solid #cbd5e1; cursor:pointer; font-size:0.85rem; font-weight:700; color:var(--amu-navy-700); white-space:nowrap;">
+            Track
+          </button>
+        </form>
+
+      </div>
+    </section>
+  </div>
 
   {# KPI Stat Pills #}
-  <section style="margin-bottom:40px;">
+  <section class="reveal-up delay-4" style="margin-bottom:40px;">
     <div style="display:flex; flex-wrap:wrap; justify-content:center; gap:10px;">
 
       {% with pills=count_active|add:0 %}
-      <div style="display:flex; align-items:center; gap:8px; background:#fff7ed; border:1.5px solid #fed7aa; border-radius:8px; padding:9px 16px; min-width:110px;">
+      <div class="spotlight-card btn-tactile" style="display:flex; align-items:center; gap:8px; background:#fff7ed; border:1.5px solid #fed7aa; border-radius:8px; padding:9px 16px; min-width:110px;">
         <span style="font-size:1.1rem; font-weight:800; color:#c2410c;">{{ count_active }}</span>
         <span style="font-size:12px; font-weight:600; color:#9a3412; line-height:1.2;">Active<br>Queue</span>
       </div>
       {% endwith %}
 
-      <div style="display:flex; align-items:center; gap:8px; background:#eff6ff; border:1.5px solid #bfdbfe; border-radius:8px; padding:9px 16px; min-width:110px;">
+      <div class="spotlight-card btn-tactile" style="display:flex; align-items:center; gap:8px; background:#eff6ff; border:1.5px solid #bfdbfe; border-radius:8px; padding:9px 16px; min-width:110px;">
         <span style="font-size:1.1rem; font-weight:800; color:#1d4ed8;">{{ count_open }}</span>
         <span style="font-size:12px; font-weight:600; color:#1e40af; line-height:1.2;">Open</span>
       </div>
 
-      <div style="display:flex; align-items:center; gap:8px; background:#faf5ff; border:1.5px solid #e9d5ff; border-radius:8px; padding:9px 16px; min-width:110px;">
+      <div class="spotlight-card btn-tactile" style="display:flex; align-items:center; gap:8px; background:#faf5ff; border:1.5px solid #e9d5ff; border-radius:8px; padding:9px 16px; min-width:110px;">
         <span style="font-size:1.1rem; font-weight:800; color:#7c3aed;">{{ count_in_progress }}</span>
         <span style="font-size:12px; font-weight:600; color:#6d28d9; line-height:1.2;">In Progress</span>
       </div>
 
-      <div style="display:flex; align-items:center; gap:8px; background:#f0fdf4; border:1.5px solid #bbf7d0; border-radius:8px; padding:9px 16px; min-width:110px;">
+      <div class="spotlight-card btn-tactile" style="display:flex; align-items:center; gap:8px; background:#f0fdf4; border:1.5px solid #bbf7d0; border-radius:8px; padding:9px 16px; min-width:110px;">
         <span style="font-size:1.1rem; font-weight:800; color:var(--amu-emerald-700);">{{ count_resolved }}</span>
         <span style="font-size:12px; font-weight:600; color:#065f46; line-height:1.2;">Resolved</span>
       </div>
 
-      <div style="display:flex; align-items:center; gap:8px; background:#f8fafc; border:1.5px solid #e2e8f0; border-radius:8px; padding:9px 16px; min-width:110px;">
+      <div class="spotlight-card btn-tactile" style="display:flex; align-items:center; gap:8px; background:#f8fafc; border:1.5px solid #e2e8f0; border-radius:8px; padding:9px 16px; min-width:110px;">
         <span style="font-size:1.1rem; font-weight:800; color:#475569;">{{ total }}</span>
         <span style="font-size:12px; font-weight:600; color:#64748b; line-height:1.2;">Total Filed</span>
       </div>
@@ -84,40 +93,44 @@
   </section>
 
   {# Active Complaints Dropdown / Accordion Panel #}
-  <section id="activeComplaintsSection" style="margin-bottom:52px;">
+  <section id="activeComplaintsSection" class="reveal-up delay-5" style="margin-bottom:52px;">
 
     {# ── Accordion Header / Toggle Button ── #}
     <button id="activeToggle" onclick="toggleActivePanel()"
+            class="spotlight-card btn-tactile"
             style="width:100%; display:flex; align-items:center; justify-content:space-between;
                    background:#fff; border:1.5px solid #e2e8f0; border-radius:12px;
                    padding:16px 20px; cursor:pointer; text-align:left;
-                   box-shadow:0 1px 4px rgba(0,0,0,.06); transition:all .2s ease;"
+                   box-shadow:0 1px 4px rgba(0,0,0,.06);"
             aria-expanded="false" aria-controls="activePanel">
       <div style="display:flex; align-items:center; gap:12px;">
         <span style="font-size:1.05rem; font-weight:700; color:var(--amu-navy-950);">
-          📋 Active Campus Complaints
+          Active Campus Complaints
         </span>
         <span id="activeBadge"
-              style="display:inline-flex; align-items:center; gap:5px; background:{% if count_active > 0 %}#fff7ed{% else %}#f1f5f9{% endif %};
+              style="display:inline-flex; align-items:center; gap:6px; background:{% if count_active > 0 %}#fff7ed{% else %}#f1f5f9{% endif %};
                      color:{% if count_active > 0 %}#c2410c{% else %}#64748b{% endif %};
                      border:1px solid {% if count_active > 0 %}#fed7aa{% else %}#e2e8f0{% endif %};
                      border-radius:9999px; font-size:12px; font-weight:700; padding:3px 10px;">
-          {% if count_active > 0 %}<span class="live-dot" style="background:#ea580c;"></span>{% endif %}
+          {% if count_active > 0 %}
+          <span class="radar-pulse-wrap">
+            <span class="radar-ping" style="background:#ea580c;"></span>
+            <span class="radar-dot" style="background:#ea580c;"></span>
+          </span>
+          {% endif %}
           {{ count_active }} Open
         </span>
       </div>
-      <svg id="chevron" xmlns="http://www.w3.org/2000/svg" width="20" height="20" viewBox="0 0 24 24"
+      <svg id="chevron" class="chevron-rotate" xmlns="http://www.w3.org/2000/svg" width="20" height="20" viewBox="0 0 24 24"
            fill="none" stroke="currentColor" stroke-width="2.5" stroke-linecap="round" stroke-linejoin="round"
-           style="color:#94a3b8; transition:transform .3s ease; flex-shrink:0;">
+           style="color:#94a3b8; flex-shrink:0;">
         <polyline points="6 9 12 15 18 9"></polyline>
       </svg>
     </button>
 
     {# ── Collapsible Panel Body ── #}
-    <div id="activePanel"
-         style="overflow:hidden; max-height:0; transition:max-height .4s cubic-bezier(0.4,0,0.2,1); border-radius:0 0 12px 12px;">
-      <div style="border:1.5px solid #e2e8f0; border-top:none; border-radius:0 0 12px 12px;
-                  background:#fff; padding:20px;">
+    <div id="activePanel" class="grid-accordion" style="border-radius:0 0 12px 12px;">
+      <div class="grid-accordion-inner" style="border:1.5px solid #e2e8f0; border-top:none; border-radius:0 0 12px 12px; background:#fff; padding:20px;">
 
         {# ── Mini Dept Breakdown Bar ── #}
         {% if dept_breakdown %}
@@ -127,7 +140,7 @@
           </p>
           <div style="display:flex; flex-wrap:wrap; gap:8px;">
             {% for d in dept_breakdown %}
-            <span style="display:inline-flex; align-items:center; gap:5px; background:#f8fafc;
+            <span class="spotlight-card" style="display:inline-flex; align-items:center; gap:5px; background:#f8fafc;
                          border:1px solid #e2e8f0; border-radius:6px; padding:4px 10px; font-size:12px; font-weight:600; color:var(--amu-navy-800);">
               {{ d.cnt }}
               <span style="font-weight:400; color:#64748b;">{{ d.category__department__name|default:d.category__department__code|default:"General"|truncatechars:20 }}</span>
@@ -140,12 +153,11 @@
         {# ── Quick Filter Bar ── #}
         <div style="display:flex; flex-wrap:wrap; gap:10px; margin-bottom:18px; align-items:center;">
           <div style="position:relative; flex:1; min-width:200px;">
-            <span style="position:absolute; left:11px; top:50%; transform:translateY(-50%); font-size:14px; pointer-events:none;">🔍</span>
             <input id="activeSearch" type="text" placeholder="Filter by title, hall, category…"
                    oninput="filterActiveComplaints()"
-                   style="width:100%; padding:9px 12px 9px 34px; border:1.5px solid #e2e8f0; border-radius:8px;
+                   style="width:100%; padding:9px 12px; border:1.5px solid #e2e8f0; border-radius:8px;
                           font-size:0.875rem; outline:none; color:var(--amu-navy-900); background:#f8fafc;
-                          box-sizing:border-box;"
+                          box-sizing:border-box; transition:border-color .2s ease;"
                    onfocus="this.style.borderColor='var(--amu-emerald-600)'; this.style.background='#fff'"
                    onblur="this.style.borderColor='#e2e8f0'; this.style.background='#f8fafc'">
           </div>
@@ -178,7 +190,7 @@
         <div id="activeList" style="display:flex; flex-direction:column; gap:10px;">
           {% if active_complaints %}
             {% for c in active_complaints %}
-            <div class="active-item"
+            <div class="active-item spotlight-card"
                  data-search="{{ c.reference|lower }} {{ c.title|lower }} {{ c.category.name|lower }} {{ c.location_description|lower }} {% if c.room %}{{ c.room.floor.building.name|lower }}{% endif %}"
                  data-cat="{{ c.category.name|lower }}"
                  data-bldg="{% if c.room %}{{ c.room.floor.building.name|lower }}{% endif %}"
@@ -203,7 +215,7 @@
                                {% elif c.priority == 'high' %}background:#ffedd5; color:#c2410c; border:1px solid #fed7aa;
                                {% elif c.priority == 'normal' %}background:#e0f2fe; color:#0369a1; border:1px solid #bae6fd;
                                {% else %}background:#dcfce7; color:#15803d; border:1px solid #86efac;{% endif %}">
-                    {% if c.priority == 'urgent' %}🚨 {% endif %}{{ c.get_priority_display }}
+                    {{ c.get_priority_display }}
                   </span>
 
                   {# Status badge #}
@@ -221,9 +233,9 @@
                 <div style="font-size:12px; color:#64748b; display:flex; flex-wrap:wrap; gap:8px; align-items:center;">
                   <span style="font-weight:600; color:var(--amu-emerald-800);">{{ c.category.name }}</span>
                   {% if c.room %}
-                    <span>📍 {{ c.room.floor.building.name }}</span>
+                    <span>{{ c.room.floor.building.name }}</span>
                   {% elif c.location_description %}
-                    <span>📍 {{ c.location_description|truncatechars:40 }}</span>
+                    <span>{{ c.location_description|truncatechars:40 }}</span>
                   {% endif %}
                   <span style="color:#94a3b8;">{{ c.created_at|timesince }} ago</span>
                 </div>
@@ -232,7 +244,7 @@
               {# ── Support / Upvote Button ── #}
               <div style="display:flex; flex-direction:column; align-items:center; gap:4px; flex-shrink:0;">
                 <button
-                  class="support-btn {% if c.id in supported_ids %}supported{% endif %}"
+                  class="support-btn upvote-btn btn-tactile {% if c.id in supported_ids %}supported{% endif %}"
                   data-ref="{{ c.reference }}"
                   data-count="{{ c.support_count }}"
                   onclick="handleSupport(this)"
@@ -245,7 +257,7 @@
                            background:#f8fafc; color:var(--amu-navy-700); border-color:#e2e8f0;
                          {% endif %}"
                   title="{% if c.id in supported_ids %}Remove support{% else %}Support this issue{% endif %}">
-                  <span class="support-icon">{% if c.id in supported_ids %}✅{% else %}👍{% endif %}</span>
+                  <span class="support-icon">{% if c.id in supported_ids %}✓{% else %}▲{% endif %}</span>
                   <span class="support-count">{{ c.support_count }}</span>
                 </button>
                 <span style="font-size:10px; color:#94a3b8; font-weight:500;">
@@ -258,17 +270,15 @@
 
             {# No filter match state #}
             <div id="noActiveMatch" style="display:none; text-align:center; padding:36px 20px; color:#94a3b8;">
-              <div style="font-size:1.8rem; margin-bottom:8px;">🔍</div>
               <p style="margin:0; font-size:0.9rem; font-weight:500;">No complaints match your filter.</p>
             </div>
 
           {% else %}
             <div style="text-align:center; padding:48px 20px; color:#94a3b8;">
-              <div style="font-size:2.5rem; margin-bottom:12px;">🎉</div>
               <h3 style="margin:0 0 6px; color:var(--amu-navy-900); font-size:1.1rem; font-weight:700;">No active complaints</h3>
               <p style="margin:0 0 18px; font-size:0.9rem;">All campus facilities are running smoothly right now.</p>
               <a href="{% url 'core:complaint_create' %}" class="btn-unified btn-unified-emerald">
-                ✍️ Lodge the first report
+                Lodge the first report
               </a>
             </div>
           {% endif %}
@@ -291,19 +301,6 @@
 
 {# Styles #}
 <style>
-@keyframes pulseDot {
-  0%   { transform: scale(.9);  box-shadow: 0 0 0 0   rgba(22,163,74,.7); }
-  70%  { transform: scale(1.15); box-shadow: 0 0 0 6px rgba(22,163,74,0); }
-  100% { transform: scale(.9);  box-shadow: 0 0 0 0   rgba(22,163,74,0); }
-}
-.live-dot {
-  display: inline-block;
-  width: 8px; height: 8px;
-  border-radius: 50%;
-  background: #16a34a;
-  animation: pulseDot 2s infinite ease-in-out;
-  flex-shrink: 0;
-}
 .active-item:hover { background: #f8fafc !important; }
 .support-btn.supported { background:#dcfce7 !important; color:#15803d !important; border-color:#86efac !important; }
 .support-btn.supported:hover { background:#bbf7d0 !important; }
@@ -331,16 +328,15 @@
     const panel   = document.getElementById('activePanel');
     const chevron = document.getElementById('chevron');
     const btn     = document.getElementById('activeToggle');
-    const isOpen  = btn.getAttribute('aria-expanded') === 'true';
+    const isOpen  = panel.classList.contains('is-open');
 
     if (isOpen) {
-      panel.style.maxHeight = '0';
-      chevron.style.transform = 'rotate(0deg)';
+      panel.classList.remove('is-open');
+      btn.classList.remove('is-open');
       btn.setAttribute('aria-expanded', 'false');
     } else {
-      // Set to a large pixel value so CSS transition animates correctly
-      panel.style.maxHeight = panel.scrollHeight + 2000 + 'px';
-      chevron.style.transform = 'rotate(180deg)';
+      panel.classList.add('is-open');
+      btn.classList.add('is-open');
       btn.setAttribute('aria-expanded', 'true');
     }
   }
