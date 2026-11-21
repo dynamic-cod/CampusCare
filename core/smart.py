@@ -309,6 +309,20 @@ def suggest_categories(text, categories, location="", limit=3):
             elif cat.name == "Campus Security":
                 score += 45
 
+        # --- N. LIFE SAFETY & CAMPUS EMERGENCY (EMERG) ---
+        if re.search(r"\b(snake|saanp|saap|saamp|cobra|viper|python|reptile|reptiles|slithering|slithered|serpent|scorpion|bichhu)\b", normalized):
+            if cat.name == "Snake / Reptile Sighting":
+                score += 80
+        if re.search(r"\b(beehive|bee\s*hive|hornet|hornets|wasp|wasps|bee\s*swarm|bees\s*attack|yellow\s*jacket)\b", normalized):
+            if cat.name == "Beehive / Venomous Pest Hazard":
+                score += 80
+        if re.search(r"\b(fire|flames|flame|blaze|smoke|gas\s*leak|cylinder\s*leak|lpg\s*leak|gas\s*smell|burning\s*smell|explosion)\b", normalized):
+            if cat.name == "Fire / Smoke / Gas Leak":
+                score += 80
+        if re.search(r"\b(dog\s*bite|dogbite|rabid|rabies|monkey|monkeys|wild\s*animal|aggressive\s*animal)\b", normalized):
+            if cat.name == "Aggressive Animal / Campus Safety Threat":
+                score += 80
+
         # Fallback keyword matching
         for kw, weight in SPECIFIC_KEYWORD_WEIGHTS.items():
             if re.search(r"\b" + re.escape(kw) + r"\b", normalized):
