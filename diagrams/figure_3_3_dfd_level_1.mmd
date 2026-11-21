@@ -1,0 +1,91 @@
+%%{ init: { "theme": "base", "themeVariables": { "primaryColor": "#1e293b", "primaryTextColor": "#f8fafc", "primaryBorderColor": "#3b82f6", "lineColor": "#94a3b8", "fontFamily": "Inter, sans-serif" } } }%%
+graph TB
+    %% ─── External Actors ──────────────────────────────────────────────────────
+    Student(["🧑‍🎓 Student"])
+    Technician(["🔧 Technician"])
+    Provost(["🏛️ Provost"])
+    HOD(["📋 HOD"])
+    Registrar(["🎓 Registrar"])
+
+    %% ─── Data Stores ──────────────────────────────────────────────────────────
+    D1[("D1: Complaint Store\ncore_complaint\ncore_complaintstatushistory")]
+    D2[("D2: User & Role Store\nauth_user\ncore_userprofile")]
+    D3[("D3: Campus Topology\ncore_campus\ncore_building\ncore_floor\ncore_room")]
+    D4[("D4: Category & Dept Store\ncore_complaintcategory\ncore_department")]
+    D5[("D5: Media & ML Store\nmedia/ files\ncore/ml_models/\ncore_complaintfeedback\ncore_complaintsupport")]
+
+    %% ─── Processes ────────────────────────────────────────────────────────────
+    P1["1.0\nComplaint\nSubmission &\nValidation\ncomplaints.py"]
+    P2["2.0\nNLP Duplicate\nTriage &\nAI Routing\nai_triage.py\nsmart.py"]
+    P3["3.0\nAutomated\nWorker\nDispatch\ndispatcher.py\nstaff_matcher.py"]
+    P4["4.0\nTechnician\nTask\nExecution\ntasks.py"]
+    P5["5.0\nResolution\nVerification &\nFeedback\ncomplaints.py"]
+    P6["6.0\nAdministrative\nOversight &\nAnalytics\ndashboards.py\nanalytics.py"]
+
+    %% ─── Student → Process 1 ──────────────────────────────────────────────────
+    Student -->|"Title, description, location\nenrollment no., category, photo"| P1
+    P1 -->|"Tracking token\nCC-XXXXXXXX reference"| Student
+    P1 -->|"Validated complaint record\nstatus=OPEN"| D1
+    P1 -->|"Read campus topology\nRoom / building lookup"| D3
+    P1 -->|"Read category &\ndepartment mapping"| D4
+
+    %% ─── Process 1 → Process 2 ────────────────────────────────────────────────
+    P1 -->|"Complaint text\n& location payload"| P2
+    P2 -->|"ML urgency score,\nPriority label,\nSpatial building binding,\nRoom assignment"| D1
+    P2 -->|"Read building alias cache"| D3
+    P2 -->|"Read / write ML model cache"| D5
+
+    %% ─── Process 2 → Process 3 ────────────────────────────────────────────────
+    P2 -->|"Routed complaint with\npriority_score & building"| P3
+    P3 -->|"Assigned technician\nsla_due_at, staff_task_token\nstatus=ASSIGNED"| D1
+    P3 -->|"Read available staff\n& accountability scores"| D2
+    P3 -->|"Read SLA hours\nfrom category"| D4
+
+    %% ─── Provost / HOD manual assignment ─────────────────────────────────────
+    Provost -->|"Manual technician\nassignment action"| P3
+    HOD -->|"Manual technician\nassignment action"| P3
+    Registrar -->|"Manual technician\nassignment action"| P3
+
+    %% ─── Technician flows ─────────────────────────────────────────────────────
+    P3 -->|"UUID task token\n& task details"| Technician
+    Technician -->|"Accept task\nResolution proof\nCompletion signal"| P4
+    P4 -->|"Fetch task via\nstaff_task_token"| D1
+    P4 -->|"Dwell-time check\nproof upload\nstatus=RESOLVED"| D1
+    P4 -->|"Store resolution proof\nmedia file"| D5
+
+    %% ─── Student verification flows ───────────────────────────────────────────
+    Student -->|"Token lookup,\nconfirm / reject\nresolution"| P5
+    P5 -->|"Read complaint status"| D1
+    P5 -->|"Verified / Rejected\nresolution_verification\nFeedback rating"| D1
+    P5 -->|"Purge media files\non CLOSED"| D5
+    P5 -->|"Store feedback rating"| D5
+
+    %% ─── Admin oversight flows ────────────────────────────────────────────────
+    Provost -->|"View hall queue\n& SLA dashboard"| P6
+    HOD -->|"View dept queue\n& SLA dashboard"| P6
+    Registrar -->|"View heatmap\n& audit export"| P6
+    P6 -->|"Query complaints\nby scope"| D1
+    P6 -->|"Query user\naccountability data"| D2
+    P6 -->|"Query topology\nfor heatmap"| D3
+    P6 -->|"SLA reports\nCSV audit log"| Registrar
+    P6 -->|"Accountability scores\nSLA breach alerts"| Provost
+    P6 -->|"Accountability scores\nSLA breach alerts"| HOD
+
+    style D1 fill:#fef3c7,stroke:#d97706,stroke-width:1.5px,color:#0f172a
+    style D2 fill:#ede9fe,stroke:#7c3aed,stroke-width:1.5px,color:#0f172a
+    style D3 fill:#dcfce7,stroke:#16a34a,stroke-width:1.5px,color:#0f172a
+    style D4 fill:#fce7f3,stroke:#db2777,stroke-width:1.5px,color:#0f172a
+    style D5 fill:#e0f2fe,stroke:#0284c7,stroke-width:1.5px,color:#0f172a
+
+    style P1 fill:#1e3a5f,stroke:#3b82f6,stroke-width:1.5px,color:#f8fafc
+    style P2 fill:#14532d,stroke:#22c55e,stroke-width:1.5px,color:#f8fafc
+    style P3 fill:#451a03,stroke:#f97316,stroke-width:1.5px,color:#f8fafc
+    style P4 fill:#3b0764,stroke:#a855f7,stroke-width:1.5px,color:#f8fafc
+    style P5 fill:#1a1a2e,stroke:#6366f1,stroke-width:1.5px,color:#f8fafc
+    style P6 fill:#1c1917,stroke:#78716c,stroke-width:1.5px,color:#f8fafc
+
+    style Student fill:#dbeafe,stroke:#2563eb,stroke-width:1.5px,color:#0f172a
+    style Technician fill:#fef9c3,stroke:#ca8a04,stroke-width:1.5px,color:#0f172a
+    style Provost fill:#f3e8ff,stroke:#9333ea,stroke-width:1.5px,color:#0f172a
+    style HOD fill:#fce7f3,stroke:#db2777,stroke-width:1.5px,color:#0f172a
+    style Registrar fill:#dcfce7,stroke:#16a34a,stroke-width:1.5px,color:#0f172a

@@ -1,0 +1,102 @@
+%%{ init: { "theme": "base", "themeVariables": { "primaryColor": "#1e293b", "primaryTextColor": "#f8fafc", "primaryBorderColor": "#3b82f6", "lineColor": "#94a3b8", "fontFamily": "Inter, sans-serif" } } }%%
+graph TB
+    subgraph INTERNET["🌐 AMU Campus Network — Internet Perimeter"]
+        subgraph CLIENTS["Presentation Tier — Client Devices"]
+            C1["📱 Anonymous Student\nMobile Browser\nNo account required\nToken-based tracking\nQR code complaint filing"]
+            C2["🔧 Zero-Login Technician\nMobile Browser\nDirect UUID task URL\nPhotographic proof upload"]
+            C3["💻 Authenticated Admin Console\nDesktop / Laptop Browser\nSession cookie auth\nProvost · HOD · Registrar · Admin"]
+        end
+    end
+
+    subgraph SERVER["Application Server — Django Monolith (Python 3.10+, Gunicorn)"]
+        subgraph SECURITY["🛡️ Security & Gateway Tier — Middleware Stack (settings.MIDDLEWARE)"]
+            direction LR
+            M1["SecurityMiddleware\nHSTS · X-Frame-Options\nContent-Type-Options"]
+            M2["GZipMiddleware\nWhiteNoise StaticFiles\nCompressed responses"]
+            M3["CsrfViewMiddleware\nAll POST/PUT/DELETE\nToken validation"]
+            M4["SessionMiddleware\nHttpOnly · Secure cookies\nAnon session tracking"]
+            M5["AuthenticationMiddleware\nUser object injection\nSession-bound identity"]
+            M6["RateLimitMiddleware\ncomplaint_create: throttled\nAPI endpoints: throttled"]
+        end
+
+        subgraph DJANGO_MVT["Django MVT Logic & AI Engines Tier — core/ Application Package"]
+            subgraph VIEWS["View Layer — core/views/ package"]
+                V1["public.py\nHome · Directory\nUser Registration\nPublic Board"]
+                V2["complaints.py\nSubmission · Tracking\nFeedback · Reopen\nConfirm Resolution"]
+                V3["tasks.py\nTechnician Task View\nDwell-time enforcement\nProof upload handler"]
+                V4["dashboards.py\nRole-scoped dashboards\nAnalytics · Heatmap\nCSV export"]
+                V5["api.py\nJSON REST endpoints\nCategory suggest\nUrgency · Rooms"]
+            end
+
+            subgraph RBAC["RBAC & Permission Layer"]
+                P1["permissions.py\ndecorators.py\n@role_required()\nBuilding / dept scope\nIDOR prevention"]
+            end
+
+            subgraph AI_ENGINE["Intelligent Services Layer"]
+                I1["ai_triage.py\nSpatial origin detection\n80+ building alias dict\nFloor + Room binding\nDept inference"]
+                I2["smart.py\nML urgency classifier\nTF-IDF pipeline\nJoblib model cache\nRule-based fallback"]
+                I3["dispatcher.py\nstaff_matcher.py\nLeast-load technician\nSLA calculation\nAuto-assignment"]
+                I4["accountability.py\nScore decay / recovery\nSLA breach detection\nStaff performance"]
+            end
+
+            subgraph FORMS["Form & Model Layer"]
+                F1["forms.py\nComplaintForm\nEnrollment validation\nQuota check (cap ≤ 3)\nCSRF + file validation"]
+                F2["models.py\nORM Model Definitions\nBusiness rule validators\nSignal hooks\nAudit timestamps"]
+            end
+        end
+    end
+
+    subgraph STORAGE["Normalised 3NF Storage Tier"]
+        DB["🗄️ SQLite Database\ndb.sqlite3\n11 core tables\n4 composite indexes\nUQ constraints\n3NF normalised schema"]
+        MEDIA["📁 Local Media Store\nmedia/complaint_evidence/\nmedia/resolution_proofs/\nmedia/reopen_proofs/\nAuto-purged on closure"]
+        ML_CACHE["🧮 ML Model Cache\ncore/ml_models/\nurgency_classifier.joblib\nmodel_metadata.json\nIn-memory _BUILDINGS_CACHE"]
+        STATIC["📦 Static Assets\nstaticfiles/\nWhitenoise-served\nHash-versioned filenames"]
+    end
+
+    C1 -->|"HTTP/HTTPS Anonymous"| M1
+    C2 -->|"HTTP/HTTPS UUID URL"| M1
+    C3 -->|"HTTPS Session cookie"| M1
+
+    M1 --> M2 --> M3 --> M4 --> M5 --> M6
+
+    M6 --> V1
+    M6 --> V2
+    M6 --> V3
+    M6 --> V4
+    M6 --> V5
+
+    V1 --> P1
+    V2 --> P1
+    V3 --> P1
+    V4 --> P1
+    V5 --> P1
+
+    V2 --> F1 --> F2
+    V2 --> I1
+    V2 --> I2
+    V3 --> I3
+    V4 --> I3
+    V4 --> I4
+
+    P1 --> DB
+    F2 --> DB
+    I1 --> DB
+    I3 --> DB
+    I4 --> DB
+
+    V2 --> MEDIA
+    V3 --> MEDIA
+    I2 --> ML_CACHE
+    V1 --> STATIC
+    V4 --> STATIC
+
+    style INTERNET fill:#f8fafc,stroke:#64748b,stroke-width:2px,color:#0f172a
+    style CLIENTS fill:#eff6ff,stroke:#2563eb,stroke-width:1.5px,color:#0f172a
+    style SERVER fill:#f0fdf4,stroke:#16a34a,stroke-width:2px,color:#0f172a
+    style SECURITY fill:#fef3c7,stroke:#d97706,stroke-width:1.5px,color:#0f172a
+    style DJANGO_MVT fill:#f5f3ff,stroke:#7c3aed,stroke-width:1.5px,color:#0f172a
+    style VIEWS fill:#ede9fe,stroke:#7c3aed,stroke-width:1px,color:#0f172a
+    style RBAC fill:#e0f2fe,stroke:#0284c7,stroke-width:1px,color:#0f172a
+    style AI_ENGINE fill:#ecfdf5,stroke:#059669,stroke-width:1px,color:#0f172a
+    style FORMS fill:#fdf4ff,stroke:#a855f7,stroke-width:1px,color:#0f172a
+    style STORAGE fill:#fdf2f8,stroke:#db2777,stroke-width:2px,color:#0f172a

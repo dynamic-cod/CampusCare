@@ -1,0 +1,68 @@
+%%{ init: { "theme": "base", "themeVariables": { "primaryColor": "#1e293b", "primaryTextColor": "#f8fafc", "primaryBorderColor": "#3b82f6", "lineColor": "#94a3b8", "fontFamily": "Inter, sans-serif" } } }%%
+stateDiagram-v2
+    [*] --> OPEN : Student submits complaint\n[enrollment valid, active cap < 3]\nAI triage runs on save()
+
+    OPEN --> ASSIGNED : Provost / HOD / Registrar assigns technician\n[staff_task_token generated, sla_due_at set]
+    OPEN --> OPEN : Duplicate complaint filed\n[duplicate_of FK set — shown as reference]
+
+    ASSIGNED --> IN_PROGRESS : Technician accepts task via UUID URL\n[in_progress_at = now()]
+    ASSIGNED --> OPEN : Assignment revoked / reassigned\n[new sla_due_at calculated]
+
+    IN_PROGRESS --> RESOLVED : Technician uploads resolution_proof\n[dwell_time >= 5 min server-side enforced]\n[resolved_at = now()]
+
+    RESOLVED --> CLOSED : Student confirms resolution\nOR auto-close after verification window\n[resolution_verification = VERIFIED]
+    RESOLVED --> REOPENED : Student rejects resolution\n[reopen_proof required + reopen_reason]\n[reopen_count incremented]
+
+    REOPENED --> ASSIGNED : Provost / HOD / Registrar re-assigns\n[sla_due_at recalculated from now()]
+
+    CLOSED --> [*] : Terminal state\n[purge_attached_media() called]\n[evidence, proof, reopen_proof deleted from disk]
+
+    note right of OPEN
+        AI Triage (ai_triage.py):
+        - Spatial origin detection
+        - 80+ building alias matching
+        - Floor & Room binding
+        - ML urgency classification
+        - priority_score set (0-100)
+    end note
+
+    note right of ASSIGNED
+        Dispatcher (dispatcher.py):
+        - Least-load technician selection
+        - Accountability score weighting
+        - SLA hours from category
+        - staff_task_token UUID URL generated
+    end note
+
+    note right of IN_PROGRESS
+        Anti-Fraud Guards (tasks.py):
+        - Dwell-time >= 5 min enforced
+        - resolution_proof mandatory
+        - UUID token single-use
+        - Server-side timestamp delta
+    end note
+
+    note right of RESOLVED
+        Resolution Verification:
+        - resolution_verification = PENDING
+        - Student action required
+        - Auto-close timer (if inactive)
+        - ComplaintFeedback available after VERIFIED
+    end note
+
+    note right of CLOSED
+        Media Purge (purge_attached_media()):
+        - evidence field cleared
+        - resolution_proof deleted
+        - reopen_proof deleted
+        - Files removed from media/ disk
+        - accountability.py: score recovery
+    end note
+
+    note right of REOPENED
+        Re-open Guard:
+        - reopen_proof image required
+        - reopen_reason text required
+        - Triggers fresh dispatch cycle
+        - ComplaintStatusHistory entry added
+    end note

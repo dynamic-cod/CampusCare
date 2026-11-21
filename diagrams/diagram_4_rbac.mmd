@@ -1,0 +1,76 @@
+%%{ init: { "theme": "base", "themeVariables": { "primaryColor": "#1e293b", "primaryTextColor": "#f8fafc", "primaryBorderColor": "#3b82f6", "lineColor": "#94a3b8", "fontFamily": "Inter, sans-serif" } } }%%
+graph TB
+    subgraph CLIENT["Client Tier — Browser Requests"]
+        A1["🧑‍🎓 Student\n(Anonymous / Token-Auth)"]
+        A2["🔧 Maintenance Technician\n(Zero-Login UUID Worker)"]
+        A3["🏛️ Hall Provost / Caretaker\n(Building-Scoped Admin)"]
+        A4["📋 Maintenance HOD\n(Trade-Scoped Admin)"]
+        A5["🎓 Central Registrar\n(Global SuperAdmin Console)"]
+        A6["⚙️ System Administrator\n(Django SuperUser)"]
+    end
+
+    subgraph ROUTING["Permission & Decorator Layer — core/decorators.py + core/permissions.py"]
+        R1["@login_not_required\nPublic complaint routes\nNo session required"]
+        R2["@uuid_token_required\nHMAC-validated UUID\nSingle-use task token"]
+        R3["@role_required(PROVOST)\n+ building_scope_check()\nManaged building enforced"]
+        R4["@role_required(HOD)\n+ department_scope_check()\nManaged department enforced"]
+        R5["@role_required(REGISTRAR)\nNo scope restriction\nGlobal read/write"]
+        R6["@superuser_required\nDjango is_superuser=True\nFull system access"]
+    end
+
+    subgraph VIEWS["View Layer — core/views/ package"]
+        V1["public.py\nhome(), campus_directory()\ncomplaint_create()\ntracking_view()\nfeedback_view()"]
+        V2["tasks.py\ntechnician_task_view()\naccept_task()\ncomplete_task()"]
+        V3["dashboards.py\nprovost_dashboard()\nassign_complaint()"]
+        V4["dashboards.py\nhod_dashboard()\nassign_complaint()"]
+        V5["dashboards.py\nregistrar_dashboard()\nanalytics_dashboard()\ncomplaint_report_csv()"]
+        V6["dashboards.py + admin.py\nAll management views\nUser / role management\nSystem config"]
+    end
+
+    subgraph SCOPE["ORM Scope Filter Layer — IDOR Prevention"]
+        D1["Complaint.objects.filter(\n  room__floor__building=profile.managed_building\n)\n→ Hall-only complaints"]
+        D2["Complaint.objects.filter(\n  category__department=profile.managed_department\n)\n→ Trade-only complaints"]
+        D3["Complaint.objects.all()\nNo filter — global scope\nAll campus complaints"]
+        D4["ALL models unrestricted\nUser management\nAudit override"]
+    end
+
+    subgraph DB["Database — SQLite / core tables"]
+        DB1[("core_complaint\ncore_complaintstatushistory\ncore_userprofile\ncore_building\ncore_department")]
+    end
+
+    %% ─── Flows ────────────────────────────────────────────────────────────────
+    A1 --> R1 --> V1
+    A2 --> R2 --> V2
+    A3 --> R3 --> V3 --> D1
+    A4 --> R4 --> V4 --> D2
+    A5 --> R5 --> V5 --> D3
+    A6 --> R6 --> V6 --> D4
+
+    D1 --> DB1
+    D2 --> DB1
+    D3 --> DB1
+    D4 --> DB1
+
+    %% ─── IDOR Prevention Annotations ─────────────────────────────────────────
+    V1 -.->|"Unauthenticated access\nToken-scoped tracking only"| D3
+    V2 -.->|"UUID validates ONE complaint\nNo cross-ticket access"| DB1
+
+    style CLIENT fill:#eff6ff,stroke:#2563eb,stroke-width:2px,color:#0f172a
+    style ROUTING fill:#f0fdf4,stroke:#16a34a,stroke-width:2px,color:#0f172a
+    style VIEWS fill:#f5f3ff,stroke:#7c3aed,stroke-width:2px,color:#0f172a
+    style SCOPE fill:#fffbeb,stroke:#d97706,stroke-width:2px,color:#0f172a
+    style DB fill:#fdf2f8,stroke:#db2777,stroke-width:2px,color:#0f172a
+
+    style A1 fill:#dbeafe,stroke:#2563eb,stroke-width:1.5px,color:#0f172a
+    style A2 fill:#fef9c3,stroke:#ca8a04,stroke-width:1.5px,color:#0f172a
+    style A3 fill:#f3e8ff,stroke:#9333ea,stroke-width:1.5px,color:#0f172a
+    style A4 fill:#fce7f3,stroke:#db2777,stroke-width:1.5px,color:#0f172a
+    style A5 fill:#dcfce7,stroke:#16a34a,stroke-width:1.5px,color:#0f172a
+    style A6 fill:#f1f5f9,stroke:#475569,stroke-width:1.5px,color:#0f172a
+
+    style R1 fill:#1e3a5f,stroke:#3b82f6,color:#f8fafc
+    style R2 fill:#451a03,stroke:#f97316,color:#f8fafc
+    style R3 fill:#3b0764,stroke:#a855f7,color:#f8fafc
+    style R4 fill:#500724,stroke:#db2777,color:#f8fafc
+    style R5 fill:#14532d,stroke:#22c55e,color:#f8fafc
+    style R6 fill:#1c1917,stroke:#78716c,color:#f8fafc

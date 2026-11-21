@@ -1,0 +1,88 @@
+graph TB
+    subgraph ACTORS["CampusCare Primary User Classes & Actors (SRS Section 2.2)"]
+        direction LR
+        Student["🧑‍🎓 Anonymous Student<br/>(Campus Citizen)"]
+        Tech["🔧 Field Technician<br/>(Zero-Login Staff)"]
+        Provost["🏛️ Hall Provost / Caretaker<br/>(Building Scoped)"]
+        HOD["📋 Department Head (HOD)<br/>(Department Scoped)"]
+        Registrar["🎓 Central Registrar<br/>(University-Wide Access)"]
+        Admin["⚙️ System Administrator<br/>(Django SuperUser)"]
+    end
+
+    subgraph STUDENT_SERVICES["Student & Public Services Portal"]
+        direction LR
+        UC1(["Lodge Maintenance Complaint"])
+        UC2(["Track Ticket via Hex32 Token"])
+        UC3(["Confirm Resolution (Purge Media)"])
+        UC4(["Reopen Ticket with Proof"])
+        UC5(["Cast Community Upvote"])
+        UC6(["Submit Feedback & Rating"])
+        UC7(["Browse Public Board"])
+    end
+
+    subgraph INCLUDED_GUARDS["System Validation & AI Triage Sub-Processes"]
+        direction LR
+        UC_VAL(["Validate Quota & Enrollment<br/>(Max 3 Active Tickets)"])
+        UC_AI(["ML Urgency & Spatial Triage<br/>(Building Alias & Room Binding)"])
+        UC_QR(["Room Auto-fill via QR Code"])
+        UC_MATCH(["Auto Least-Load Staff Matcher"])
+    end
+
+    subgraph TECH_OPS["Technician Operations (Zero-Login Task Pipeline)"]
+        direction LR
+        UC8(["Access Task via Direct UUID URL"])
+        UC9(["Accept Task (Set IN_PROGRESS)"])
+        UC10(["Upload Resolution Proof & Complete"])
+    end
+
+    subgraph GOVERNANCE["Institutional Administration & University Oversight"]
+        direction LR
+        UC11(["Manage Hall Queue (Provost)"])
+        UC14(["Manage Dept Queue (HOD)"])
+        UC12(["Dispatch & Assign Technician"])
+        UC13(["Monitor SLAs & Accountability Scores"])
+        UC16(["Cross-Campus Spatial Heatmap"])
+        UC17(["Export University Audit Logs (CSV)"])
+        UC19(["Manage Users, Roles & Topology"])
+    end
+
+    Student --> UC1
+    Student --> UC2
+    Student --> UC3
+    Student --> UC4
+    Student --> UC5
+    Student --> UC6
+    Student --> UC7
+
+    UC1 -.->|<<include>>| UC_VAL
+    UC1 -.->|<<include>>| UC_AI
+    
+
+    Tech --> UC8
+    Tech --> UC9
+    Tech --> UC10
+    UC10 -.->|<<include>>| UC_DWELL
+
+    Provost --> UC11
+    Provost --> UC12
+    Provost --> UC13
+
+    HOD --> UC14
+    HOD --> UC12
+    HOD --> UC13
+
+    Registrar --> UC16
+    Registrar --> UC17
+    Registrar --> UC12
+
+    Admin --> UC19
+    Admin --> UC16
+    Admin --> UC17
+
+    UC12 -.->|<<include>>| UC_MATCH
+
+    style ACTORS fill:#1e293b,color:#f8fafc,stroke:#3b82f6
+    style STUDENT_SERVICES fill:#064e3b,color:#f8fafc,stroke:#10b981
+    style INCLUDED_GUARDS fill:#1e1b4b,color:#f8fafc,stroke:#6366f1
+    style TECH_OPS fill:#78350f,color:#f8fafc,stroke:#f59e0b
+    style GOVERNANCE fill:#311042,color:#f8fafc,stroke:#a855f7

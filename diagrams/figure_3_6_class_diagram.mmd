@@ -1,0 +1,168 @@
+%%{ init: { "theme": "base", "themeVariables": { "primaryColor": "#1e293b", "primaryTextColor": "#f8fafc", "primaryBorderColor": "#3b82f6", "lineColor": "#94a3b8", "fontFamily": "Inter, sans-serif" } } }%%
+classDiagram
+    class TimestampedModel {
+        <<abstract>>
+        +DateTimeField created_at
+        +DateTimeField updated_at
+    }
+
+    class Campus {
+        +BigIntegerField id PK
+        +CharField name UK
+        +CharField code UK
+        +TextField address
+        +BooleanField is_active
+        +__str__() str
+    }
+
+    class Building {
+        +BigIntegerField id PK
+        +CharField name
+        +CharField code
+        +CharField short_name
+        +CharField gender
+        +CharField building_type
+        +CharField wing_detail
+        +CharField capacity_detail
+        +DecimalField latitude
+        +DecimalField longitude
+        +BooleanField is_active
+        +__str__() str
+    }
+
+    class Floor {
+        +BigIntegerField id PK
+        +IntegerField number
+        +CharField label
+        +__str__() str
+    }
+
+    class Room {
+        +BigIntegerField id PK
+        +CharField number
+        +CharField name
+        +CharField qr_code_token UK
+        +BooleanField is_active
+        +__str__() str
+    }
+
+    class Department {
+        +BigIntegerField id PK
+        +CharField name UK
+        +CharField code UK
+        +EmailField email
+        +CharField phone
+        +BooleanField is_active
+        +__str__() str
+    }
+
+    class ComplaintCategory {
+        +BigIntegerField id PK
+        +CharField name UK
+        +TextField description
+        +PositiveIntegerField default_sla_hours
+        +BooleanField is_active
+        +__str__() str
+    }
+
+    class UserProfile {
+        +BigIntegerField id PK
+        +CharField role
+        +IntegerField accountability_score
+        +CharField phone
+        +CharField hall_location
+        +__str__() str
+    }
+
+    class Complaint {
+        +BigIntegerField id PK
+        +CharField reference UK
+        +CharField tracking_token UK
+        +UUIDField staff_task_token UK
+        +CharField reporter_name
+        +CharField reporter_enrollment_number
+        +CharField title
+        +TextField description
+        +CharField priority
+        +PositiveSmallIntegerField priority_score
+        +CharField priority_reason
+        +CharField status
+        +CharField location_description
+        +BooleanField category_detected_automatically
+        +PositiveSmallIntegerField category_detection_confidence
+        +ImageField evidence
+        +ImageField resolution_proof
+        +ImageField reopen_proof
+        +TextField resolution_note
+        +TextField reopen_reason
+        +PositiveSmallIntegerField reopen_count
+        +BooleanField is_public
+        +CharField resolution_verification
+        +DateTimeField assigned_at
+        +DateTimeField in_progress_at
+        +DateTimeField resolved_at
+        +DateTimeField closed_at
+        +DateTimeField reopened_at
+        +DateTimeField sla_due_at
+        +DateTimeField escalated_at
+        +PositiveSmallIntegerField escalation_level
+        +DateTimeField resolution_verified_at
+        +clean() None
+        +save() None
+        +purge_attached_media() None
+        +is_sla_breached bool
+        +reporter_display str
+    }
+
+    class ComplaintStatusHistory {
+        +BigIntegerField id PK
+        +CharField status
+        +TextField note
+        +DateTimeField created_at
+        +__str__() str
+    }
+
+    class ComplaintSupport {
+        +BigIntegerField id PK
+        +CharField session_key
+        +DateTimeField created_at
+        +__str__() str
+    }
+
+    class ComplaintFeedback {
+        +BigIntegerField id PK
+        +PositiveSmallIntegerField rating
+        +TextField comment
+        +DateTimeField created_at
+        +clean() None
+        +__str__() str
+    }
+
+    %% ─── Inheritance ──────────────────────────────────────────────────────────
+    TimestampedModel <|-- Campus
+    TimestampedModel <|-- Building
+    TimestampedModel <|-- Floor
+    TimestampedModel <|-- Room
+    TimestampedModel <|-- Department
+    TimestampedModel <|-- ComplaintCategory
+    TimestampedModel <|-- UserProfile
+    TimestampedModel <|-- Complaint
+
+    %% ─── Associations ─────────────────────────────────────────────────────────
+    Campus "1" --> "0..*" Building : has
+    Building "0..1" --> "0..*" Building : parent (hostel blocks)
+    Building "1" --> "0..*" Floor : contains
+    Building "0..1" --> "0..*" Department : managed by
+    Floor "1" --> "0..*" Room : contains
+    Department "1" --> "0..*" ComplaintCategory : owns
+    Department "1" --> "0..*" UserProfile : employs
+
+    UserProfile "1" --> "0..1" Building : managed_building
+    UserProfile "1" --> "0..1" Department : managed_department
+
+    Complaint "0..*" --> "0..1" Room : located in
+    Complaint "0..*" --> "1" ComplaintCategory : categorised as
+    Complaint "0..*" --> "0..1" Complaint : duplicate_of
+    Complaint "1" --> "0..*" ComplaintStatusHistory : status audit trail
+    Complaint "1" --> "0..*" ComplaintSupport : community votes
+    Complaint "1" --> "0..1" ComplaintFeedback : satisfaction rating

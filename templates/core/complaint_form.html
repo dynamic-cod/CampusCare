@@ -1,280 +1,301 @@
 {% extends "base.html" %}
-{% block title %}Report an issue | CampusCare{% endblock %}
+{% block title %}Report a Maintenance Issue | CampusCare{% endblock %}
+
+{% block extra_head %}
+<script src="https://cdn.tailwindcss.com"></script>
+{% endblock %}
+
 {% block content %}
-<section class="card" style="max-width: 820px; margin: 0 auto; border-top: 5px solid var(--amu-emerald-700);">
-  <div style="margin-bottom: 22px;">
-    <div
-      style="font-size: 11px; font-weight: 700; color: var(--amu-emerald-800); text-transform: uppercase; letter-spacing: 0.5px;">
-      🏛️ ALIGARH MUSLIM UNIVERSITY · FACILITY DISPATCH HELPDESK
+<div class="max-w-2xl mx-auto px-4 py-8 sm:py-12">
+
+  {# Clean Card Surface #}
+  <div class="bg-white border border-slate-200 rounded-xl p-6 sm:p-8 shadow-sm">
+
+    {# Crisp Header #}
+    <div class="mb-8">
+      <h1 class="text-2xl font-bold text-slate-900 tracking-tight">Report a Maintenance Issue</h1>
+      <p class="text-sm text-slate-500 mt-1">Submit a facility maintenance request for your hall, faculty, or department.</p>
     </div>
-    <h1 style="margin: 4px 0 6px 0; font-size: 1.65rem; color: var(--amu-navy-950);">Report a Maintenance Issue</h1>
-    <p style="margin: 0; color: var(--amu-text-muted); font-size: 0.95rem;">
-      No account or password needed. Enter your university enrollment number, location, and clear issue description.
-      Save your private zero-login receipt after submission.
-    </p>
-  </div>
-  <form method="post" enctype="multipart/form-data" id="complaint-form" novalidate>
-    {% csrf_token %}
 
     {# Real-Time Validation Alert Banner #}
     <div id="enrollment-error-banner"
-      style="display: none; margin-bottom: 20px; padding: 14px 16px; background-color: #fef2f2; border: 1px solid #fecaca; border-left: 4px solid #ef4444; border-radius: 6px; color: #991b1b; font-size: 14px; font-weight: 500;">
+      class="hidden mb-6 p-3.5 bg-red-50 border border-red-200 rounded-lg text-xs font-medium text-red-700">
     </div>
 
     {% if form.non_field_errors %}
-    <div
-      style="margin-bottom: 20px; padding: 14px 16px; background-color: #fef2f2; border: 1px solid #fecaca; border-left: 4px solid #ef4444; border-radius: 6px; color: #991b1b; font-size: 14px; font-weight: 500;">
+    <div class="mb-6 p-3.5 bg-red-50 border border-red-200 rounded-lg text-xs font-medium text-red-700">
       {{ form.non_field_errors }}
     </div>
     {% endif %}
 
-    <div style="margin-bottom: 20px;">
-      <label for="{{ form.reporter_name.id_for_label }}"
-        style="font-weight: 600; display: block; margin-bottom: 6px; color: #1e293b;">
-        {{ form.reporter_name.label }} <span style="color: #dc2626;">*</span>
-      </label>
-      {{ form.reporter_name }}
-      {% if form.reporter_name.errors %}
-      <div style="color: #dc2626; font-size: 13px; margin-top: 4px; font-weight: 500;" id="reporter_name_server_error">
-        {{ form.reporter_name.errors.0 }}</div>
-      {% endif %}
-    </div>
+    <form method="post" enctype="multipart/form-data" id="complaint-form" novalidate class="space-y-6">
+      {% csrf_token %}
 
-    <div style="margin-bottom: 20px;">
-      <label for="{{ form.reporter_enrollment_number.id_for_label }}"
-        style="font-weight: 600; display: block; margin-bottom: 6px; color: #1e293b;">
-        {{ form.reporter_enrollment_number.label }} <span style="color: #dc2626;">*</span>
-      </label>
-      {{ form.reporter_enrollment_number }}
-      {% if form.reporter_enrollment_number.help_text %}
-      <small style="display: block; color: #64748b; margin-top: 4px;">{{ form.reporter_enrollment_number.help_text
-        }}</small>
-      {% endif %}
-      {% if form.reporter_enrollment_number.errors %}
-      <div style="color: #dc2626; font-size: 13px; margin-top: 4px; font-weight: 500;"
-        id="reporter_enrollment_server_error">{{ form.reporter_enrollment_number.errors.0 }}</div>
-      {% endif %}
-    </div>
+      {# ── Section 1: Location ── #}
+      <div>
+        <div class="text-xs font-semibold uppercase tracking-wider text-slate-400 mb-4">Location</div>
 
-    <div id="student-remember-card"
-      style="margin-bottom: 22px; display: flex; align-items: center; justify-content: space-between; flex-wrap: wrap; gap: 8px; background: #f8fafc; padding: 10px 14px; border-radius: 6px; border: 1px solid #e2e8f0;">
-      <label
-        style="font-size: 13px; color: #334155; display: inline-flex; align-items: center; gap: 8px; cursor: pointer; margin: 0; font-weight: 500;">
-        <input type="checkbox" id="remember-student-details" checked
-          style="accent-color: #2563eb; width: 16px; height: 16px; cursor: pointer;">
-        <span>Remember my Name &amp; Enrollment on this device</span>
-      </label>
-      <span id="autofill-badge"
-        style="display: none; font-size: 12px; color: #059669; font-weight: 600; align-items: center; gap: 4px;">
-        ✓ Auto-filled
-        <button type="button" id="clear-saved-student-btn"
-          style="background: none; border: none; color: #dc2626; font-size: 12px; cursor: pointer; text-decoration: underline; margin-left: 6px; padding: 0;">
-          Clear saved
+        <div class="space-y-4">
+          {# Academic Department Selector #}
+          <div>
+            <label for="faculty_dept_select" class="block text-xs font-medium text-slate-600 mb-1">Academic Faculty or Department (Optional)</label>
+            <select id="faculty_dept_select"
+              class="w-full px-3.5 py-2.5 text-sm bg-white border border-slate-300 rounded-lg text-slate-800 focus:outline-none focus:ring-2 focus:ring-slate-900/10 focus:border-slate-900 transition-colors">
+              <option value="">Select Faculty or Department</option>
+              {% for faculty in active_faculties %}
+              <optgroup label="{{ faculty.name }} ({{ faculty.code }})">
+                <option value="{{ faculty.name }}" data-type="faculty" data-faculty="{{ faculty.code }}">
+                  {{ faculty.name }}
+                </option>
+                {% for dept in faculty.departments %}
+                <option value="Department of {{ dept.name }} · {{ faculty.name }}" data-type="department" data-faculty="{{ faculty.code }}" data-dept="{{ dept.code }}">
+                  Department of {{ dept.name }}
+                </option>
+                {% endfor %}
+              </optgroup>
+              {% endfor %}
+            </select>
+          </div>
+
+          {# Residential Hall Selector #}
+          <div>
+            <label for="hall_hostel_select" class="block text-xs font-medium text-slate-600 mb-1">Residential Hall or Hostel (Optional)</label>
+            <select id="hall_hostel_select"
+              class="w-full px-3.5 py-2.5 text-sm bg-white border border-slate-300 rounded-lg text-slate-800 focus:outline-none focus:ring-2 focus:ring-slate-900/10 focus:border-slate-900 transition-colors">
+              <option value="">Select Hall or Hostel Block</option>
+              {% for hall in active_halls %}
+              <optgroup label="{{ hall.name }} ({{ hall.code }})">
+                <option value="{{ hall.name }}" data-code="{{ hall.code }}">{{ hall.name }}</option>
+                {% for hostel in hall.hostels.all %}
+                {% if hostel.is_active %}
+                <option value="{{ hall.name }} · {{ hostel.short_name }}" data-code="{{ hostel.code }}"
+                  data-hall="{{ hall.code }}" data-hostel="{{ hostel.short_name }}">
+                  {{ hostel.short_name }} ({{ hostel.wing_detail|default:"Block" }})
+                </option>
+                {% endif %}
+                {% endfor %}
+              </optgroup>
+              {% endfor %}
+            </select>
+          </div>
+
+          {# Location & Room Side-by-Side on Desktop #}
+          <div class="grid grid-cols-1 sm:grid-cols-2 gap-4">
+            <div>
+              <label for="{{ form.location_description.id_for_label }}" class="block text-sm font-medium text-slate-700 mb-1.5">
+                Location Details <span class="text-red-500">*</span>
+              </label>
+              {{ form.location_description }}
+              {% if form.location_description.errors %}
+              <div class="text-xs text-red-600 mt-1">{{ form.location_description.errors.0 }}</div>
+              {% endif %}
+            </div>
+
+            <div>
+              <label for="id_room_number" class="block text-sm font-medium text-slate-700 mb-1.5">
+                {{ form.room_number.label }}
+              </label>
+              {{ form.room_number }}
+              <div id="room-lookup-feedback" class="hidden mt-1 text-xs font-medium"></div>
+              {% if form.room_number.errors %}
+              <div class="text-xs text-red-600 mt-1">{{ form.room_number.errors.0 }}</div>
+              {% endif %}
+            </div>
+          </div>
+        </div>
+      </div>
+
+      {# ── Section 2: Issue Details ── #}
+      <div class="border-t border-slate-100 pt-6">
+        <div class="text-xs font-semibold uppercase tracking-wider text-slate-400 mb-4">Issue Details</div>
+
+        <div class="space-y-4">
+          <div>
+            <label for="{{ form.category.id_for_label }}" class="block text-sm font-medium text-slate-700 mb-1.5">
+              Category <span class="text-red-500">*</span>
+            </label>
+            {{ form.category }}
+            {% if form.category.errors %}
+            <div class="text-xs text-red-600 mt-1">{{ form.category.errors.0 }}</div>
+            {% endif %}
+          </div>
+
+          {# Subtle Inline AI Category Suggestions #}
+          <div id="suggestions-container" class="hidden bg-slate-50 border border-slate-200/80 rounded-lg p-3">
+            <span class="text-xs font-medium text-slate-500">Suggested categories:</span>
+            <div id="suggestions-list" class="flex flex-wrap gap-2 mt-1.5"></div>
+          </div>
+
+          <div>
+            <label for="{{ form.title.id_for_label }}" class="block text-sm font-medium text-slate-700 mb-1.5">
+              {{ form.title.label }} <span class="text-red-500">*</span>
+            </label>
+            {{ form.title }}
+            {% if form.title.errors %}
+            <div class="text-xs text-red-600 mt-1">{{ form.title.errors.0 }}</div>
+            {% endif %}
+          </div>
+
+          <div>
+            <label for="{{ form.description.id_for_label }}" class="block text-sm font-medium text-slate-700 mb-1.5">
+              {{ form.description.label }} <span class="text-red-500">*</span>
+            </label>
+            {{ form.description }}
+            {% if form.description.errors %}
+            <div class="text-xs text-red-600 mt-1">{{ form.description.errors.0 }}</div>
+            {% endif %}
+          </div>
+
+          {# Understated Inline AI Assessment Card #}
+          <div id="ai-assessment-card" class="bg-slate-50 border border-slate-200/80 rounded-lg p-3.5 space-y-2 text-xs">
+            <div class="flex flex-wrap items-center justify-between gap-2 text-slate-600">
+              <div>
+                <span class="text-slate-400">Assessed Priority:</span>
+                <span id="ai-priority-badge" class="font-semibold text-slate-800 ml-1">Normal</span>
+              </div>
+              <div>
+                <span class="text-slate-400">Resolution Target:</span>
+                <span id="ai-sla-badge" class="font-semibold text-slate-800 ml-1">24h (Next business day)</span>
+              </div>
+            </div>
+            <div id="ai-staff-preview" class="border-t border-slate-200/60 pt-2 text-slate-600">
+              <span id="ai-staff-details" class="text-slate-500">Technician will be auto-assigned upon category and location selection.</span>
+            </div>
+          </div>
+        </div>
+      </div>
+
+      {# ── Section 3: Reporter & Attachment ── #}
+      <div class="border-t border-slate-100 pt-6">
+        <div class="text-xs font-semibold uppercase tracking-wider text-slate-400 mb-4">Reporter &amp; Verification</div>
+
+        <div class="space-y-4">
+          {# Name & Enrollment Side-by-Side on Desktop #}
+          <div class="grid grid-cols-1 sm:grid-cols-2 gap-4">
+            <div>
+              <label for="{{ form.reporter_name.id_for_label }}" class="block text-sm font-medium text-slate-700 mb-1.5">
+                {{ form.reporter_name.label }} <span class="text-red-500">*</span>
+              </label>
+              {{ form.reporter_name }}
+              {% if form.reporter_name.errors %}
+              <div class="text-xs text-red-600 mt-1" id="reporter_name_server_error">{{ form.reporter_name.errors.0 }}</div>
+              {% endif %}
+            </div>
+
+            <div>
+              <label for="{{ form.reporter_enrollment_number.id_for_label }}" class="block text-sm font-medium text-slate-700 mb-1.5">
+                {{ form.reporter_enrollment_number.label }} <span class="text-red-500">*</span>
+              </label>
+              {{ form.reporter_enrollment_number }}
+              {% if form.reporter_enrollment_number.errors %}
+              <div class="text-xs text-red-600 mt-1" id="reporter_enrollment_server_error">{{ form.reporter_enrollment_number.errors.0 }}</div>
+              {% endif %}
+            </div>
+          </div>
+
+          {# Remember Student Details Checkbox #}
+          <div class="flex items-center justify-between text-xs text-slate-600 pt-1">
+            <label class="inline-flex items-center gap-2 cursor-pointer select-none">
+              <input type="checkbox" id="remember-student-details" checked
+                class="rounded border-slate-300 text-slate-900 focus:ring-slate-900/10 h-4 w-4">
+              <span>Remember details on this device</span>
+            </label>
+            <span id="autofill-badge" class="hidden text-emerald-600 font-medium items-center gap-1.5">
+              Auto-filled
+              <button type="button" id="clear-saved-student-btn"
+                class="text-slate-400 hover:text-red-600 underline ml-1">Clear</button>
+            </span>
+          </div>
+
+          {# File Upload #}
+          <div>
+            <label for="{{ form.evidence.id_for_label }}" class="block text-sm font-medium text-slate-700 mb-1.5">
+              {{ form.evidence.label }}
+            </label>
+            <div class="relative">
+              <input type="file" name="evidence" id="{{ form.evidence.id_for_label }}" accept="image/*"
+                class="block w-full text-xs text-slate-500 file:mr-3 file:py-2 file:px-3 file:rounded-md file:border-0 file:text-xs file:font-medium file:bg-slate-100 file:text-slate-700 hover:file:bg-slate-200 cursor-pointer border border-slate-300 rounded-lg p-1.5 bg-white focus:outline-none focus:ring-2 focus:ring-slate-900/10 focus:border-slate-900">
+            </div>
+            {% if form.evidence.errors %}
+            <div class="text-xs text-red-600 mt-1">{{ form.evidence.errors.0 }}</div>
+            {% endif %}
+          </div>
+
+          {# Public Board Visibility Checkbox #}
+          <div class="pt-2">
+            <input type="hidden" name="_has_is_public" value="1">
+            <label class="inline-flex items-start gap-2.5 cursor-pointer text-xs text-slate-600 select-none">
+              <input type="checkbox" name="is_public" id="{{ form.is_public.id_for_label }}" checked
+                class="rounded border-slate-300 text-slate-900 focus:ring-slate-900/10 h-4 w-4 mt-0.5">
+              <span>Allow other students to view and endorse this issue on the public board</span>
+            </label>
+            {% if form.is_public.errors %}
+            <div class="text-xs text-red-600 mt-1">{{ form.is_public.errors.0 }}</div>
+            {% endif %}
+          </div>
+        </div>
+      </div>
+
+      {# ── Submit Button ── #}
+      <div class="pt-6 border-t border-slate-100 flex items-center justify-end">
+        <button type="submit" id="submit-btn"
+          class="w-full sm:w-auto px-6 py-2.5 rounded-lg text-sm font-medium text-white bg-emerald-700 hover:bg-emerald-800 transition-colors shadow-sm focus:outline-none focus:ring-2 focus:ring-emerald-600/20">
+          Submit Ticket
         </button>
-      </span>
-    </div>
-
-    <div style="margin-bottom: 20px;">
-      <label for="{{ form.title.id_for_label }}">{{ form.title.label }} *</label>
-      {{ form.title }}
-      {% if form.title.errors %}
-      <div style="color: red; font-size: 12px;">{{ form.title.errors.0 }}</div>
-      {% endif %}
-    </div>
-
-    <div style="margin-bottom: 20px;">
-      <label for="{{ form.description.id_for_label }}">{{ form.description.label }} *</label>
-      {{ form.description }}
-      {% if form.description.errors %}
-      <div style="color: red; font-size: 12px;">{{ form.description.errors.0 }}</div>
-      {% endif %}
-    </div>
-
-    {# Category field with suggestions #}
-    <div style="margin-bottom: 20px;">
-      <label for="{{ form.category.id_for_label }}">{{ form.category.label }} *</label>
-      {{ form.category }}
-      {% if form.category.help_text %}
-      <small style="display: block; color: #666; margin-top: 4px;">{{ form.category.help_text }}</small>
-      {% endif %}
-      {% if form.category.errors %}
-      <div style="color: red; font-size: 12px;">{{ form.category.errors.0 }}</div>
-      {% endif %}
-    </div>
-
-    {# Suggestions container #}
-    <div id="suggestions-container"
-      style="display: none; margin: 15px 0; padding: 15px; background-color: #f0f8ff; border-left: 4px solid #2196F3; border-radius: 4px;">
-      <p style="margin: 0 0 10px 0; color: #555; font-weight: bold;">💡 Category suggestions based on your description:
-      </p>
-      <div id="suggestions-list" style="margin: 0;"></div>
-    </div>
-
-    <div style="margin-bottom: 20px;">
-      <label for="id_room_number">{{ form.room_number.label }}</label>
-      {{ form.room_number }}
-      <div id="room-lookup-feedback" style="display: none; margin-top: 4px; font-size: 13px; font-weight: 500;"></div>
-      {% if form.room_number.help_text %}
-      <small style="display: block; color: #666; margin-top: 4px;">{{ form.room_number.help_text }}</small>
-      {% endif %}
-      {% if form.room_number.errors %}
-      <div style="color: red; font-size: 12px;">{{ form.room_number.errors.0 }}</div>
-      {% endif %}
-    </div>
-
-    {# Academic Faculty & Teaching Department Helper #}
-    <div style="margin-bottom: 20px;">
-      <label for="faculty_dept_select">Select Academic Faculty or Teaching Department (Optional helper)</label>
-      <select id="faculty_dept_select" class="form-control"
-        style="width: 100%; padding: 8px 12px; border: 1px solid #cbd5e1; border-radius: 4px; margin-bottom: 6px; font-size: 14px;">
-        <option value="">-- Choose Faculty or Teaching Department (or enter manually below) --</option>
-        {% for faculty in active_faculties %}
-        <optgroup label="🏛️ {{ faculty.name }} ({{ faculty.code }})">
-          <option value="{{ faculty.name }}" data-type="faculty" data-faculty="{{ faculty.code }}">
-            {{ faculty.name }} (Central / Dean Office / Common Facilities)
-          </option>
-          {% for dept in faculty.departments %}
-          <option value="Department of {{ dept.name }} · {{ faculty.name }}" data-type="department" data-faculty="{{ faculty.code }}" data-dept="{{ dept.code }}">
-            ↳ Department of {{ dept.name }}
-          </option>
-          {% endfor %}
-        </optgroup>
-        {% endfor %}
-      </select>
-      <small style="display: block; color: #64748b;">Selecting from this list automatically fills your academic location description.</small>
-    </div>
-
-    {# Residential Hall or Constituent Hostel Helper #}
-    <div style="margin-bottom: 20px;">
-      <label for="hall_hostel_select">Select Residential Hall or Constituent Hostel (Optional helper)</label>
-      <select id="hall_hostel_select" class="form-control"
-        style="width: 100%; padding: 8px 12px; border: 1px solid #cbd5e1; border-radius: 4px; margin-bottom: 6px; font-size: 14px;">
-        <option value="">-- Choose Hall or Hostel Block (or enter manually below) --</option>
-        {% for hall in active_halls %}
-        <optgroup label="🛏️ {{ hall.name }} ({{ hall.code }})">
-          <option value="{{ hall.name }}" data-code="{{ hall.code }}">{{ hall.name }} (Central / Common Facilities)
-          </option>
-          {% for hostel in hall.hostels.all %}
-          {% if hostel.is_active %}
-          <option value="{{ hall.name }} · {{ hostel.short_name }}" data-code="{{ hostel.code }}"
-            data-hall="{{ hall.code }}" data-hostel="{{ hostel.short_name }}">
-            ↳ {{ hostel.short_name }} ({{ hostel.wing_detail|default:"Block" }})
-          </option>
-          {% endif %}
-          {% endfor %}
-        </optgroup>
-        {% endfor %}
-      </select>
-      <small style="display: block; color: #64748b;">Selecting from this list automatically fills your residential location description.</small>
-    </div>
-
-    <div style="margin-bottom: 20px;">
-      <label for="{{ form.location_description.id_for_label }}">{{ form.location_description.label }}</label>
-      {{ form.location_description }}
-      {% if form.location_description.help_text %}
-      <small style="display: block; color: #666; margin-top: 4px;">{{ form.location_description.help_text }}</small>
-      {% endif %}
-      {% if form.location_description.errors %}
-      <div style="color: red; font-size: 12px;">{{ form.location_description.errors.0 }}</div>
-      {% endif %}
-    </div>
-
-    {# AI Priority, SLA & Staff Assignment Preview #}
-    <div id="ai-assessment-card"
-      style="margin-bottom: 20px; padding: 16px; background: #f8fafc; border: 1px solid #cbd5e1; border-left: 4px solid #2563eb; border-radius: 6px;">
-      <div style="font-weight: 600; color: #1e3a8a; margin-bottom: 6px; font-size: 15px;">
-        🤖 AI Urgency &amp; Staff Auto-Assignment
       </div>
-      <p style="margin: 0 0 10px 0; font-size: 13px; color: #475569;">
-        Priority, resolution SLA, and maintenance technician are automatically selected by the AI model based on your
-        complaint details and location from the AMU Staff Roster.
-      </p>
+    </form>
 
-      <div
-        style="display: grid; grid-template-columns: repeat(auto-fit, minmax(200px, 1fr)); gap: 10px; margin-bottom: 10px;">
-        <div style="background: white; padding: 10px; border-radius: 4px; border: 1px solid #e2e8f0;">
-          <div style="font-size: 11px; color: #64748b; font-weight: bold;">AI PRIORITY</div>
-          <div id="ai-priority-badge" style="font-size: 14px; font-weight: 600; color: #0284c7; margin-top: 2px;">
-            ℹ️ Normal (Auto)
-          </div>
-        </div>
-        <div style="background: white; padding: 10px; border-radius: 4px; border: 1px solid #e2e8f0;">
-          <div style="font-size: 11px; color: #64748b; font-weight: bold;">SLA TARGET</div>
-          <div id="ai-sla-badge" style="font-size: 14px; font-weight: 600; color: #059669; margin-top: 2px;">
-            24h (Next business day)
-          </div>
-        </div>
-      </div>
-
-      <div id="ai-staff-preview"
-        style="background: white; padding: 10px 12px; border-radius: 4px; border: 1px solid #e2e8f0;">
-        <div style="font-size: 11px; color: #64748b; font-weight: bold; margin-bottom: 4px;">ASSIGNED TECHNICIAN (AMU
-          STAFF DIRECTORY)</div>
-        <div id="ai-staff-details" style="font-size: 13px; color: #334155;">
-          Select a category and location to see your automatically assigned technician.
-        </div>
-      </div>
-    </div>
-
-    <div style="margin-bottom: 20px;">
-      <label for="{{ form.evidence.id_for_label }}">{{ form.evidence.label }}</label>
-      {{ form.evidence }}
-      {% if form.evidence.help_text %}
-      <small style="display: block; color: #666; margin-top: 4px;">{{ form.evidence.help_text }}</small>
-      {% endif %}
-      {% if form.evidence.errors %}
-      <div style="color: red; font-size: 12px;">{{ form.evidence.errors.0 }}</div>
-      {% endif %}
-    </div>
-
-    <div
-      style="margin-bottom: 20px; background: #f8fafc; padding: 12px 16px; border-radius: 8px; border: 1px solid #e2e8f0;">
-      <input type="hidden" name="_has_is_public" value="1">
-      <label for="{{ form.is_public.id_for_label }}"
-        style="display: flex; align-items: center; gap: 10px; cursor: pointer; font-size: 14px; color: var(--amu-navy-900); font-weight: 500; margin: 0;">
-        {{ form.is_public }}
-        <span>🌐 Visible on the Campus Public Board (allows fellow students to endorse this report)</span>
-      </label>
-      {% if form.is_public.errors %}
-      <div style="color: red; font-size: 12px; margin-top: 4px;">{{ form.is_public.errors.0 }}</div>
-      {% endif %}
-    </div>
-
-    <div style="margin-top: 24px;">
-      <button type="submit" class="btn-unified btn-unified-emerald"
-        style="height: 46px; min-height: 46px; font-size: 1rem; padding: 0 32px; width: 100%; max-width: 320px;">
-        <span>✍️</span> Submit Complaint Ticket
-      </button>
-    </div>
-  </form>
-</section>
+  </div>
+</div>
 
 <script>
   document.addEventListener('DOMContentLoaded', function () {
     const titleField = document.querySelector('#id_title');
     const descriptionField = document.querySelector('#id_description');
     const categoryField = document.querySelector('#id_category');
+    const locationField = document.querySelector('#id_location_description');
+    const roomField = document.querySelector('#id_room_number');
+    const facultyDeptSelect = document.getElementById('faculty_dept_select');
+    const hallHostelSelect = document.getElementById('hall_hostel_select');
     const suggestionsContainer = document.getElementById('suggestions-container');
     const suggestionsList = document.getElementById('suggestions-list');
-    let debounceTimer;
+    const roomLookupFeedback = document.getElementById('room-lookup-feedback');
+    const aiPriorityBadge = document.getElementById('ai-priority-badge');
+    const aiSlaBadge = document.getElementById('ai-sla-badge');
+    const aiStaffDetails = document.getElementById('ai-staff-details');
+    const complaintForm = document.getElementById('complaint-form');
+    const submitBtn = document.getElementById('submit-btn');
+    const nameInput = document.getElementById('id_reporter_name');
+    const enrollmentInput = document.getElementById('id_reporter_enrollment_number');
+    const errorBanner = document.getElementById('enrollment-error-banner');
+    const rememberCheckbox = document.getElementById('remember-student-details');
+    const autofillBadge = document.getElementById('autofill-badge');
+    const clearSavedBtn = document.getElementById('clear-saved-student-btn');
 
-    if (!titleField || !descriptionField || !categoryField) {
-      console.warn('Form fields not found. Category suggestions will not work.');
-      return;
+    let debounceTimer;
+    let aiDebounceTimer;
+    let roomLookupDebounceTimer;
+
+    function escapeHtml(text) {
+      if (!text) return '';
+      const div = document.createElement('div');
+      div.textContent = text;
+      return div.innerHTML;
     }
 
+    // ── Category Suggestions ──
     function fetchCategorySuggestions() {
-      const title = titleField.value.trim();
-      const description = descriptionField.value.trim();
+      const title = titleField ? titleField.value.trim() : '';
+      const description = descriptionField ? descriptionField.value.trim() : '';
       const combinedText = `${title} ${description}`;
       const locationText = locationField ? locationField.value.trim() : '';
 
       if (combinedText.length < 5 && locationText.length < 3) {
-        suggestionsContainer.style.display = 'none';
+        if (suggestionsContainer) suggestionsContainer.classList.add('hidden');
         return;
       }
 
-      const csrfToken = document.querySelector('[name=csrfmiddlewaretoken]').value;
+      const csrfToken = document.querySelector('[name=csrfmiddlewaretoken]')?.value || '';
 
       fetch('/api/suggest-category/', {
         method: 'POST',
@@ -284,70 +305,58 @@
         },
         body: JSON.stringify({
           text: combinedText,
-          location: locationText
+          location: locationText,
         }),
       })
         .then(response => response.json())
         .then(data => {
           if (data.suggestions && data.suggestions.length > 0) {
             displaySuggestions(data.suggestions);
-          } else {
-            suggestionsContainer.style.display = 'none';
+          } else if (suggestionsContainer) {
+            suggestionsContainer.classList.add('hidden');
           }
         })
         .catch(error => console.error('Error fetching suggestions:', error));
     }
 
     function displaySuggestions(suggestions) {
+      if (!suggestionsList || !suggestionsContainer) return;
       suggestionsList.innerHTML = '';
       suggestions.forEach(suggestion => {
-        const isSelected = parseInt(categoryField.value) === suggestion.id;
-        const suggestionEl = document.createElement('div');
-        suggestionEl.style.cssText = 'margin-bottom: 12px; padding: 10px; background-color: white; border-radius: 4px; border: 1px solid #ddd; cursor: pointer; transition: all 0.2s;';
+        const isSelected = categoryField && parseInt(categoryField.value) === suggestion.id;
+        const btn = document.createElement('button');
+        btn.type = 'button';
+        btn.className = `suggestion-btn px-2.5 py-1 text-xs font-medium rounded-md border transition-colors ${
+          isSelected
+            ? 'bg-emerald-50 border-emerald-300 text-emerald-700'
+            : 'bg-white border-slate-300 hover:bg-slate-50 text-slate-700'
+        }`;
+        btn.dataset.categoryId = suggestion.id;
+        btn.textContent = `${suggestion.name} (${suggestion.confidence}%)`;
 
-        let htmlContent = `
-            <div style="display: flex; justify-content: space-between; align-items: start; gap: 12px;">
-              <div style="flex: 1;">
-                <strong style="display: block; color: #1976D2; margin-bottom: 4px;">${escapeHtml(suggestion.name)}</strong>
-                ${suggestion.description ? `<p style="margin: 0 0 6px 0; font-size: 13px; color: #666;">${escapeHtml(suggestion.description)}</p>` : ''}
-                <p style="margin: 0; font-size: 12px; color: #999;">Department: ${escapeHtml(suggestion.department)}</p>
-              </div>
-              <div style="text-align: right; white-space: nowrap;">
-                <div style="font-size: 12px; font-weight: bold; color: #666; margin-bottom: 6px;">Confidence</div>
-                <div style="font-size: 14px; color: #2196F3; font-weight: bold;">${suggestion.confidence}%</div>
-              </div>
-            </div>
-            <button type="button" class="suggestion-btn" data-category-id="${suggestion.id}" style="margin-top: 8px; padding: 8px 12px; background-color: #2196F3; color: white; border: none; border-radius: 4px; cursor: pointer; font-size: 13px; width: 100%; ${isSelected ? 'background-color: #4CAF50;' : ''} transition: all 0.2s;">
-              ${isSelected ? '✓ Selected' : 'Use this category'}
-            </button>
-          `;
-        suggestionEl.innerHTML = htmlContent;
-        suggestionsList.appendChild(suggestionEl);
-
-        const btn = suggestionEl.querySelector('.suggestion-btn');
         btn.addEventListener('click', function (e) {
           e.preventDefault();
           e.stopPropagation();
-          categoryField.value = this.dataset.categoryId;
-          categoryField.dispatchEvent(new Event('change'));
+          if (categoryField) {
+            categoryField.value = this.dataset.categoryId;
+            categoryField.dispatchEvent(new Event('change'));
+          }
           updateSuggestionButtons();
         });
 
-        suggestionEl.addEventListener('mouseenter', function () {
-          this.style.backgroundColor = '#f5f5f5';
-        });
-        suggestionEl.addEventListener('mouseleave', function () {
-          this.style.backgroundColor = 'white';
-        });
+        suggestionsList.appendChild(btn);
       });
-      suggestionsContainer.style.display = 'block';
+      suggestionsContainer.classList.remove('hidden');
     }
 
     function updateSuggestionButtons() {
       document.querySelectorAll('.suggestion-btn').forEach(btn => {
-        const isSelected = parseInt(categoryField.value) === parseInt(btn.dataset.categoryId);
-        btn.textContent = isSelected ? '✓ Selected' : 'Use this category';
-        btn.style.backgroundColor = isSelected ? '#4CAF50' : '#2196F3';
+        const isSelected = categoryField && parseInt(categoryField.value) === parseInt(btn.dataset.categoryId);
+        if (isSelected) {
+          btn.className = 'suggestion-btn px-2.5 py-1 text-xs font-medium rounded-md border bg-emerald-50 border-emerald-300 text-emerald-700 transition-colors';
+        } else {
+          btn.className = 'suggestion-btn px-2.5 py-1 text-xs font-medium rounded-md border bg-white border-slate-300 hover:bg-slate-50 text-slate-700 transition-colors';
+        }
       });
     }
 
@@ -356,22 +365,7 @@
       debounceTimer = setTimeout(fetchCategorySuggestions, 500);
     }
 
-    function escapeHtml(text) {
-      const div = document.createElement('div');
-      div.textContent = text;
-      return div.innerHTML;
-    }
-
-    const roomField = document.querySelector('#id_room_number');
-    const locationField = document.querySelector('#id_location_description');
-    const hallHostelSelect = document.getElementById('hall_hostel_select');
-    const roomLookupFeedback = document.getElementById('room-lookup-feedback');
-    const aiPriorityBadge = document.getElementById('ai-priority-badge');
-    const aiSlaBadge = document.getElementById('ai-sla-badge');
-    const aiStaffDetails = document.getElementById('ai-staff-details');
-    let aiDebounceTimer;
-    let roomLookupDebounceTimer;
-
+    // ── Live AI Urgency Assessment ──
     function updateAIAssessment() {
       const title = titleField ? titleField.value.trim() : '';
       const description = descriptionField ? descriptionField.value.trim() : '';
@@ -382,7 +376,7 @@
 
       if (!title && !description && !categoryOption && !location) return;
 
-      const csrfToken = document.querySelector('[name=csrfmiddlewaretoken]') ? document.querySelector('[name=csrfmiddlewaretoken]').value : '';
+      const csrfToken = document.querySelector('[name=csrfmiddlewaretoken]')?.value || '';
 
       fetch('/api/analyze-urgency/', {
         method: 'POST',
@@ -401,34 +395,40 @@
         .then(data => {
           if (aiPriorityBadge && data.priority_display) {
             aiPriorityBadge.textContent = data.priority_display;
+            if (data.priority === 'urgent') {
+              aiPriorityBadge.className = 'font-semibold text-red-600 ml-1';
+            } else if (data.priority === 'high') {
+              aiPriorityBadge.className = 'font-semibold text-amber-600 ml-1';
+            } else {
+              aiPriorityBadge.className = 'font-semibold text-slate-800 ml-1';
+            }
           }
           if (aiSlaBadge && data.sla_display) {
             aiSlaBadge.textContent = data.sla_display;
+            if (data.priority === 'urgent') {
+              aiSlaBadge.className = 'font-semibold text-red-600 ml-1';
+            } else {
+              aiSlaBadge.className = 'font-semibold text-slate-800 ml-1';
+            }
           }
           if (aiStaffDetails && data.suggested_staff) {
             const staff = data.suggested_staff;
             aiStaffDetails.innerHTML = `
-                <div style="font-size: 14px; font-weight: 600; color: #1e293b;">👷 ${escapeHtml(staff.name)} <span style="font-size:12px; font-weight:normal; color:#475569;">(${escapeHtml(staff.role)})</span></div>
-                <div style="font-size: 12px; color: #475569; margin-top: 2px;">
-                  📍 <strong>Location:</strong> ${escapeHtml(staff.location)} · 
-                  🏢 <strong>Dept:</strong> ${escapeHtml(staff.dept)} · 
-                  📞 <strong>Phone:</strong> ${escapeHtml(staff.contact)}
-                </div>
-                <div style="font-size: 11px; color: #059669; font-weight: 500; margin-top: 3px;">
-                  ✓ Auto-assigned technician: ${escapeHtml(staff.reason)}
-                </div>
-              `;
+              <span class="font-medium text-slate-800">${escapeHtml(staff.name)}</span>
+              <span class="text-slate-500">(${escapeHtml(staff.role)})</span> ·
+              <span class="text-slate-500">${escapeHtml(staff.dept)}</span> ·
+              <span class="text-slate-500">${escapeHtml(staff.contact)}</span>
+            `;
           }
         })
         .catch(err => console.error('Error updating AI assessment:', err));
     }
 
+    // ── Room Lookup ──
     function handleRoomLookup() {
       const roomVal = roomField ? roomField.value.trim() : '';
       if (!roomVal) {
-        if (roomLookupFeedback) {
-          roomLookupFeedback.style.display = 'none';
-        }
+        if (roomLookupFeedback) roomLookupFeedback.classList.add('hidden');
         return;
       }
 
@@ -445,15 +445,13 @@
         .then(res => res.json())
         .then(data => {
           if (roomLookupFeedback) {
+            roomLookupFeedback.classList.remove('hidden');
             if (data.found) {
-              roomLookupFeedback.style.display = 'block';
-              roomLookupFeedback.style.color = '#059669';
-              roomLookupFeedback.textContent = `✓ Recognized: ${data.display}`;
-              // Auto-fill location if currently empty
+              roomLookupFeedback.className = 'mt-1 text-xs font-medium text-emerald-600';
+              roomLookupFeedback.textContent = `Recognized: ${data.display}`;
               if (locationField && !locationField.value.trim()) {
                 locationField.value = data.display;
               }
-              // If hallHostelSelect not set, try to select matching option
               if (hallHostelSelect && (!hallHostelSelect.value || hallHostelSelect.selectedIndex <= 0)) {
                 for (let i = 0; i < hallHostelSelect.options.length; i++) {
                   const opt = hallHostelSelect.options[i];
@@ -465,17 +463,15 @@
                 }
               }
             } else {
-              roomLookupFeedback.style.display = 'block';
-              roomLookupFeedback.style.color = '#64748b';
-              roomLookupFeedback.textContent = `ℹ️ ${data.message || 'Custom room / unlisted'}`;
+              roomLookupFeedback.className = 'mt-1 text-xs font-medium text-slate-400';
+              roomLookupFeedback.textContent = data.message || 'Custom room / unlisted';
             }
           }
         })
         .catch(err => console.error('Error querying room lookup:', err));
     }
 
-    const facultyDeptSelect = document.getElementById('faculty_dept_select');
-
+    // ── Helper Select Handlers ──
     if (facultyDeptSelect) {
       facultyDeptSelect.addEventListener('change', function () {
         const val = this.value;
@@ -507,12 +503,14 @@
       aiDebounceTimer = setTimeout(updateAIAssessment, 400);
     }
 
-    titleField.addEventListener('input', onAnyInputChange);
-    descriptionField.addEventListener('input', onAnyInputChange);
-    categoryField.addEventListener('change', function () {
-      updateSuggestionButtons();
-      updateAIAssessment();
-    });
+    if (titleField) titleField.addEventListener('input', onAnyInputChange);
+    if (descriptionField) descriptionField.addEventListener('input', onAnyInputChange);
+    if (categoryField) {
+      categoryField.addEventListener('change', function () {
+        updateSuggestionButtons();
+        updateAIAssessment();
+      });
+    }
     if (roomField) {
       roomField.addEventListener('input', function () {
         onAnyInputChange();
@@ -523,16 +521,7 @@
     }
     if (locationField) locationField.addEventListener('input', onAnyInputChange);
 
-    // ── Strict Student Enrollment & Name Validation ──
-    const complaintForm = document.getElementById('complaint-form');
-    const nameInput = document.getElementById('id_reporter_name');
-    const enrollmentInput = document.getElementById('id_reporter_enrollment_number');
-    const errorBanner = document.getElementById('enrollment-error-banner');
-    const rememberCheckbox = document.getElementById('remember-student-details');
-    const autofillBadge = document.getElementById('autofill-badge');
-    const clearSavedBtn = document.getElementById('clear-saved-student-btn');
-
-    // ── Student LocalStorage Auto-Fill Initialization ──
+    // ── Student Details & Validation ──
     const isRememberEnabled = localStorage.getItem('amu_remember_student') !== 'false';
     if (rememberCheckbox) rememberCheckbox.checked = isRememberEnabled;
 
@@ -547,13 +536,11 @@
       }
       if (enrollmentInput && !enrollmentInput.value.trim() && savedStudentEnroll) {
         enrollmentInput.value = savedStudentEnroll;
-        if (isValidEnrollment(savedStudentEnroll)) {
-          enrollmentInput.style.borderColor = '#10b981';
-        }
         filled = true;
       }
       if (filled && autofillBadge) {
-        autofillBadge.style.display = 'inline-flex';
+        autofillBadge.classList.remove('hidden');
+        autofillBadge.classList.add('inline-flex');
       }
     }
 
@@ -563,7 +550,7 @@
         if (!this.checked) {
           localStorage.removeItem('amu_student_name');
           localStorage.removeItem('amu_student_enrollment');
-          if (autofillBadge) autofillBadge.style.display = 'none';
+          if (autofillBadge) autofillBadge.classList.add('hidden');
         }
       });
     }
@@ -574,61 +561,46 @@
         localStorage.removeItem('amu_student_name');
         localStorage.removeItem('amu_student_enrollment');
         if (nameInput) nameInput.value = '';
-        if (enrollmentInput) {
-          enrollmentInput.value = '';
-          enrollmentInput.style.borderColor = '';
-        }
-        if (autofillBadge) autofillBadge.style.display = 'none';
+        if (enrollmentInput) enrollmentInput.value = '';
+        if (autofillBadge) autofillBadge.classList.add('hidden');
       });
+    }
+
+    function isValidEnrollment(v) {
+      return /^[a-zA-Z]{2}\d{4}$/.test(v);
+    }
+
+    function showEnrollmentError(msg) {
+      if (errorBanner) {
+        errorBanner.textContent = msg;
+        errorBanner.classList.remove('hidden');
+        errorBanner.scrollIntoView({ behavior: 'smooth', block: 'center' });
+      }
     }
 
     function validateEnrollmentForm() {
       const nameVal = nameInput ? nameInput.value.trim() : '';
       const enrollVal = enrollmentInput ? enrollmentInput.value.trim() : '';
 
-      // Reset styles and error banner
-      if (nameInput) nameInput.style.borderColor = '';
-      if (enrollmentInput) enrollmentInput.style.borderColor = '';
       if (errorBanner) {
-        errorBanner.style.display = 'none';
-        errorBanner.innerHTML = '';
+        errorBanner.classList.add('hidden');
+        errorBanner.textContent = '';
       }
 
-      const isNameEmpty = !nameVal;
-      const isEnrollEmpty = !enrollVal;
-
-      if (isNameEmpty || isEnrollEmpty) {
+      if (!nameVal || !enrollVal) {
         showEnrollmentError('Both Name and Enrollment Number are required.');
-        if (isNameEmpty && nameInput) nameInput.style.borderColor = '#ef4444';
-        if (isEnrollEmpty && enrollmentInput) enrollmentInput.style.borderColor = '#ef4444';
-        if (isNameEmpty && nameInput) {
-          nameInput.focus();
-        } else if (isEnrollEmpty && enrollmentInput) {
-          enrollmentInput.focus();
-        }
+        if (!nameVal && nameInput) nameInput.focus();
+        else if (!enrollVal && enrollmentInput) enrollmentInput.focus();
         return false;
       }
 
-      // Enrollment format: Exactly 6 characters (first 2 letters, remaining 4 digits)
-      const enrollmentRegex = /^[a-zA-Z]{2}\d{4}$/;
-      if (!enrollmentRegex.test(enrollVal)) {
-        showEnrollmentError("Invalid Enrollment Number. It must be exactly 6 characters: 2 letters followed by 4 digits (e.g., gq1234 or AA0001).");
-        if (enrollmentInput) {
-          enrollmentInput.style.borderColor = '#ef4444';
-          enrollmentInput.focus();
-        }
+      if (!isValidEnrollment(enrollVal)) {
+        showEnrollmentError('Invalid Enrollment Number. It must be exactly 6 characters: 2 letters followed by 4 digits (e.g., GQ1234).');
+        if (enrollmentInput) enrollmentInput.focus();
         return false;
       }
 
       return true;
-    }
-
-    function showEnrollmentError(msg) {
-      if (errorBanner) {
-        errorBanner.innerHTML = `<strong>⚠️ Validation Error:</strong> ${msg}`;
-        errorBanner.style.display = 'block';
-        errorBanner.scrollIntoView({ behavior: 'smooth', block: 'center' });
-      }
     }
 
     if (complaintForm) {
@@ -638,7 +610,15 @@
           e.stopPropagation();
           return false;
         }
-        // Save verified student details on submit if remember is checked
+
+        // Disable submit button to prevent double-submissions
+        if (submitBtn) {
+          submitBtn.disabled = true;
+          submitBtn.textContent = 'Submitting...';
+          submitBtn.classList.add('opacity-75', 'cursor-not-allowed');
+        }
+
+        // Save verified details if remember checked
         if (rememberCheckbox && rememberCheckbox.checked) {
           const nameVal = nameInput ? nameInput.value.trim() : '';
           const enrollVal = enrollmentInput ? enrollmentInput.value.trim() : '';
@@ -648,38 +628,19 @@
       });
     }
 
-    function isValidEnrollment(v) {
-      return /^[a-zA-Z]{2}\d{4}$/.test(v);
-    }
-
     if (enrollmentInput) {
       enrollmentInput.addEventListener('input', function () {
         const val = this.value.trim();
         if (isValidEnrollment(val)) {
-          this.style.borderColor = '#10b981';
-          if (errorBanner) errorBanner.style.display = 'none';
-        } else if (val.length >= 6 && !isValidEnrollment(val)) {
-          this.style.borderColor = '#ef4444';
-        } else {
-          this.style.borderColor = '';
-        }
-      });
-      enrollmentInput.addEventListener('blur', function () {
-        const val = this.value.trim();
-        if (val && !isValidEnrollment(val)) {
-          this.style.borderColor = '#ef4444';
-          showEnrollmentError("Invalid Enrollment Number. It must be exactly 6 characters: 2 letters followed by 4 digits (e.g., gq1234 or AA0001).");
+          if (errorBanner) errorBanner.classList.add('hidden');
         }
       });
     }
 
     if (nameInput) {
       nameInput.addEventListener('input', function () {
-        if (this.value.trim()) {
-          this.style.borderColor = '';
-          if (errorBanner && errorBanner.textContent.includes('Name')) {
-            errorBanner.style.display = 'none';
-          }
+        if (this.value.trim() && errorBanner && errorBanner.textContent.includes('Name')) {
+          errorBanner.classList.add('hidden');
         }
       });
     }

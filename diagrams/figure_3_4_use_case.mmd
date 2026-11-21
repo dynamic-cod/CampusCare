@@ -1,0 +1,106 @@
+%%{ init: { "theme": "base", "themeVariables": { "primaryColor": "#1e293b", "primaryTextColor": "#f8fafc", "primaryBorderColor": "#3b82f6", "lineColor": "#94a3b8", "fontFamily": "Inter, sans-serif" } } }%%
+graph TB
+    %% ─── Actors OUTSIDE System Boundary (UML 2.5 strict) ─────────────────────
+    Student["🧑‍🎓 Student\n(Anonymous /\nToken-Authenticated)"]
+    Technician["🔧 Maintenance Technician\n(Zero-Login Staff)"]
+    Provost["🏛️ Hall Provost / Caretaker\n(Building-Scoped Admin)"]
+    HOD["📋 Maintenance HOD\n(Trade-Scoped Admin)"]
+    Registrar["🎓 Central Registrar\n(Global SuperAdmin)"]
+
+    %% ─── System Boundary ──────────────────────────────────────────────────────
+    subgraph SYS["System Boundary: AMU CampusCare Facility Maintenance Platform"]
+        direction TB
+
+        subgraph SUB_STUDENT["Citizen & Student Services"]
+            direction LR
+            UC_Lodge(["Lodge Maintenance Complaint"])
+            UC_Track(["Track Ticket Status via Token"])
+            UC_Confirm(["Confirm Resolution & Purge Media"])
+            UC_Reopen(["Dispute & Reopen Ticket with Proof"])
+            UC_Feedback(["Submit Resolution Feedback & Rating"])
+            UC_Browse(["Browse Public Issue Board"])
+            UC_Upvote(["Upvote Public Issue Support"])
+        end
+
+        subgraph SUB_SHARED["Automated Platform Sub-Processes «include» / «extend»"]
+            direction LR
+            UC_Quota(["Verify Active Ticket Quota\n& Enrollment (cap ≤ 3)"])
+            UC_Triage(["Classify ML Urgency\n& Spatial Origin"])
+            UC_QR(["Auto-Fill Room Data\nvia QR Code"])
+            UC_Dwell(["Validate Anti-Fraud\n5-Min Dwell Timer"])
+            UC_Matcher(["Suggest Optimal Staff\nvia Least-Load Matcher"])
+        end
+
+        subgraph SUB_TECH["Technician Operations (Zero-Login UUID Pipeline)"]
+            direction LR
+            UC_AccessTask(["Access Dispatched Task\nvia UUID Direct URL"])
+            UC_AcceptTask(["Accept Task &\nTransition to In-Progress"])
+            UC_UploadProof(["Upload Photographic\nResolution Proof"])
+        end
+
+        subgraph SUB_ADMIN["Administrative Governance & Oversight"]
+            direction LR
+            UC_ManageHall(["Manage Hall Queue\n(Building-Scoped)"])
+            UC_ManageDept(["Manage Department Queue\n(Trade-Scoped)"])
+            UC_Dispatch(["Dispatch & Assign\nTechnician to Ticket"])
+            UC_SLA(["Monitor SLA Targets\n& Staff Accountability"])
+            UC_Analytics(["Inspect University\nHeatmap & Analytics"])
+            UC_Export(["Export University-Wide\nAudit Logs CSV"])
+        end
+
+        SUB_STUDENT ~~~ SUB_SHARED
+        SUB_SHARED ~~~ SUB_TECH
+        SUB_TECH ~~~ SUB_ADMIN
+    end
+
+    %% ─── Student Associations ─────────────────────────────────────────────────
+    Student --- UC_Lodge
+    Student --- UC_Track
+    Student --- UC_Confirm
+    Student --- UC_Feedback
+    Student --- UC_Browse
+
+    %% ─── Technician Associations ──────────────────────────────────────────────
+    Technician --- UC_AccessTask
+    Technician --- UC_AcceptTask
+    Technician --- UC_UploadProof
+
+    %% ─── Provost Associations ────────────────────────────────────────────────
+    UC_ManageHall --- Provost
+    UC_Dispatch --- Provost
+    UC_SLA --- Provost
+
+    %% ─── HOD Associations ────────────────────────────────────────────────────
+    UC_ManageDept --- HOD
+    UC_Dispatch --- HOD
+    UC_SLA --- HOD
+
+    %% ─── Registrar Associations ───────────────────────────────────────────────
+    UC_Analytics --- Registrar
+    UC_Export --- Registrar
+    UC_Dispatch --- Registrar
+    UC_SLA --- Registrar
+
+    %% ─── UML «include» Dependencies (base -.-> included) ─────────────────────
+    UC_Lodge -.->|"«include»"| UC_Quota
+    UC_Lodge -.->|"«include»"| UC_Triage
+    UC_UploadProof -.->|"«include»"| UC_Dwell
+    UC_Dispatch -.->|"«include»"| UC_Matcher
+
+    %% ─── UML «extend» Dependencies (extension -.-> base) ─────────────────────
+    UC_QR -.->|"«extend»"| UC_Lodge
+    UC_Reopen -.->|"«extend»"| UC_Confirm
+    UC_Upvote -.->|"«extend»"| UC_Browse
+
+    %% ─── Styling ─────────────────────────────────────────────────────────────
+    style SYS fill:#f8fafc,stroke:#0f172a,stroke-width:2.5px,color:#0f172a
+    style SUB_STUDENT fill:#f0fdf4,stroke:#16a34a,stroke-width:1.5px,color:#0f172a
+    style SUB_SHARED fill:#f5f3ff,stroke:#7c3aed,stroke-width:1.5px,color:#0f172a
+    style SUB_TECH fill:#fffbeb,stroke:#d97706,stroke-width:1.5px,color:#0f172a
+    style SUB_ADMIN fill:#eff6ff,stroke:#2563eb,stroke-width:1.5px,color:#0f172a
+
+    style Student fill:#dbeafe,stroke:#2563eb,stroke-width:1.5px,color:#0f172a
+    style Technician fill:#fef9c3,stroke:#ca8a04,stroke-width:1.5px,color:#0f172a
+    style Provost fill:#f3e8ff,stroke:#9333ea,stroke-width:1.5px,color:#0f172a
+    style HOD fill:#fce7f3,stroke:#db2777,stroke-width:1.5px,color:#0f172a
+    style Registrar fill:#dcfce7,stroke:#16a34a,stroke-width:1.5px,color:#0f172a

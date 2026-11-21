@@ -1,0 +1,169 @@
+%%{ init: { "theme": "base", "themeVariables": { "primaryColor": "#1e293b", "primaryTextColor": "#f8fafc", "primaryBorderColor": "#3b82f6", "lineColor": "#94a3b8", "fontFamily": "Inter, sans-serif" } } }%%
+sequenceDiagram
+    autonumber
+
+    actor Student as Anonymous Student
+    participant Browser as Mobile Browser
+    participant ComplaintView as complaints.py<br/>complaint_create()
+    participant Form as ComplaintForm<br/>forms.py
+    participant SmartPy as smart.py<br/>classify_urgency()
+    participant AiTriage as ai_triage.py<br/>bind_complaint_spatial_origin()
+    participant Dispatcher as dispatcher.py<br/>staff_matcher.py
+    participant Cache as In-Memory Cache<br/>_BUILDINGS_CACHE
+    participant ORM as Django ORM
+    participant DB as SQLite DB
+    participant SuggestAPI as api.py<br/>suggest_category_api()
+    actor Technician as Maintenance Technician
+    participant TaskView as tasks.py<br/>technician_task_view()
+    participant AcctPy as accountability.py<br/>SLA tracker
+
+    %% ─── Phase 1: Anonymous Complaint Submission ──────────────────────────────
+    Note over Student, SuggestAPI: Phase 1 — Anonymous Complaint Submission & AI Triage
+
+    Student->>Browser: Opens /complaints/new/
+    Browser->>ComplaintView: GET /complaints/new/
+    ComplaintView-->>Browser: Render blank ComplaintForm
+
+    Student->>Browser: Types title + description
+    Browser->>SuggestAPI: AJAX GET /api/suggest-category/?q=[query]
+    SuggestAPI->>DB: SELECT ComplaintCategory WHERE name~=query (ranked)
+    DB-->>SuggestAPI: Matching categories with scores
+    SuggestAPI-->>Browser: JSON [ranked category list]
+    Browser-->>Student: Auto-suggest dropdown populated
+
+    Student->>Browser: Selects category, fills form, submits
+    Browser->>ComplaintView: POST /complaints/new/ [CSRF token]
+    ComplaintView->>Form: form.is_valid()
+    Form->>Form: Validate enrollment_number format (regex)
+    Form->>ORM: Check active complaint count for enrollment
+
+    ORM->>DB: SELECT COUNT(*) FROM core_complaint WHERE enrollment=X AND status NOT IN (resolved, closed)
+
+    alt Count >= 3 — Quota Exceeded
+        DB-->>ORM: count >= 3
+        ORM-->>Form: Quota validation fails
+        Form-->>ComplaintView: form.errors
+        ComplaintView-->>Browser: Re-render form with error
+        Browser-->>Student: "Max 3 active tickets" error shown
+    else Count < 3 — Valid Submission
+        DB-->>ORM: count < 3
+        ORM-->>Form: OK
+        Form-->>ComplaintView: form.is_valid() = True
+
+        ComplaintView->>SmartPy: classify_urgency(title + description)
+        SmartPy->>SmartPy: Load urgency_classifier.joblib (in-memory cached)
+        SmartPy->>SmartPy: TF-IDF vectorise + predict priority label
+        SmartPy-->>ComplaintView: {priority: "high", score: 72, reason: "..."}
+
+        ComplaintView->>ORM: complaint = form.save(commit=False); set priority fields
+        ORM->>AiTriage: bind_complaint_spatial_origin(complaint) [pre-save]
+        AiTriage->>Cache: get_cached_buildings()
+
+        alt Cache cold — first request
+            Cache->>DB: SELECT * FROM core_building WHERE is_active=True (with dept + parent)
+            DB-->>Cache: Building queryset list
+        end
+
+        Cache-->>AiTriage: [Building objects from _BUILDINGS_CACHE]
+        AiTriage->>AiTriage: Alias phrase matching (80+ entries, length-sorted)
+        AiTriage->>AiTriage: Floor number regex extraction from location_description
+        AiTriage->>AiTriage: extract_building_and_department()
+
+        alt Building + Room matched
+            AiTriage->>DB: SELECT Room WHERE floor.building=B AND number~=token
+            DB-->>AiTriage: Room object
+            AiTriage-->>ORM: complaint.room = Room; complaint.location_description updated
+        else No building match
+            AiTriage-->>ORM: complaint.location_description preserved verbatim
+        end
+
+        ORM->>DB: INSERT INTO core_complaint (reference=CC-XXXXXXXX, tracking_token=[hex32], staff_task_token=[uuid4], priority=high, status=open, ...)
+        DB-->>ORM: complaint saved (pk assigned)
+        ORM->>DB: INSERT INTO core_complaintstatushistory (complaint=pk, status=open, changed_by=null, ...)
+        DB-->>ORM: History row created
+
+        ComplaintView-->>Browser: HTTP 302 Redirect → /track/[tracking_token]/
+        Browser-->>Student: Tracking page rendered<br/>"Reference: CC-XXXXXXXX | Token: [hex32]"
+    end
+
+    %% ─── Phase 2: Automated Dispatch ─────────────────────────────────────────
+    Note over Dispatcher, Technician: Phase 2 — Automated Worker Dispatch
+
+    ComplaintView->>Dispatcher: auto_assign_complaint(complaint)
+    Dispatcher->>DB: SELECT UserProfile WHERE role=STAFF AND dept=complaint.category.dept AND is_active=True
+    DB-->>Dispatcher: Eligible technician list
+    Dispatcher->>DB: SELECT COUNT(*) active complaints grouped by assigned_to
+    DB-->>Dispatcher: Per-technician active load counts
+    Dispatcher->>DB: SELECT accountability_score FROM core_userprofile WHERE id IN [candidates]
+    DB-->>Dispatcher: Accountability scores
+    Dispatcher->>Dispatcher: Rank by (load_score + accountability_weight) — least-load wins
+    Dispatcher->>DB: UPDATE core_complaint SET assigned_to=tech, sla_due_at=now+SLA, status=assigned, assigned_at=now
+    DB-->>Dispatcher: Complaint updated
+    Dispatcher->>DB: INSERT INTO core_complaintstatushistory (status=assigned)
+    DB-->>Dispatcher: History row created
+    Dispatcher-->>Technician: UUID task URL: /task/[staff_task_token]/
+
+    %% ─── Phase 3: Technician Execution & Anti-Fraud ──────────────────────────
+    Note over Technician, AcctPy: Phase 3 — Technician Execution, Dwell-Timer Anti-Fraud & Resolution
+
+    Technician->>Browser: Opens /task/[staff_task_token]/
+    Browser->>TaskView: GET /task/[staff_task_token]/
+    TaskView->>DB: SELECT Complaint WHERE staff_task_token=uuid
+    DB-->>TaskView: Complaint record
+    TaskView-->>Browser: Render task card (title, location, SLA deadline)
+    Technician->>Browser: Clicks Accept Task
+    Browser->>TaskView: POST /task/[token]/accept/
+    TaskView->>DB: UPDATE status=in_progress, in_progress_at=now()
+    DB-->>TaskView: Updated
+    TaskView->>DB: INSERT ComplaintStatusHistory(status=in_progress)
+
+    Technician->>Browser: Uploads resolution_proof image
+    Browser->>TaskView: POST /task/[token]/complete/ [multipart/form-data]
+    TaskView->>TaskView: dwell_check: now() - in_progress_at >= 5 min?
+
+    alt Dwell time < 5 minutes — Anti-Fraud Block
+        TaskView-->>Browser: HTTP 400 — "Must wait 5 minutes before marking complete"
+        Browser-->>Technician: Timer countdown shown
+    else Dwell time >= 5 minutes — Valid Completion
+        TaskView->>DB: UPDATE resolution_proof=path, status=resolved, resolved_at=now(), resolution_verification=pending
+        DB-->>TaskView: Updated
+        TaskView->>DB: INSERT ComplaintStatusHistory(status=resolved)
+        TaskView->>AcctPy: record_timely_resolution(technician, complaint)
+        AcctPy->>DB: UPDATE UserProfile.accountability_score += recovery_delta
+        DB-->>AcctPy: Score updated
+        TaskView-->>Browser: Success — "Resolution submitted"
+        Browser-->>Technician: Confirmation page
+    end
+
+    %% ─── Phase 4: Student Verification & Closure ─────────────────────────────
+    Note over Student, DB: Phase 4 — Student Resolution Verification & Ticket Closure
+
+    Student->>Browser: Opens /track/[tracking_token]/
+    Browser->>ComplaintView: GET /track/[tracking_token]/
+    ComplaintView->>DB: SELECT Complaint WHERE tracking_token=hex32
+    DB-->>ComplaintView: Complaint (status=resolved)
+    ComplaintView-->>Browser: Render resolution with "Confirm" / "Reject" options
+
+    alt Student confirms resolution
+        Student->>Browser: Clicks Confirm Resolution
+        Browser->>ComplaintView: POST /complaints/[token]/confirm/
+        ComplaintView->>DB: UPDATE resolution_verification=verified, resolution_verified_at=now()
+        ComplaintView->>DB: UPDATE status=closed, closed_at=now()
+        DB-->>ComplaintView: Ticket closed
+        ComplaintView->>ORM: complaint.purge_attached_media()
+        ORM->>DB: DELETE media files; UPDATE evidence=null, resolution_proof=null, reopen_proof=null
+        ComplaintView-->>Browser: Redirect → feedback form /complaints/[token]/feedback/
+        Student->>Browser: Submits rating (1-5) + comment
+        Browser->>ComplaintView: POST /complaints/[token]/feedback/
+        ComplaintView->>DB: INSERT INTO core_complaintfeedback (rating=4, comment=...)
+        DB-->>ComplaintView: Feedback stored
+        ComplaintView-->>Browser: "Thank you" confirmation page
+    else Student disputes resolution
+        Student->>Browser: Clicks Reject — uploads reopen_proof
+        Browser->>ComplaintView: POST /complaints/[token]/reopen/ [reopen_proof image + reason]
+        ComplaintView->>DB: UPDATE status=reopened, reopen_proof=path, reopen_reason=text, reopen_count++
+        DB-->>ComplaintView: Ticket reopened
+        ComplaintView->>DB: INSERT ComplaintStatusHistory(status=reopened)
+        ComplaintView-->>Browser: Redirect → tracking page with status=REOPENED
+        Browser-->>Student: "Ticket reopened — manager notified"
+    end

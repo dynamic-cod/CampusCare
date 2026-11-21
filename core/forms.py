@@ -11,7 +11,7 @@ from .smart import score_priority, suggest_category
 class GroupedCategorySelect(forms.Select):
     """
     A <select> widget that renders complaint categories in optgroups:
-      1. 🍽️ Dining Hall & Mess Services  — always listed first
+      1. Dining Hall & Mess Services  — always listed first
       2. All other departments, sorted alphabetically
     """
 
@@ -25,7 +25,7 @@ class GroupedCategorySelect(forms.Select):
         other_groups = []
         for label, subgroup, idx in groups:
             if label and "dining" in label.lower() or (label and "mess" in label.lower()):
-                dining_group = ("🍽️ Dining Hall & Mess Services", subgroup, idx)
+                dining_group = ("Dining Hall & Mess Services", subgroup, idx)
             else:
                 other_groups.append((label, subgroup, idx))
         if dining_group:
@@ -38,8 +38,11 @@ class ComplaintSubmissionForm(forms.ModelForm):
     room_number = forms.CharField(
         max_length=20, 
         required=False,
-        label="Room number (optional)",
-        help_text="Enter the room number of your department or hostel (e.g., 001, 002, A205). Leave blank if the issue is outside a specific room."
+        label="Room Number",
+        widget=forms.TextInput(attrs={
+            "placeholder": "e.g., 204 or A-12",
+            "class": "form-control",
+        }),
     )
     
     class Meta:
@@ -49,9 +52,20 @@ class ComplaintSubmissionForm(forms.ModelForm):
             "description", "is_public", "evidence",
         )
         widgets = {
-            "description": forms.Textarea(attrs={"rows": 5}),
-            "title": forms.TextInput(attrs={"placeholder": "e.g., WiFi not working in Room A205"}),
+            "description": forms.Textarea(attrs={
+                "rows": 4,
+                "placeholder": "Describe the issue clearly (what needs repair, how long it has persisted)...",
+                "class": "form-control",
+            }),
+            "title": forms.TextInput(attrs={
+                "placeholder": "e.g., Water leakage from ceiling pipe",
+                "class": "form-control",
+            }),
             "category": GroupedCategorySelect(attrs={"class": "form-control"}),
+            "location_description": forms.TextInput(attrs={
+                "placeholder": "e.g., 2nd Floor, West Wing corridor",
+                "class": "form-control",
+            }),
         }
 
     def __init__(self, *args, **kwargs):
@@ -65,43 +79,49 @@ class ComplaintSubmissionForm(forms.ModelForm):
         dining_choices = [(c.pk, c.name) for c in mess_cats]
         other_choices  = [(c.pk, c.name) for c in other_cats]
         self.fields["category"].widget.choices = (
-            [("" , "---------")]
-            + [("🍽️ Dining Hall & Mess Services", dining_choices)]
+            [("" , "Select category")]
+            + [("Dining Hall & Mess Services", dining_choices)]
             + other_choices
         )
         self.fields["category"].required = True
-        self.fields["category"].help_text = "Select the category that best describes your issue."
+        self.fields["category"].help_text = ""
         self.fields["reporter_name"].label = "Student Name"
         self.fields["reporter_name"].required = True
         self.fields["reporter_name"].error_messages = {
             "required": "Both Name and Enrollment Number are required.",
         }
-        self.fields["reporter_name"].help_text = "Enter your full name as registered."
+        self.fields["reporter_name"].help_text = ""
         self.fields["reporter_name"].widget.attrs.update({
-            "placeholder": "Enter student full name",
+            "placeholder": "e.g., Mohammad Asif",
             "class": "form-control",
             "required": "required",
         })
-        self.fields["reporter_enrollment_number"].label = "Student Enrollment Number"
-        self.fields["reporter_enrollment_number"].help_text = (
-            "Must be exactly 6 characters: 2 letters followed by 4 digits (e.g., gq1234 or AA0001)."
-        )
+        self.fields["reporter_enrollment_number"].label = "Enrollment Number"
+        self.fields["reporter_enrollment_number"].help_text = ""
         self.fields["reporter_enrollment_number"].required = True
         self.fields["reporter_enrollment_number"].error_messages = {
             "required": "Both Name and Enrollment Number are required.",
         }
         self.fields["reporter_enrollment_number"].widget.attrs.update({
-            "placeholder": "e.g., gq1234 or AA0001",
+            "placeholder": "e.g., GQ1234",
             "class": "form-control",
             "maxlength": "6",
             "pattern": "[a-zA-Z]{2}[0-9]{4}",
-            "title": "Must be exactly 6 characters: 2 letters followed by 4 digits (e.g., gq1234 or AA0001)",
+            "title": "Must be exactly 6 characters: 2 letters followed by 4 digits (e.g., GQ1234)",
             "required": "required",
         })
-        self.fields["title"].help_text = "Brief one-line summary of the issue (e.g., 'WiFi not working in Room A205')"
+        self.fields["title"].label = "Issue Title"
+        self.fields["title"].help_text = ""
+        self.fields["description"].label = "Description"
+        self.fields["description"].help_text = ""
+        self.fields["location_description"].label = "Location or Landmark"
+        self.fields["location_description"].help_text = ""
+        self.fields["evidence"].label = "Photo Evidence"
+        self.fields["evidence"].help_text = ""
         self.fields["is_public"].initial = True
         self.fields["is_public"].required = False
-        self.fields["is_public"].label = "Public issue (visible on the public issue board for peer student support)"
+        self.fields["is_public"].label = "Display on public community board"
+        self.fields["is_public"].help_text = ""
         self.fields["is_public"].widget.attrs.update({"class": "form-check-input", "checked": "checked"})
         # Set initial room_number from existing room if editing
         if self.instance and self.instance.room:

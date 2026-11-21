@@ -1,0 +1,1169 @@
+<div align="center">
+
+# SOFTWARE REQUIREMENTS SPECIFICATION
+
+## CampusCare: University Facility Maintenance & Operations Platform
+
+**Version 2.0 — Final Release**
+
+**Document Identifier:** CC-SRS-2026-v2.0
+
+**Prepared For:** Department of Computer Science, Aligarh Muslim University
+
+**Date of Issue:** 14 October 2026
+
+**Classification:** ACADEMIC — INTERNAL USE ONLY
+
+---
+
+| **Field** | **Detail** |
+|:---|:---|
+| **Project Title** | CampusCare — University Facility Maintenance & Operations Platform |
+| **Document Standard** | IEEE 830-1998 / ISO/IEC/IEEE 29148:2018 |
+| **Version** | 2.0 |
+| **Authors** | CampusCare Development Team |
+| **Institutional Affiliation** | Aligarh Muslim University (AMU), Aligarh, India |
+| **Date** | 14 October 2026 |
+
+</div>
+
+---
+
+<div align="center">
+
+## REVISION HISTORY
+
+</div>
+
+| **Version** | **Date** | **Author** | **Change Description** |
+|:---:|:---:|:---|:---|
+| 1.0 | 01 Aug 2026 | CampusCare Team | Initial SRS draft with core functional requirements |
+| 1.5 | 15 Sep 2026 | CampusCare Team | Added AI Triage, Dispatcher, and RBAC specifications |
+| 2.0 | 14 Oct 2026 | CampusCare Team | Final production release — full data architecture, ERD, acceptance criteria, and security hardening |
+
+---
+
+## TABLE OF CONTENTS
+
+| **Section** | **Title** |
+|:---:|:---|
+| — | Revision History |
+| — | Table of Contents |
+| **1** | **INTRODUCTION** |
+| 1.1 | Purpose |
+| 1.2 | Scope |
+| 1.3 | Definitions, Acronyms, and Abbreviations |
+| **2** | **OVERALL DESCRIPTION & HIGH-LEVEL ARCHITECTURE** |
+| 2.1 | Product Perspective |
+| 2.2 | Product Features |
+| 2.3 | User Classes & Characteristics |
+| 2.4 | Operating Environment |
+| 2.5 | Design and Implementation Constraints |
+| 2.6 | Assumptions and Dependencies |
+| **3** | **FUNCTIONAL REQUIREMENTS & BEHAVIORAL MODELS** |
+| 3.1 | Core System Features & Capabilities |
+| 3.2 | Technical Flow Explanations |
+| 3.3 | Object Lifecycle States |
+| **4** | **EXTERNAL INTERFACE REQUIREMENTS** |
+| 4.1 | User Interfaces (UI) |
+| 4.2 | Hardware Interfaces |
+| 4.3 | Software Interfaces |
+| 4.4 | Communication Interfaces |
+| **5** | **NON-FUNCTIONAL & SECURITY REQUIREMENTS** |
+| 5.1 | Performance Requirements |
+| 5.2 | Safety and Reliability Requirements |
+| 5.3 | Security Requirements & Access Policies |
+| 5.4 | Software Quality Attributes |
+| **6** | **DATA ARCHITECTURE & APPENDICES** |
+| 6.1 | Logical Data Models |
+| 6.2 | Appendix A: Data Dictionary |
+| 6.3 | Appendix B: Acceptance Criteria |
+| **7** | **REFERENCES** |
+
+---
+
+# 1. INTRODUCTION
+
+## 1.1 Purpose
+
+The purpose of this Software Requirements Specification (SRS) document is to provide a complete, unambiguous, and formally structured definition of all functional, non-functional, and interface requirements for the **CampusCare University Facility Maintenance & Operations Platform**. This document serves as the authoritative contractual baseline between the development team and all institutional stakeholders, governing the design, implementation, verification, and validation of the system throughout its software development lifecycle.
+
+The primary objectives of this specification are as follows:
+
+1. **Requirement Codification:** To enumerate every verifiable software requirement — encompassing complaint lifecycle management, AI-assisted spatial triage, automated technician dispatch, multi-tenant role-based access control (RBAC), and closed-loop student verification workflows — in a manner that permits traceability from requirement origin through implementation to acceptance testing.
+2. **Stakeholder Alignment:** To establish a shared understanding of the system's behavioural contract among all parties, including university administration (Registrar, Provosts, Heads of Department), campus maintenance staff, student body, and the software engineering team.
+3. **Architectural Governance:** To formally constrain the technological boundaries, performance envelopes, and security posture of the system, ensuring compliance with IEEE 830-1998 and ISO/IEC/IEEE 29148:2018 standards.
+
+**Target Audience:** This document is intended for the following readership categories:
+
+- **University Administration:** Registrar Office, Provosts of Residential Halls, and Heads of Maintenance Departments seeking operational clarity on system capabilities and access jurisdictions.
+- **Software Engineers & Developers:** Backend, frontend, and DevOps engineers responsible for implementation, testing, and deployment of the CampusCare platform.
+- **Quality Assurance Personnel:** Testers and reviewers who shall derive test plans, acceptance criteria, and regression suites from the requirements herein specified.
+- **Academic Evaluators:** Faculty supervisors and examination boards conducting formal evaluation of the project's technical merit and completeness.
+
+## 1.2 Scope
+
+### 1.2.1 Product Identification
+
+**CampusCare** is an enterprise-grade, multi-tenant facility management and automated complaint lifecycle resolution platform engineered for large-scale collegiate campuses. The reference deployment is modelled on Aligarh Muslim University (AMU), encompassing 20 Residential Halls, 84 Constituent Hostels, 13 Academic Faculties, and a 157-person maintenance staff directory.
+
+### 1.2.2 Product Values and Objectives
+
+The system shall deliver the following core value propositions:
+
+- **Friction-Free Complaint Submission:** Students shall submit maintenance complaints without requiring user account registration, authenticating solely via their university enrollment number (format: 2 alpha + 4 numeric characters).
+- **AI-Powered Spatial Triage:** The system shall automatically bind each complaint to a verified campus building, floor, and room using a multi-priority extraction pipeline that resolves building aliases, academic department codes, and constituent hostel hierarchies.
+- **Automated Technician Dispatch:** Upon complaint creation, the system shall autonomously select and assign the optimal maintenance technician based on department expertise, geographic proximity, trade specialisation, and current active task load, using a least-loaded scheduling algorithm.
+- **Anti-Fraud Dwell Timing:** A mandatory 5-minute minimum dwell period shall be enforced between a technician marking a task "In Progress" and attempting "Resolved," preventing fraudulent remote closures.
+- **Closed-Loop Student Verification:** Students shall independently verify or dispute resolutions via a private 32-character tracking token, with disputed complaints automatically escalating to Urgent priority (score = 95) and deducting 15 points from the assigned technician's accountability score.
+- **Row-Level Multi-Tenant RBAC:** Each administrative role (Registrar, Provost, HOD) shall operate within strictly scoped data boundaries with zero cross-tenant data leakage.
+
+### 1.2.3 Explicit Out-of-Scope Exclusions
+
+The following capabilities are explicitly excluded from the current release scope:
+
+| **Item** | **Reason for Exclusion** |
+|:---|:---|
+| Mobile native applications (iOS/Android) | The platform is delivered as a responsive Progressive Web Application (PWA); native app development is deferred to a future phase. |
+| Financial billing and payment processing | CampusCare is an operational facility management tool; no financial transactions are processed within the system boundary. |
+| Real-time push notifications (WebSocket) | The current architecture relies on periodic HTTP polling for status updates; WebSocket integration is planned for Phase 3. |
+| Multi-language internationalisation (i18n) | The system operates exclusively in English (en-US) for the initial release. Hindi/Urdu localisation is deferred. |
+| Integration with university ERP systems | Direct integration with the AMU Student Information System (SIS) or finance ERP is not implemented in the current version. |
+| Hostel room allotment or accommodation management | The system manages facility complaints only; room allotment is outside the product boundary. |
+
+## 1.3 Definitions, Acronyms, and Abbreviations
+
+| **Term / Acronym** | **Definition** |
+|:---|:---|
+| **AMU** | Aligarh Muslim University — the target institutional deployment environment. |
+| **RBAC** | Role-Based Access Control — an access management paradigm where system permissions are assigned to defined roles rather than individual users. |
+| **SLA** | Service Level Agreement — a contractual time-bound target within which a maintenance complaint must be resolved (e.g., Urgent: 2 hours, Normal: 24 hours). |
+| **NLP** | Natural Language Processing — computational techniques used by the AI Triage engine to extract keywords, classify complaint categories, and detect urgency signals from free-text descriptions. |
+| **CSRF** | Cross-Site Request Forgery — a class of web security vulnerability mitigated by the Django CSRF middleware token validation. |
+| **HSTS** | HTTP Strict Transport Security — a security policy enforcing HTTPS-only communication in production environments. |
+| **Tracking Token** | A system-generated 32-character hexadecimal UUID serving as the student's private credential for anonymous complaint tracking. |
+| **Staff Task Token** | A UUID-based tokenised URL enabling zero-login direct access for maintenance technicians to their assigned task portal. |
+| **Dwell Timer** | An anti-fraud mechanism enforcing a minimum 5-minute elapsed time between status transitions from "In Progress" to "Resolved." |
+| **Accountability Score** | An integer metric (default: 100) assigned to each technician profile, decremented by 15 points upon each legitimate student dispute of a resolution. |
+| **Spatial Binding** | The process by which the AI Triage engine resolves a complaint's free-text location description to a verified Building, Floor, and Room hierarchy in the spatial database. |
+| **ERD** | Entity-Relationship Diagram — a data modelling notation showing database tables, their attributes, and inter-table relationships. |
+| **ORM** | Object-Relational Mapping — the Django framework's abstraction layer translating Python model classes to SQL database operations. |
+| **Constituent Hostel** | A child hostel block physically located within a parent Residential Hall (e.g., Macdonnell Hostel within Aftab Hall). |
+| **Provost** | The administrative head of a Residential Hall, possessing scoped jurisdiction over the hall and all its constituent hostels. |
+| **HOD** | Head of Department — the administrative head of a maintenance department (e.g., Electrical, Plumbing, Civil, Sanitation). |
+| **Registrar** | The chief administrative officer with global, university-wide jurisdiction over all complaints, buildings, and staff. |
+| **PWA** | Progressive Web Application — a web application that uses modern web technologies to deliver app-like experiences on mobile and desktop devices. |
+| **WhiteNoise** | A Python middleware library that serves static files directly from the Django application process without requiring a separate web server. |
+| **SQLite** | A self-contained, serverless relational database engine used as the development and single-server production database backend. |
+| **Pillow** | The Python Imaging Library (PIL) fork used for in-memory image compression of uploaded evidence and resolution proof photographs. |
+
+---
+
+# 2. OVERALL DESCRIPTION & HIGH-LEVEL ARCHITECTURE
+
+## 2.1 Product Perspective
+
+CampusCare operates as a standalone, self-contained web application within the institutional technology landscape of Aligarh Muslim University. It does not depend on or integrate with any pre-existing university information system, instead maintaining its own canonical spatial database of campus infrastructure (Halls, Hostels, Departments, Buildings, Floors, Rooms) and personnel directory (157 maintenance staff records).
+
+The system is architecturally positioned as a centralised digital bridge connecting three previously disconnected operational domains: (1) student-initiated facility complaint reporting, (2) administrative oversight and jurisdictional management, and (3) frontline technician task execution and accountability tracking.
+
+### System Architecture Diagram
+
+```mermaid
+graph TB
+    subgraph "CLIENT LAYER"
+        A["Student Browser<br/>(Anonymous)"]
+        B["Admin Browser<br/>(Authenticated)"]
+        C["Technician Browser<br/>(Token-Based)"]
+    end
+
+    subgraph "PRESENTATION LAYER"
+        D["Django Template Engine<br/>(Jinja2-Compatible)"]
+        E["Static Assets<br/>(WhiteNoise CDN)"]
+        F["Responsive HTML5 CSS3<br/>JavaScript Frontend"]
+    end
+
+    subgraph "APPLICATION LAYER - Django 5.x"
+        G["URL Router<br/>(campuscare.urls + core.urls)"]
+        H["View Controllers<br/>(Function-Based Views)"]
+        I["Form Validators<br/>(ModelForm + Custom)"]
+        J["RBAC Permission Engine<br/>(permissions.py)"]
+        K["AI Triage Engine<br/>(ai_triage.py)"]
+        L["NLP Category Classifier<br/>(smart.py)"]
+        M["Staff Roster Matcher<br/>(staff_matcher.py)"]
+        N["Auto-Dispatch Engine<br/>(dispatcher.py)"]
+        O["Accountability Engine<br/>(accountability.py)"]
+        P["Analytics Engine<br/>(analytics.py)"]
+    end
+
+    subgraph "DATA LAYER"
+        Q["Django ORM<br/>(models.py)"]
+        R["SQLite 3 Database<br/>(db.sqlite3)"]
+        S["Media Storage<br/>(File System)"]
+        T["Staff Roster JSON<br/>(staff_data.json)"]
+        U["In-Memory Cache<br/>(LocMemCache)"]
+    end
+
+    A -->|"HTTP GET/POST"| G
+    B -->|"Authenticated Session"| G
+    C -->|"UUID Token URL"| G
+    G --> H
+    H --> D
+    D --> F
+    F --> E
+    H --> I
+    H --> J
+    H --> K
+    H --> N
+    K --> L
+    K --> M
+    N --> M
+    N --> O
+    H --> P
+    I --> Q
+    J --> Q
+    K --> Q
+    N --> Q
+    O --> Q
+    P --> Q
+    Q --> R
+    Q --> S
+    M --> T
+    H --> U
+```
+
+**Technical Data Flow Explanation:** All client interactions — whether from anonymous student browsers, authenticated administrative consoles, or tokenised technician portals — ingress through the Django URL Router, which dispatches requests to the appropriate Function-Based View Controller within the Application Layer. The View Controllers orchestrate business logic by invoking specialised engines: the AI Triage Engine performs spatial binding and room resolution, the NLP Category Classifier suggests complaint categories with calibrated confidence scores (50%–95%), and the Auto-Dispatch Engine selects the least-loaded technician via the Staff Roster Matcher. All persistent data operations are mediated through the Django ORM, which translates model operations to SQL queries against the SQLite 3 database, while uploaded media (evidence photographs, resolution proofs) are persisted directly to the file system under the media directory with automated purging upon complaint closure.
+
+## 2.2 Product Features
+
+The following table enumerates the high-level functional groupings and modules that collectively constitute the CampusCare platform:
+
+| **Module ID** | **Module Name** | **Description** |
+|:---:|:---|:---|
+| M-01 | **Campus Spatial Hierarchy** | Complete spatial database modelling 20 Residential Halls, 84 Constituent Hostels, 13 Academic Faculties, and associated Floors and Rooms with self-referential parent-child relationships. |
+| M-02 | **Anonymous Complaint Submission** | Zero-login student complaint creation with validated enrollment number (2 alpha + 4 digit format), AI-suggested category, NLP-scored priority, and optional photographic evidence upload. |
+| M-03 | **AI Spatial Triage and Room Binding** | Multi-priority extraction pipeline resolving free-text location descriptions to verified Building, Floor, and Room hierarchies using building aliases, academic department detection, and hostel parent-child resolution. |
+| M-04 | **NLP Category Classification** | Keyword-weighted heuristic engine with domain-specific vocabulary (Electrical, Plumbing, Civil, Sanitation, IT, Dining, Laboratory, Medical, Security) and cross-faculty isolation to prevent misclassification. |
+| M-05 | **Automated Technician Dispatch** | Least-loaded scheduling algorithm selecting the optimal technician from a 157-person roster based on department expertise, geographic proximity, trade specialisation, and current active task count. |
+| M-06 | **Zero-Login Technician Portal** | UUID-tokenised direct task access portal enabling technicians to view assignment details, mark tasks in-progress, upload resolution proofs, and mark tasks as resolved without authentication credentials. |
+| M-07 | **Anti-Fraud Dwell Timer** | Enforcement of a strict 5-minute minimum elapsed time between In Progress and Resolved status transitions to prevent fraudulent remote closures by technicians. |
+| M-08 | **Closed-Loop Student Verification** | Private 32-character tracking token enabling students to monitor complaint status in real-time, confirm verified resolutions, or initiate disputes with mandatory photographic evidence. |
+| M-09 | **Dispute and Accountability Engine** | Automated escalation of disputed complaints to Urgent priority (score = 95) with a minus 15 point deduction from the assigned technician's accountability score. |
+| M-10 | **Multi-Tenant RBAC Console** | Row-level ORM query scoping ensuring Registrar (global), Provost (hall + hostels), and HOD (department) jurisdictions operate with zero cross-tenant data leakage. |
+| M-11 | **Analytics and Reporting Dashboard** | Operational analytics including department-wise resolution metrics, SLA breach monitoring, trend analysis, recurring issue heatmaps, and CSV export capabilities. |
+| M-12 | **Daily Dispatch Sheet** | Printable daily task assignment sheet for physical dispatch tracking and signed paper-slip workflows. |
+| M-13 | **Community Support Voting** | Public issue board allowing students to upvote complaints (one vote per user or session) to signal community priority. |
+| M-14 | **Duplicate Detection Engine** | Text-similarity analysis (Ratcliff/Obershelp SequenceMatcher) identifying potential duplicate complaints at the same location with 58% or higher similarity threshold. |
+| M-15 | **Campus Heatmap Visualization** | Geographic heatmap overlay displaying complaint density across campus buildings with GPS coordinate support. |
+| M-16 | **Automated Media Purge** | Disk storage cleanup process that permanently deletes evidence, resolution proof, and reopen proof image files upon complaint closure confirmation. |
+
+## 2.3 User Classes & Characteristics
+
+| **User Class** | **Access Level** | **Authentication** | **Competency** | **Mandates and Privileges** |
+|:---|:---:|:---|:---|:---|
+| **Student** | Public | None (anonymous submission via enrollment number) | Basic digital literacy; ability to describe facility issues in free-text English. | Submit complaints (max 3 concurrent active); track status via private token; confirm or dispute resolutions with star ratings and feedback; upload photographic evidence. |
+| **Registrar** | Global | Username/Password (Django Auth) | Senior administrative officer with university-wide operational oversight. | View, filter, and manage ALL complaints across every hall, department, and facility; manually assign/reassign technicians; override priorities; export CSV reports; access full analytics dashboard. |
+| **Provost** | Hall-Scoped | Username/Password (Django Auth) | Residential hall warden with jurisdiction over a specific hall and its constituent hostels. | View and manage complaints ONLY within their assigned hall and its child hostels; assign technicians within jurisdiction; access scoped analytics. |
+| **Head of Department (HOD)** | Dept-Scoped | Username/Password (Django Auth) | Maintenance department leader managing a specific trade category (e.g., Electrical, Plumbing). | View and manage complaints ONLY within their department's trade jurisdiction; monitor department-specific SLA compliance; access department-scoped analytics. |
+| **Maintenance Technician** | Task-Scoped | Zero-Login (UUID Task Token URL) | Frontline repair personnel with trade-specific expertise; variable digital literacy. | Access assigned task details via tokenised URL; mark tasks In Progress; upload mandatory resolution proof photographs; mark tasks Resolved (subject to 5-minute dwell timer); CANNOT close complaints. |
+| **System Administrator** | Superuser | Django Admin (is_superuser=True) | Technical personnel with full database and configuration access. | Full Django Admin panel access; manage all models; create/modify user accounts and profiles; configure system settings. |
+
+## 2.4 Operating Environment
+
+### 2.4.1 Server-Side Environment
+
+| **Parameter** | **Specification** |
+|:---|:---|
+| **Runtime** | Python 3.9+ (CPython) |
+| **Framework** | Django 5.0+ (LTS-compatible) |
+| **Database Engine** | SQLite 3 (development and single-server production) |
+| **WSGI Server** | Gunicorn (production) / Django Development Server (development) |
+| **ASGI Server** | Daphne or Uvicorn (future WebSocket support) |
+| **Static File Serving** | WhiteNoise 6.0+ (CompressedStaticFilesStorage) |
+| **Image Processing** | Pillow 9.0+ (in-memory JPEG/PNG/WebP compression) |
+| **Configuration** | python-decouple 3.8+ (.env file management) |
+| **Operating System** | Linux (Ubuntu 22.04+ recommended), macOS 13+, Windows 10+ (WSL) |
+| **Time Zone** | Asia/Kolkata (IST, UTC+05:30) |
+
+### 2.4.2 Client-Side Environment
+
+| **Parameter** | **Specification** |
+|:---|:---|
+| **Target Browsers** | Google Chrome 90+, Mozilla Firefox 88+, Safari 14+, Microsoft Edge 90+ |
+| **Responsive Breakpoints** | Mobile (up to 768px), Tablet (769px to 1024px), Desktop (1025px and above) |
+| **JavaScript** | Vanilla ES6+ (no external JS framework dependency) |
+| **CSS** | Custom responsive stylesheet with CSS Grid and Flexbox layouts |
+
+### 2.4.3 Cloud and Deployment Environment
+
+| **Parameter** | **Specification** |
+|:---|:---|
+| **Primary Deployment** | On-premises university server or VPS (DigitalOcean, AWS EC2, Google Cloud Compute) |
+| **Containerisation** | Docker-compatible (Dockerfile deferred to Phase 3) |
+| **Reverse Proxy** | Nginx recommended for production deployment |
+| **TLS/SSL** | Let's Encrypt or institutional CA certificate |
+| **CDN** | Optional (Cloudflare or university CDN for static assets) |
+
+## 2.5 Design and Implementation Constraints
+
+1. **Framework Lock-In:** The system SHALL be implemented exclusively using the Django web framework (version 5.0 or higher) with Python 3.9+ as the runtime environment. No alternative backend frameworks (Flask, FastAPI, Express.js) are permitted.
+2. **Database Constraint:** The current release SHALL utilise SQLite 3 as the sole database backend. Migration to PostgreSQL is architecturally supported via Django ORM abstraction but is not mandated for the initial deployment.
+3. **No External JavaScript Frameworks:** The frontend SHALL NOT depend on React, Vue, Angular, or any third-party JavaScript framework. All client-side interactivity SHALL be implemented using vanilla JavaScript (ES6+).
+4. **Image Format Restriction:** Uploaded evidence and proof photographs SHALL be restricted to JPG, JPEG, PNG, and WebP formats only, as enforced by the FileExtensionValidator on the Complaint model image fields.
+5. **Enrollment Number Format:** Student enrollment numbers SHALL conform to the strict format of exactly 6 characters: 2 alphabetic letters followed by 4 numeric digits (regex: `^[a-zA-Z]{2}\d{4}$`).
+6. **Concurrent Ticket Cap:** A single enrollment number SHALL NOT have more than 3 concurrent active (non-resolved, non-closed) complaints at any given time.
+7. **Session-Based Authentication:** Sub-admin authentication SHALL use Django's built-in session-based authentication framework with CSRF token protection on all state-modifying endpoints.
+8. **Timezone Enforcement:** All temporal operations SHALL use the Asia/Kolkata (IST) timezone as configured in settings.TIME_ZONE, with timezone-aware DateTimeField storage (USE_TZ = True).
+
+## 2.6 Assumptions and Dependencies
+
+### 2.6.1 Assumptions
+
+1. The university campus infrastructure (Halls, Hostels, Departments, Rooms) remains relatively stable during the system's operational lifecycle; major restructuring of the spatial hierarchy would require re-execution of the synchronisation scripts (sync_departments.py, sync_halls_hostels.py).
+2. Students possess access to a web-capable device (smartphone, laptop, or desktop) with a modern browser and internet connectivity sufficient for HTTP form submissions and image uploads.
+3. Maintenance technicians possess mobile devices capable of loading the tokenised task portal URL and capturing photographic resolution proofs via the device camera.
+4. The university's network infrastructure provides reliable HTTP/HTTPS connectivity between client devices and the CampusCare server.
+5. The maintenance staff roster (staff_data.json, 157 personnel records) is assumed to be current; staff turnover requires manual JSON updates or re-import from the source Excel file.
+
+### 2.6.2 External Dependencies
+
+| **Dependency** | **Type** | **Version** | **Purpose** | **Failure Impact** |
+|:---|:---:|:---:|:---|:---|
+| Django | Framework | 4.2 to 5.0 | Core web application framework, ORM, authentication, URL routing, template engine. | **Critical** — Total system failure. |
+| Pillow | Library | 9.0+ | In-memory image compression for evidence and proof uploads. | **High** — Image uploads would fail; complaints without evidence can still proceed. |
+| WhiteNoise | Middleware | 6.0.0+ | Static file serving without external web server dependency. | **Medium** — Static assets (CSS, JS, images) would not load; functionality unaffected. |
+| python-decouple | Library | 3.8+ | Environment variable management from .env files. | **Low** — Fallback to hardcoded default values in settings.py. |
+| SQLite 3 | Database | Built-in | Persistent data storage for all application models. | **Critical** — Total data loss if corrupted; WAL journaling provides crash safety. |
+
+---
+
+# 3. FUNCTIONAL REQUIREMENTS & BEHAVIORAL MODELS
+
+## 3.1 Core System Features & Capabilities
+
+### Use Case Diagram
+
+```mermaid
+graph LR
+    subgraph "ACTORS"
+        STU["Student<br/>(Anonymous)"]
+        REG["Registrar<br/>(Global Admin)"]
+        PRV["Provost<br/>(Hall Admin)"]
+        HOD["HOD<br/>(Dept Admin)"]
+        TECH["Technician<br/>(Field Staff)"]
+        SYS["System<br/>(Automated)"]
+    end
+
+    subgraph "CAMPUSCARE SYSTEM BOUNDARY"
+        UC1["UC-01: Submit Complaint"]
+        UC2["UC-02: Track Complaint<br/>via Token"]
+        UC3["UC-03: Confirm or Dispute<br/>Resolution"]
+        UC4["UC-04: Provide Feedback<br/>and Rating"]
+        UC5["UC-05: View Admin<br/>Dashboard"]
+        UC6["UC-06: Assign Technician<br/>Manually"]
+        UC7["UC-07: Update Complaint<br/>Status"]
+        UC8["UC-08: Export CSV<br/>Report"]
+        UC9["UC-09: View Scoped<br/>Dashboard"]
+        UC10["UC-10: Execute<br/>Assigned Task"]
+        UC11["UC-11: Upload Resolution<br/>Proof"]
+        UC12["UC-12: AI Category<br/>Suggestion"]
+        UC13["UC-13: Auto-Dispatch<br/>Technician"]
+        UC14["UC-14: SLA Escalation"]
+        UC15["UC-15: Accountability<br/>Scoring"]
+        UC16["UC-16: Media Purge<br/>on Closure"]
+        UC17["UC-17: Duplicate<br/>Detection"]
+        UC18["UC-18: Community<br/>Support Vote"]
+        UC19["UC-19: View Analytics<br/>Dashboard"]
+        UC20["UC-20: Print Dispatch<br/>Sheet"]
+    end
+
+    STU --> UC1
+    STU --> UC2
+    STU --> UC3
+    STU --> UC4
+    STU --> UC18
+
+    REG --> UC5
+    REG --> UC6
+    REG --> UC7
+    REG --> UC8
+    REG --> UC19
+    REG --> UC20
+
+    PRV --> UC9
+    PRV --> UC6
+    PRV --> UC7
+
+    HOD --> UC9
+    HOD --> UC7
+
+    TECH --> UC10
+    TECH --> UC11
+
+    SYS --> UC12
+    SYS --> UC13
+    SYS --> UC14
+    SYS --> UC15
+    SYS --> UC16
+    SYS --> UC17
+```
+
+**Technical Explanation:** The use case diagram delineates six distinct actor classes interacting with the CampusCare system boundary across twenty discrete use cases. Student actors operate exclusively through anonymous, token-authenticated interfaces (UC-01 through UC-04, UC-18), while administrative actors (Registrar, Provost, HOD) access scoped dashboard consoles with row-level ORM filtering ensuring jurisdictional isolation. The System actor represents automated, event-driven processes — including AI category suggestion (UC-12), auto-dispatch (UC-13), SLA escalation (UC-14), accountability scoring (UC-15), media purge (UC-16), and duplicate detection (UC-17) — that execute without human intervention during the complaint lifecycle.
+
+### Detailed Functional Requirements
+
+| **Req. ID** | **Feature** | **Description** | **Priority** |
+|:---:|:---|:---|:---:|
+| FR-01 | Complaint Submission | The system SHALL allow students to submit facility complaints by providing their full name, enrollment number (2 alpha + 4 digits), complaint title, category, location description, detailed description, and optional photographic evidence. | Critical |
+| FR-02 | Enrollment Validation | The system SHALL validate that the enrollment number conforms to the format `^[a-zA-Z]{2}\d{4}$` and reject non-conforming values with a descriptive error message. | Critical |
+| FR-03 | Concurrent Ticket Cap | The system SHALL enforce a maximum of 3 concurrent active (non-resolved, non-closed) complaints per unique enrollment number. | High |
+| FR-04 | Tracking Token Generation | Upon successful complaint creation, the system SHALL generate a unique 32-character hexadecimal tracking token and display it to the student for future reference. | Critical |
+| FR-05 | AI Category Suggestion | The system SHALL provide real-time category suggestions via the /api/suggest-category/ endpoint, using keyword-weighted heuristic scoring with calibrated confidence percentages (50% to 95%). | High |
+| FR-06 | Cross-Faculty Isolation | The AI category classifier SHALL prevent cross-faculty misclassification by filtering categories from incompatible academic faculty codes when an academic department is detected in the complaint text. | High |
+| FR-07 | Priority Scoring | The system SHALL automatically compute a priority score (0 to 100) and assign a priority level (Urgent/High/Normal/Low) based on keyword analysis of the complaint title, description, and category. | High |
+| FR-08 | SLA Assignment | The system SHALL assign an SLA deadline based on the AI-determined priority: Urgent = 2 hours, High = 6 hours, Normal = 24 hours, Low = 48 hours. | High |
+| FR-09 | Spatial Binding | The system SHALL automatically resolve free-text location descriptions to the verified Campus, Building, Floor, and Room hierarchy using a multi-priority extraction pipeline. | Critical |
+| FR-10 | Auto-Dispatch | The system SHALL automatically assign the optimal maintenance technician upon complaint creation using the least-loaded scheduling algorithm with department, location, and trade matching. | Critical |
+| FR-11 | Mess/Dining Routing | For complaints classified under MESS/DINING department codes, the system SHALL preferentially route to the hall's dedicated Dining Incharge before falling back to the generic roster matcher. | High |
+| FR-12 | Technician Task Portal | The system SHALL provide a zero-login task portal accessible via /task/uuid:staff_task_token/ where technicians can view assignment details and update task status. | Critical |
+| FR-13 | Anti-Fraud Dwell Timer | The system SHALL enforce a minimum 5-minute elapsed time between In Progress and Resolved status transitions, rejecting premature resolution attempts. | Critical |
+| FR-14 | Mandatory Resolution Proof | The system SHALL require technicians to upload a photographic proof (JPG/PNG/WebP) when marking a task as Resolved. | Critical |
+| FR-15 | Student Tracking Portal | The system SHALL provide a complaint tracking interface at /track/tracking_token/ displaying real-time status, assignment details, and timeline. | Critical |
+| FR-16 | Status Polling API | The system SHALL expose a /track/tracking_token/poll/ endpoint returning the current complaint status as JSON for real-time UI updates without full page reload. | Medium |
+| FR-17 | Student Resolution Confirmation | The system SHALL allow students to confirm a resolution as Verified via the tracking portal, triggering complaint closure. | Critical |
+| FR-18 | Student Dispute Mechanism | The system SHALL allow students to dispute a resolution by providing a reason (10 or more characters) and mandatory photographic proof, which triggers automatic escalation to Urgent priority. | Critical |
+| FR-19 | Accountability Deduction | Upon legitimate student dispute, the system SHALL automatically deduct 15 points from the assigned technician's accountability_score. | High |
+| FR-20 | Automated Media Purge | Upon complaint closure confirmation, the system SHALL permanently delete all attached media files (evidence, resolution proof, reopen proof) from disk storage. | High |
+| FR-21 | Duplicate Detection | The system SHALL analyse new complaints for potential duplicates at the same location using Ratcliff/Obershelp text similarity with a 58% or higher match threshold. | Medium |
+| FR-22 | Community Support Voting | The system SHALL allow users (authenticated or session-based) to upvote public complaints, enforcing uniqueness per user or per session. | Low |
+| FR-23 | Admin Dashboard | The system SHALL provide a role-scoped administrative dashboard with complaint lists, status filters, assignment controls, and batch operations. | Critical |
+| FR-24 | CSV Report Export | The system SHALL allow Registrar-level users to export filtered complaint data as downloadable CSV files via /reports/complaints.csv. | Medium |
+| FR-25 | Analytics Dashboard | The system SHALL provide an operational analytics dashboard with department metrics, trend charts, recurring issue analysis, and heatmap visualisations. | Medium |
+| FR-26 | Daily Dispatch Sheet | The system SHALL generate a printable daily dispatch sheet listing all active assignments with technician details, task descriptions, and signature lines. | Medium |
+| FR-27 | Campus Heatmap | The system SHALL display a geographic heatmap visualisation of complaint density across campus buildings using GPS coordinate data. | Low |
+| FR-28 | SLA Escalation | The system SHALL automatically escalate overdue complaints (past SLA deadline) by incrementing the escalation_level counter and recording an audit trail entry. | High |
+
+## 3.2 Technical Flow Explanations
+
+### Complaint Lifecycle Sequence Diagram
+
+```mermaid
+sequenceDiagram
+    autonumber
+    participant S as Student Browser
+    participant V as Django View
+    participant F as Form Validator
+    participant AI as AI Triage Engine
+    participant NLP as NLP Classifier
+    participant D as Dispatcher Engine
+    participant SM as Staff Matcher
+    participant DB as SQLite Database
+    participant T as Technician Portal
+    participant ACC as Accountability Engine
+
+    S->>V: POST /complaints/new/<br/>(name, enrollment, title,<br/>category, location, description)
+    V->>F: Validate ComplaintSubmissionForm
+    F->>F: Validate enrollment format<br/>(2 alpha + 4 digits)
+    F->>DB: Check active ticket count<br/>(max 3 per enrollment)
+    F-->>V: Validation result
+
+    V->>NLP: suggest_category(text, categories)
+    NLP-->>V: (category, confidence %)
+    V->>NLP: score_priority(text, category)
+    NLP-->>V: (score, priority, reason, sla_hours)
+
+    V->>DB: CREATE Complaint record
+    DB->>AI: Trigger spatial binding<br/>(on Complaint.save)
+    AI->>AI: extract_building_and_department<br/>(aliases, dept codes, hostels)
+    AI->>DB: Resolve Room via<br/>Building-Floor-Room hierarchy
+    AI-->>DB: Complaint.room = resolved room
+
+    V->>D: auto_dispatch_complaint()
+    D->>SM: suggest_staff<br/>(category, location, title)
+    SM->>SM: Load staff_data.json<br/>(157 personnel records)
+    SM->>SM: detect_department_code<br/>match_canonical_location
+    SM-->>D: Top N matched staff
+    D->>DB: Query least-loaded<br/>technician (active count)
+    D->>DB: UPDATE Complaint<br/>(assigned_to, status=assigned)
+
+    V-->>S: 302 Redirect to<br/>Success Page<br/>(tracking_token displayed)
+
+    Note over S,T: Student receives tracking token
+
+    S->>V: GET /track/token/
+    V->>DB: Fetch complaint by token
+    V-->>S: Render tracking portal<br/>(status, assignment, timeline)
+
+    Note over T,ACC: Technician receives task URL
+
+    T->>V: POST /task/uuid/<br/>(status=in_progress)
+    V->>DB: UPDATE status, in_progress_at
+
+    T->>V: POST /task/uuid/<br/>(status=resolved,<br/>resolution_proof=photo)
+    V->>V: Enforce 5-min dwell timer<br/>(now - in_progress_at >= 300s)
+    V->>DB: UPDATE status=resolved,<br/>resolved_at, resolution_proof
+
+    S->>V: POST /track/token/confirm/<br/>(decision=verified, rating=4)
+    V->>DB: UPDATE resolution_verification<br/>=verified, status=closed
+    V->>DB: CREATE ComplaintFeedback<br/>(rating, comment)
+    V->>DB: Purge attached media<br/>from disk storage
+```
+
+**Technical Explanation:** The sequence diagram traces the complete end-to-end lifecycle of a maintenance complaint from initial student submission through AI-powered triage, automated technician dispatch, field resolution, and closed-loop student verification. Upon form submission, the Django View Controller orchestrates a multi-stage pipeline: (1) form validation including enrollment format and concurrent ticket cap enforcement, (2) NLP-based category suggestion and priority scoring, (3) database record creation with automatic spatial binding triggered during the model's save() method, and (4) auto-dispatch via the least-loaded scheduling algorithm. The anti-fraud dwell timer is enforced at the View layer by comparing timezone.now() against the recorded in_progress_at timestamp, rejecting resolution attempts where the elapsed delta is less than 300 seconds.
+
+## 3.3 Object Lifecycle States
+
+### Complaint State Machine Diagram
+
+```mermaid
+stateDiagram-v2
+    [*] --> Open : Student submits complaint
+
+    Open --> Assigned : Auto-dispatch assigns technician
+
+    Assigned --> InProgress : Technician marks task started
+
+    InProgress --> Resolved : Technician uploads proof<br/>(5-min dwell enforced)
+
+    Resolved --> Closed : Student confirms<br/>resolution as verified
+
+    Resolved --> Reopened : Student disputes<br/>resolution with proof
+
+    Reopened --> Assigned : System re-dispatches<br/>(priority escalated to Urgent)
+
+    Open --> Assigned : Admin manually assigns technician
+
+    Assigned --> Open : Admin unassigns technician
+
+    InProgress --> Assigned : Admin reassigns to different technician
+
+    Closed --> [*] : Terminal state<br/>(media purged from disk)
+
+    note right of Open
+        Initial state on creation.
+        AI triage binds spatial origin.
+        NLP scores priority and SLA.
+    end note
+
+    note right of Resolved
+        Awaiting student verification.
+        Technician cannot close.
+    end note
+
+    note right of Reopened
+        Auto-escalated to Urgent.
+        Priority score set to 95.
+        Technician penalized -15 pts.
+    end note
+
+    note right of Closed
+        Terminal immutable state.
+        All media files purged.
+        Feedback rating recorded.
+    end note
+```
+
+**Technical Explanation:** The state machine diagram models six discrete states governing the complaint lifecycle: Open, Assigned, In Progress, Resolved, Reopened, and Closed. State transitions are governed by a combination of automated system triggers (auto-dispatch on creation, SLA escalation on timeout) and human-initiated actions (technician status updates, student verification/dispute, administrative overrides). The Reopened state introduces a critical feedback loop: when a student disputes a resolution, the complaint transitions from Resolved to Reopened, triggering automatic priority escalation to Urgent (score = 95), a minus 15 point accountability deduction for the assigned technician, and re-entry into the dispatch pipeline for reassignment. The Closed state is terminal and immutable, at which point the purge_attached_media() method permanently deletes all evidence, resolution proof, and reopen proof image files from disk storage.
+
+---
+
+# 4. EXTERNAL INTERFACE REQUIREMENTS
+
+## 4.1 User Interfaces (UI)
+
+### 4.1.1 Student-Facing Interfaces
+
+| **Screen** | **Route** | **Description** | **Key UI Elements** |
+|:---|:---|:---|:---|
+| **Home / Landing Page** | `/` | Public-facing landing page with university branding, feature overview, and navigation to complaint submission and tracking. | Hero section, feature cards, quick-action buttons (Report Issue, Track Complaint), latest public complaints feed. |
+| **Complaint Submission Form** | `/complaints/new/` | Multi-field form for anonymous complaint creation with AI-assisted category suggestion. | Student name input, enrollment number input (masked 2 alpha + 4 digits), title field, category dropdown (grouped: Dining first, then alphabetical), location description, room number (optional), rich text description, file upload (evidence), public toggle checkbox, AI suggestion panel. |
+| **Submission Success Page** | `/complaints/new/` (POST redirect) | Confirmation page displaying the generated tracking token and complaint reference number. | Tracking token display (copyable), reference number, estimated SLA timeline, Track My Complaint button. |
+| **Tracking Form** | `/track/` | Simple form to enter a tracking token for complaint status lookup. | Token input field, Track submit button. |
+| **Complaint Tracking Portal** | `/track/<token>/` | Real-time complaint status display with full lifecycle timeline. | Status badge, priority indicator, assignment details (technician name, department), timeline progression, Confirm Resolution button, Dispute Resolution button, feedback form (1 to 5 star rating). |
+| **Public Complaint List** | `/complaints/` | Filterable public board showing all public complaints with community support counts. | Status filter tabs, search bar, complaint cards (title, category, location, status, support count), Support This Issue button. |
+| **Campus Directory** | `/campus-directory/` | Browsable directory of all campus buildings, halls, hostels, and departments. | Searchable table, building type filters, hall/hostel hierarchy display, department listings. |
+
+### 4.1.2 Administrative Interfaces
+
+| **Screen** | **Route** | **Description** | **Key UI Elements** |
+|:---|:---|:---|:---|
+| **Admin Dashboard** | `/dashboard/` | Role-scoped complaint management console (Registrar: global, Provost: hall-scoped, HOD: department-scoped). | Summary statistics cards (total, open, assigned, overdue, resolved), complaint data table with sorting/filtering, status update controls, technician assignment dropdown, bulk actions. |
+| **Complaint Detail (Admin)** | `/dashboard/complaints/<ref>/` | Detailed complaint view with full audit trail and management controls. | Complete complaint metadata, evidence image viewer, status history timeline, assignment controls, resolution proof viewer, status transition buttons, notes input. |
+| **Analytics Dashboard** | `/analytics/` | Operational analytics with charts, metrics, and heatmaps. | Department performance table, trend line charts (reported vs. resolved), recurring issues table, room heatmap grid, satisfaction ratings, CSV export button. |
+| **Daily Dispatch Sheet** | `/dashboard/dispatch-sheet/` | Printable daily task assignment roster for physical dispatch workflows. | Tabular layout (date, technician, task, location, priority, status), print-optimised CSS, signature lines, dispatch log. |
+| **Campus Heatmap** | `/dashboard/heatmap/` | Geographic complaint density visualisation. | Interactive map overlay, building markers, colour-coded density indicators, filtering controls. |
+
+### 4.1.3 Technician Interface
+
+| **Screen** | **Route** | **Description** | **Key UI Elements** |
+|:---|:---|:---|:---|
+| **Technician Task Portal** | `/task/<uuid>/` | Zero-login task execution interface for assigned maintenance technicians. | Task details (complaint title, description, location, priority, evidence image), status buttons (Start Work then Mark Resolved), resolution proof upload, resolution notes textarea, dwell timer countdown display. |
+
+### 4.1.4 Navigation and Style Guide
+
+- **Navigation Pattern:** Top-fixed responsive navbar with contextual navigation items based on authentication state (Student: Home, Report, Track; Admin: Dashboard, Analytics, Reports; Technician: Task-only view).
+- **Colour Palette:** University-branded primary colours with semantic status indicators (Green: Resolved/Closed, Blue: Assigned/In Progress, Orange: Urgent/High, Red: Overdue/Breached, Grey: Open/Low).
+- **Typography:** System font stack (-apple-system, BlinkMacSystemFont, Segoe UI, Roboto, sans-serif) for optimal cross-platform rendering.
+- **Responsive Behaviour:** Mobile-first layout with CSS Grid and Flexbox; all interfaces are fully functional at 360px viewport width and above.
+
+## 4.2 Hardware Interfaces
+
+CampusCare does not interface directly with specialised hardware devices. However, the following hardware capabilities are utilised indirectly through browser APIs:
+
+| **Hardware** | **Interface Method** | **Purpose** |
+|:---|:---|:---|
+| Device Camera | HTML5 input type file with accept image and capture environment | Capturing photographic evidence (complaint submission), resolution proofs (technician portal), and dispute proofs (student tracking portal). |
+| GPS Module | HTML5 Geolocation API (future enhancement) | Planned for Phase 3: automatic building detection based on device GPS coordinates. |
+| Printer | Browser Print API (window.print) | Printing daily dispatch sheets and complaint detail reports. |
+| QR Code Scanner | Device camera via browser (future enhancement) | Planned: room-level QR code scanning for instant spatial binding via Room.qr_code_token. |
+
+## 4.3 Software Interfaces
+
+| **External Software** | **Interface Type** | **Data Exchange Format** | **Purpose** |
+|:---|:---|:---|:---|
+| SQLite 3 Database Engine | Django ORM (Python DB-API 2.0) | SQL via Django QuerySet API | Persistent storage of all application models; WAL journaling for crash safety. |
+| File System (OS) | Python os / Django FileSystemStorage | Binary file I/O | Storage and retrieval of uploaded media files (evidence, proofs); purge operations via storage.delete(). |
+| Staff Roster JSON | Python json module | JSON (staff_data.json) | Read-only lookup of 157 maintenance staff records for the AI dispatcher's roster matching algorithm. |
+| Django Admin Interface | Django django.contrib.admin | HTML/HTTP | Superuser-level model management, data inspection, and configuration. |
+| In-Memory Cache | Django LocMemCache backend | Python dict (process-local) | Caching of building lists, department lists, and active staff load counts for performance optimisation. |
+
+## 4.4 Communication Interfaces
+
+| **Protocol** | **Usage** | **Specification** |
+|:---|:---|:---|
+| **HTTP/1.1** | All client-server communication in development mode. | Standard request/response cycle over TCP port 8000. |
+| **HTTPS (TLS 1.2+)** | All client-server communication in production mode. | Enforced via SECURE_SSL_REDIRECT = True and HSTS headers (31,536,000 seconds). |
+| **REST/JSON** | API endpoints for category suggestion, urgency analysis, room lookup, status polling, heatmap data, and latest complaints. | JSON request/response payloads with Content-Type application/json. |
+| **HTML Form POST** | Complaint submission, status updates, resolution confirmation, dispute filing, feedback submission. | application/x-www-form-urlencoded or multipart/form-data (when file uploads are included). |
+| **CSV** | Complaint report export. | RFC 4180-compliant CSV with Content-Disposition attachment header. |
+| **CSRF Token** | All state-modifying POST requests. | Django CSRF middleware validates csrfmiddlewaretoken in form data or X-CSRFToken header. |
+
+### API Endpoint Summary
+
+| **Endpoint** | **Method** | **Authentication** | **Response** | **Description** |
+|:---|:---:|:---|:---:|:---|
+| `/api/suggest-category/` | GET | None | JSON | Returns top matching categories with confidence scores for the provided text query. |
+| `/api/analyze-urgency/` | POST | None | JSON | Returns priority score, level, reason, and SLA hours for the provided complaint text. |
+| `/api/room-lookup/` | GET | None | JSON | Returns matching rooms based on building, floor, and room number query parameters. |
+| `/track/<token>/poll/` | GET | Token (path) | JSON | Returns current complaint status, priority, and assignment state for real-time polling. |
+| `/api/heatmap-data/` | GET | Session | JSON | Returns complaint density data aggregated by building for heatmap visualisation. |
+| `/api/latest-complaints/` | GET | None | JSON | Returns the most recent public complaints for the landing page feed. |
+
+---
+
+# 5. NON-FUNCTIONAL & SECURITY REQUIREMENTS
+
+## 5.1 Performance Requirements
+
+| **Metric** | **Requirement** | **Measurement Method** |
+|:---|:---|:---|
+| **Page Load Time** | All pages SHALL render within 2.0 seconds or less under normal load conditions (fewer than 50 concurrent users). | Browser DevTools Network tab; Lighthouse Performance audit. |
+| **API Response Time** | All REST API endpoints SHALL return responses within 500 milliseconds for a single request. | Django Debug Toolbar; server-side timing logs. |
+| **Database Query Ceiling** | Each page view SHALL execute no more than 15 SQL queries, leveraging select_related() and prefetch_related() for eager loading. | Django Debug Toolbar SQL panel; connection.queries inspection. |
+| **Concurrent User Capacity** | The system SHALL support 100 or more concurrent active sessions on a single-server deployment with 2 GB RAM or less. | Load testing via Locust or Apache JMeter. |
+| **Image Upload Size** | Uploaded images SHALL be compressed in-memory via Pillow to a maximum of 2 MB before disk persistence. | Server-side file size validation. |
+| **Static Asset Delivery** | Static files SHALL be served with GZip compression and long-term cache headers via WhiteNoise. | HTTP response header inspection (Content-Encoding: gzip). |
+| **Cache Hit Ratio** | Building and department lookup caches SHALL achieve 95% or higher hit ratio during normal operation. | In-memory cache statistics; staff load cache TTL = 2 seconds. |
+
+## 5.2 Safety and Reliability Requirements
+
+| **Metric** | **Requirement** |
+|:---|:---|
+| **System Availability** | The system SHALL maintain 99.0% or higher uptime during university operational hours (8:00 AM to 10:00 PM IST, Monday through Saturday). |
+| **Data Durability** | SQLite Write-Ahead Logging (WAL) mode SHALL be enabled to ensure crash-safe atomic transactions and prevent data corruption. |
+| **Backup Schedule** | Database backups SHALL be performed daily via automated cron job or equivalent scheduler, retaining the last 7 daily snapshots. |
+| **Mean Time Between Failures (MTBF)** | The system SHALL operate without critical failure for 720 hours or more (30 days) under normal operational load. |
+| **Recovery Time Objective (RTO)** | The system SHALL be recoverable from a database backup within 30 minutes or less following a catastrophic failure. |
+| **Recovery Point Objective (RPO)** | Maximum acceptable data loss upon recovery SHALL NOT exceed 24 hours (equivalent to the last daily backup). |
+| **Audit Trail Immutability** | The ComplaintStatusHistory model SHALL provide an append-only, immutable audit trail for every status transition, preserving the acting user, timestamp, and optional note. |
+| **Graceful Degradation** | If the AI Triage Engine, NLP Classifier, or Dispatcher Engine encounters an unhandled exception during complaint creation, the system SHALL gracefully degrade by saving the complaint without spatial binding or auto-dispatch, rather than returning a server error. |
+
+## 5.3 Security Requirements & Access Policies
+
+### 5.3.1 Authentication and Session Security
+
+| **Control** | **Implementation** |
+|:---|:---|
+| Password Hashing | Django PBKDF2-SHA256 with 600,000 iterations (default Django 5.x). |
+| Password Validation | 4-validator chain: UserAttributeSimilarity, MinimumLength, CommonPassword, NumericPassword. |
+| Session Cookie | SESSION_COOKIE_HTTPONLY = True; SESSION_COOKIE_SECURE = True (production). |
+| CSRF Protection | CsrfViewMiddleware active on all POST endpoints; CSRF_COOKIE_HTTPONLY = True. |
+| Content Sniffing | SECURE_CONTENT_TYPE_NOSNIFF = True (X-Content-Type-Options: nosniff). |
+| Clickjacking | X_FRAME_OPTIONS = DENY preventing all iframe embedding. |
+| HSTS | SECURE_HSTS_SECONDS = 31536000 with INCLUDE_SUBDOMAINS and PRELOAD (production). |
+| SSL Redirect | SECURE_SSL_REDIRECT = True (production); all HTTP requests forcibly redirected to HTTPS. |
+| XSS Filter | SECURE_BROWSER_XSS_FILTER = True (production). |
+
+### 5.3.2 Role-Based Access Control (RBAC) Matrix
+
+| **Permission / Action** | **Student** | **Technician** | **HOD** | **Provost** | **Registrar** | **Superuser** |
+|:---|:---:|:---:|:---:|:---:|:---:|:---:|
+| Submit complaint | Yes | No | No | No | No | Yes |
+| Track complaint (own token) | Yes | No | No | No | No | No |
+| Confirm/dispute resolution | Yes | No | No | No | No | No |
+| Provide feedback and rating | Yes | No | No | No | No | No |
+| Support/upvote public issue | Yes | No | No | No | Yes | Yes |
+| View assigned task | No | Yes | No | No | No | No |
+| Mark task in-progress | No | Yes | No | No | No | No |
+| Upload resolution proof | No | Yes | No | No | No | No |
+| Mark task resolved | No | Yes | No | No | No | No |
+| Close complaint | No | No | No | No | No | Yes |
+| View dashboard (dept-scoped) | No | No | Yes | No | No | No |
+| View dashboard (hall-scoped) | No | No | No | Yes | No | No |
+| View dashboard (global) | No | No | No | No | Yes | Yes |
+| Assign technician manually | No | No | No | Yes | Yes | Yes |
+| Update complaint status | No | No | Yes | Yes | Yes | Yes |
+| Admin-resolve complaint | No | No | No | Yes | Yes | Yes |
+| Export CSV report | No | No | No | No | Yes | Yes |
+| View analytics dashboard | No | No | No | No | Yes | Yes |
+| Print daily dispatch sheet | No | No | No | Yes | Yes | Yes |
+| View campus heatmap | No | No | No | Yes | Yes | Yes |
+| Access Django Admin panel | No | No | No | No | No | Yes |
+| Manage users and profiles | No | No | No | No | No | Yes |
+
+**Technical Explanation:** The RBAC matrix above codifies the principle of least privilege across six user roles with twenty-two discrete permissions. The architectural enforcement mechanism resides in core/permissions.py, which implements the get_scoped_complaints_for_user() function — a Django ORM query scoping utility that dynamically constructs filtered QuerySets based on the authenticated user's UserProfile.role, managed_building, and managed_department foreign key associations. Registrar and Superuser roles receive unscoped base_qs.all() access, Provost roles receive QuerySets filtered by room__floor__building = managed_building with parent-child hostel inclusion via room__floor__building__parent = managed_building, and HOD roles receive QuerySets filtered by category__department = managed_department. This row-level ORM scoping guarantees zero cross-tenant data leakage at the database query layer, rendering client-side permission bypass attempts ineffective.
+
+## 5.4 Software Quality Attributes
+
+| **Quality Attribute** | **Requirement** | **Verification Method** |
+|:---|:---|:---|
+| **Maintainability** | The codebase SHALL maintain a modular architecture with clear separation of concerns: models.py (data), views/ (controllers), forms.py (validation), permissions.py (RBAC), smart.py (NLP), ai_triage.py (spatial), dispatcher.py (dispatch), accountability.py (SLA). | Code review; module dependency analysis. |
+| **Testability** | The system SHALL achieve 90% or higher unit test coverage on core business logic modules, with a minimum of 28 passing automated tests. | python manage.py test core execution; coverage.py report. |
+| **Portability** | The system SHALL be deployable on any POSIX-compliant operating system (Linux, macOS) and Windows (via WSL) without platform-specific modifications. | Cross-platform deployment testing. |
+| **Scalability** | The Django ORM abstraction SHALL permit migration from SQLite to PostgreSQL, MySQL, or Oracle without application code changes beyond settings.DATABASES configuration. | Database backend swap testing. |
+| **Extensibility** | New complaint categories, departments, buildings, and staff members SHALL be addable via Django Admin or synchronisation scripts without code modifications. | Admin panel workflow verification. |
+| **Localisation Readiness** | The system SHALL use Django's USE_I18N = True configuration and timezone-aware datetime storage (USE_TZ = True) to support future multilingual and multi-timezone deployments. | settings.py configuration audit. |
+| **Accessibility** | All public-facing interfaces SHALL comply with WCAG 2.1 Level AA guidelines for colour contrast, keyboard navigation, and semantic HTML structure. | axe-core accessibility audit; manual keyboard testing. |
+
+---
+
+# 6. DATA ARCHITECTURE & APPENDICES
+
+## 6.1 Logical Data Models
+
+### Entity-Relationship Diagram (ERD)
+
+```mermaid
+erDiagram
+    User {
+        int id PK
+        string username UK
+        string password
+        string email
+        string first_name
+        string last_name
+        bool is_active
+        bool is_staff
+        bool is_superuser
+    }
+
+    UserProfile {
+        int id PK
+        int user_id FK
+        string role
+        int department_id FK
+        int managed_building_id FK
+        int managed_department_id FK
+        int accountability_score
+        string phone
+        string hall_location
+        datetime created_at
+        datetime updated_at
+    }
+
+    Campus {
+        int id PK
+        string name UK
+        string code UK
+        text address
+        bool is_active
+        datetime created_at
+        datetime updated_at
+    }
+
+    Department {
+        int id PK
+        string name UK
+        string code UK
+        string email
+        string phone
+        bool is_active
+        datetime created_at
+        datetime updated_at
+    }
+
+    Building {
+        int id PK
+        int campus_id FK
+        int department_id FK
+        int parent_id FK
+        string name
+        string short_name
+        string code
+        string gender
+        string building_type
+        string wing_detail
+        string capacity_detail
+        decimal latitude
+        decimal longitude
+        bool is_active
+        datetime created_at
+        datetime updated_at
+    }
+
+    Floor {
+        int id PK
+        int building_id FK
+        int number
+        string label
+        datetime created_at
+        datetime updated_at
+    }
+
+    Room {
+        int id PK
+        int floor_id FK
+        string number
+        string name
+        string qr_code_token UK
+        bool is_active
+        datetime created_at
+        datetime updated_at
+    }
+
+    ComplaintCategory {
+        int id PK
+        string name UK
+        text description
+        int department_id FK
+        int default_sla_hours
+        bool is_active
+        datetime created_at
+        datetime updated_at
+    }
+
+    Complaint {
+        int id PK
+        string reference UK
+        int reporter_id FK
+        string reporter_name
+        string reporter_enrollment_number
+        string tracking_token UK
+        int category_id FK
+        bool category_detected_automatically
+        int category_detection_confidence
+        int room_id FK
+        string location_description
+        string title
+        text description
+        string priority
+        int priority_score
+        string priority_reason
+        string status
+        string evidence
+        int assigned_to_id FK
+        int assigned_by_id FK
+        uuid staff_task_token UK
+        datetime assigned_at
+        datetime in_progress_at
+        datetime resolved_at
+        datetime closed_at
+        datetime reopened_at
+        datetime sla_due_at
+        datetime escalated_at
+        int escalation_level
+        string resolution_verification
+        datetime resolution_verified_at
+        text resolution_note
+        string resolution_proof
+        string reopen_proof
+        text reopen_reason
+        int reopen_count
+        int reopened_count
+        bool is_public
+        int duplicate_of_id FK
+        datetime created_at
+        datetime updated_at
+    }
+
+    ComplaintSupport {
+        int id PK
+        int complaint_id FK
+        int user_id FK
+        string session_key
+        datetime created_at
+    }
+
+    ComplaintFeedback {
+        int id PK
+        int complaint_id FK
+        int rating
+        text comment
+        datetime created_at
+    }
+
+    ComplaintStatusHistory {
+        int id PK
+        int complaint_id FK
+        string status
+        text note
+        int changed_by_id FK
+        datetime created_at
+    }
+
+    User ||--|| UserProfile : "has one"
+    UserProfile }o--|| Department : "belongs to"
+    UserProfile }o--|| Building : "manages"
+    UserProfile }o--|| Department : "manages dept"
+    Campus ||--o{ Building : "contains"
+    Department ||--o{ Building : "oversees"
+    Building ||--o{ Building : "parent has hostels"
+    Building ||--o{ Floor : "contains"
+    Floor ||--o{ Room : "contains"
+    Department ||--o{ ComplaintCategory : "owns"
+    ComplaintCategory ||--o{ Complaint : "classifies"
+    Room ||--o{ Complaint : "located in"
+    User ||--o{ Complaint : "reports"
+    User ||--o{ Complaint : "assigned to"
+    User ||--o{ Complaint : "assigned by"
+    Complaint ||--o{ Complaint : "duplicate of"
+    Complaint ||--o{ ComplaintSupport : "receives"
+    Complaint ||--|| ComplaintFeedback : "has"
+    Complaint ||--o{ ComplaintStatusHistory : "tracks"
+    User ||--o{ ComplaintSupport : "gives"
+    User ||--o{ ComplaintStatusHistory : "changed by"
+```
+
+**Technical Explanation:** The Entity-Relationship Diagram represents the complete logical data model underlying the CampusCare platform, comprising 11 interconnected entities mapped to SQLite 3 database tables via the Django ORM. The spatial hierarchy is modelled through a four-level containment chain: Campus to Building to Floor to Room, with the Building entity supporting self-referential parent-child relationships via the parent_id foreign key to model Residential Halls and their Constituent Hostels (e.g., Aftab Hall to Macdonnell Hostel). The Complaint entity serves as the central transactional hub, maintaining foreign key relationships to Room (spatial origin), ComplaintCategory (issue classification), User (reporter, assignee, assigner), and a self-referential duplicate_of link for the duplicate detection engine. The ComplaintStatusHistory entity provides an immutable, append-only audit trail recording every status transition with the acting user and timestamp.
+
+## 6.2 Appendix A: Data Dictionary
+
+### Table: UserProfile
+
+| **Field** | **Data Type** | **Constraints** | **Description** |
+|:---|:---|:---|:---|
+| id | BigAutoField | PK, Auto-increment | Unique record identifier. |
+| user_id | Integer (FK to User) | NOT NULL, UNIQUE | One-to-one link to Django auth_user table. |
+| role | CharField(20) | NOT NULL, DEFAULT student | Enumerated role: registrar, provost, hod, staff, student, admin. |
+| department_id | Integer (FK to Department) | NULLABLE | Staff member's parent department. |
+| managed_building_id | Integer (FK to Building) | NULLABLE | Provost's jurisdictional hall. |
+| managed_department_id | Integer (FK to Department) | NULLABLE | HOD's jurisdictional department. |
+| accountability_score | Integer | NOT NULL, DEFAULT 100 | Technician performance metric; decremented by 15 per dispute. |
+| phone | CharField(20) | BLANK | Contact telephone number. |
+| hall_location | CharField(200) | BLANK | Staff member's assigned hall or facility from roster. |
+| created_at | DateTimeField | Auto (creation) | Record creation timestamp (timezone-aware). |
+| updated_at | DateTimeField | Auto (modification) | Last modification timestamp (timezone-aware). |
+
+### Table: Campus
+
+| **Field** | **Data Type** | **Constraints** | **Description** |
+|:---|:---|:---|:---|
+| id | BigAutoField | PK | Unique record identifier. |
+| name | CharField(100) | NOT NULL, UNIQUE | Full campus name (e.g., Aligarh Muslim University). |
+| code | CharField(12) | NOT NULL, UNIQUE | Short unique identifier (e.g., AMU). |
+| address | TextField | BLANK | Physical mailing address. |
+| is_active | BooleanField | NOT NULL, DEFAULT True | Soft-delete flag. |
+
+### Table: Department
+
+| **Field** | **Data Type** | **Constraints** | **Description** |
+|:---|:---|:---|:---|
+| id | BigAutoField | PK | Unique record identifier. |
+| name | CharField(100) | NOT NULL, UNIQUE | Full department name. |
+| code | CharField(12) | NOT NULL, UNIQUE | Short unique department code (e.g., ESTATE, ELEC, PLUMB). |
+| email | EmailField | BLANK | Department contact email. |
+| phone | CharField(20) | BLANK | Department contact phone. |
+| is_active | BooleanField | NOT NULL, DEFAULT True | Soft-delete flag. |
+
+### Table: Building
+
+| **Field** | **Data Type** | **Constraints** | **Description** |
+|:---|:---|:---|:---|
+| id | BigAutoField | PK | Unique record identifier. |
+| campus_id | Integer (FK to Campus) | NOT NULL, PROTECT | Parent campus association. |
+| department_id | Integer (FK to Department) | NULLABLE, SET_NULL | Owning maintenance department. |
+| parent_id | Integer (FK to Building) | NULLABLE, CASCADE | Self-referential: parent hall for constituent hostels. |
+| name | CharField(150) | NOT NULL | Full building name. |
+| short_name | CharField(120) | BLANK | Abbreviated hostel/block name. |
+| code | CharField(20) | NOT NULL | Short unique code within campus. |
+| gender | CharField(10) | BLANK | Gender designation: Boys, Girls, Co-ed. |
+| building_type | CharField(50) | NOT NULL, DEFAULT hall | Classification: hall, hostel, academic, administrative. |
+| wing_detail | CharField(150) | BLANK | Wing/block subdivision details. |
+| capacity_detail | CharField(255) | BLANK | Room capacity information. |
+| latitude | Decimal(9,6) | NULLABLE | GPS latitude for heatmap. |
+| longitude | Decimal(9,6) | NULLABLE | GPS longitude for heatmap. |
+| is_active | BooleanField | NOT NULL, DEFAULT True | Soft-delete flag. |
+| **Constraints** | | UNIQUE(campus, name), UNIQUE(campus, code) | Composite uniqueness within campus. |
+
+### Table: Floor
+
+| **Field** | **Data Type** | **Constraints** | **Description** |
+|:---|:---|:---|:---|
+| id | BigAutoField | PK | Unique record identifier. |
+| building_id | Integer (FK to Building) | NOT NULL, PROTECT | Parent building association. |
+| number | Integer | NOT NULL, MIN -5 | Floor number (negative for basement levels). |
+| label | CharField(50) | BLANK | Optional display name (e.g., Ground Floor). |
+| **Constraints** | | UNIQUE(building, number) | Unique floor number per building. |
+
+### Table: Room
+
+| **Field** | **Data Type** | **Constraints** | **Description** |
+|:---|:---|:---|:---|
+| id | BigAutoField | PK | Unique record identifier. |
+| floor_id | Integer (FK to Floor) | NOT NULL, PROTECT | Parent floor association. |
+| number | CharField(20) | NOT NULL | Room number (e.g., 001, A205, GEN-01). |
+| name | CharField(100) | BLANK | Optional room name or label. |
+| qr_code_token | CharField(64) | NULLABLE, UNIQUE | Future: QR code identifier for instant spatial binding. |
+| is_active | BooleanField | NOT NULL, DEFAULT True | Soft-delete flag. |
+| **Constraints** | | UNIQUE(floor, number) | Unique room number per floor. |
+
+### Table: ComplaintCategory
+
+| **Field** | **Data Type** | **Constraints** | **Description** |
+|:---|:---|:---|:---|
+| id | BigAutoField | PK | Unique record identifier. |
+| name | CharField(100) | NOT NULL, UNIQUE | Category name (e.g., Estate Plumbing, Electrical and Wiring Maintenance). |
+| description | TextField | BLANK | Detailed category description. |
+| department_id | Integer (FK to Department) | NOT NULL, PROTECT | Owning department responsible for this category. |
+| default_sla_hours | PositiveIntegerField | NOT NULL, DEFAULT 72 | Default resolution target in hours. |
+| is_active | BooleanField | NOT NULL, DEFAULT True | Soft-delete flag. |
+
+### Table: Complaint
+
+| **Field** | **Data Type** | **Constraints** | **Description** |
+|:---|:---|:---|:---|
+| id | BigAutoField | PK | Unique record identifier. |
+| reference | CharField(16) | UNIQUE, Auto-generated | Human-readable ID: CC- prefix + 8-char hex (e.g., CC-A1B2C3D4). |
+| reporter_id | Integer (FK to User) | NULLABLE, PROTECT | Legacy/staff-submitted complaints only. |
+| reporter_name | CharField(150) | NOT NULL, DEFAULT Unknown | Student's full name. |
+| reporter_enrollment_number | CharField(40) | NOT NULL, INDEX, DEFAULT LEGACY | Format: 2 alpha + 4 digits (e.g., GQ1234). |
+| tracking_token | CharField(32) | UNIQUE, Auto-generated | Private 32-char hex token for anonymous tracking. |
+| category_id | Integer (FK to ComplaintCategory) | NOT NULL, PROTECT | Maintenance issue classification. |
+| category_detected_automatically | BooleanField | DEFAULT False | Whether AI suggested the final category. |
+| category_detection_confidence | SmallInteger | DEFAULT 0 | AI confidence percentage (0 to 100). |
+| room_id | Integer (FK to Room) | NULLABLE, PROTECT | Spatially resolved campus room. |
+| location_description | CharField(160) | BLANK | Free-text location description. |
+| title | CharField(160) | NOT NULL | One-line complaint summary. |
+| description | TextField | NOT NULL | Detailed issue description. |
+| priority | CharField(10) | NOT NULL, DEFAULT normal | Enumerated: low, normal, high, urgent. |
+| priority_score | SmallInteger | DEFAULT 50 | Numeric urgency score (0 to 100). |
+| priority_reason | CharField(255) | BLANK | Human-readable priority explanation. |
+| status | CharField(16) | NOT NULL, INDEX, DEFAULT open | Lifecycle state: open, assigned, in_progress, resolved, reopened, closed. |
+| evidence | ImageField | BLANK, JPG/PNG/WebP only | Student-uploaded photographic evidence. |
+| assigned_to_id | Integer (FK to User) | NULLABLE, SET_NULL | Assigned maintenance technician. |
+| assigned_by_id | Integer (FK to User) | NULLABLE, SET_NULL | Admin who performed manual assignment. |
+| staff_task_token | UUIDField | UNIQUE, Auto-generated | Tokenised URL for technician portal access. |
+| assigned_at | DateTimeField | NULLABLE | Timestamp of technician assignment. |
+| in_progress_at | DateTimeField | NULLABLE | Timestamp when technician started work. |
+| resolved_at | DateTimeField | NULLABLE | Timestamp of resolution marking. |
+| closed_at | DateTimeField | NULLABLE | Timestamp of student-confirmed closure. |
+| reopened_at | DateTimeField | NULLABLE | Timestamp of student dispute/reopen. |
+| sla_due_at | DateTimeField | NULLABLE | Computed SLA deadline. |
+| escalated_at | DateTimeField | NULLABLE | Timestamp of automatic SLA escalation. |
+| escalation_level | SmallInteger | DEFAULT 0 | Count of escalation events. |
+| resolution_verification | CharField(12) | DEFAULT pending | Student verification: pending, verified, rejected. |
+| resolution_verified_at | DateTimeField | NULLABLE | Timestamp of student verification action. |
+| resolution_note | TextField | BLANK | Technician's resolution description. |
+| resolution_proof | ImageField | NULLABLE | Technician-uploaded proof photograph. |
+| reopen_proof | ImageField | NULLABLE | Student-uploaded dispute proof photograph. |
+| reopen_reason | TextField | BLANK, DEFAULT empty | Student's dispute reason (10 or more chars required). |
+| reopen_count | SmallInteger | DEFAULT 0 | Number of times complaint has been reopened. |
+| reopened_count | SmallInteger | DEFAULT 0 | Duplicate counter for reopen tracking. |
+| is_public | BooleanField | DEFAULT True | Visibility on public complaint board. |
+| duplicate_of_id | Integer (FK to Complaint) | NULLABLE, SET_NULL | Link to original if detected as duplicate. |
+| created_at | DateTimeField | Auto (creation) | Record creation timestamp. |
+| updated_at | DateTimeField | Auto (modification) | Last modification timestamp. |
+| **Indexes** | | (status, -created_at), (priority, status), (category, status), (-created_at) | Composite database indexes for query performance. |
+
+### Table: ComplaintSupport
+
+| **Field** | **Data Type** | **Constraints** | **Description** |
+|:---|:---|:---|:---|
+| id | BigAutoField | PK | Unique record identifier. |
+| complaint_id | Integer (FK to Complaint) | NOT NULL, CASCADE | Supported complaint reference. |
+| user_id | Integer (FK to User) | NULLABLE, CASCADE | Authenticated user who supported (NULL for session-based). |
+| session_key | CharField(40) | BLANK, INDEX | Browser session identifier for anonymous support. |
+| created_at | DateTimeField | Auto (creation) | Support action timestamp. |
+| **Constraints** | | UNIQUE(complaint, user) WHERE user IS NOT NULL; UNIQUE(complaint, session_key) WHERE session_key is not empty | One support per user OR per session per complaint. |
+
+### Table: ComplaintFeedback
+
+| **Field** | **Data Type** | **Constraints** | **Description** |
+|:---|:---|:---|:---|
+| id | BigAutoField | PK | Unique record identifier. |
+| complaint_id | Integer (FK to Complaint) | NOT NULL, UNIQUE, CASCADE | One-to-one link to parent complaint. |
+| rating | SmallInteger | NOT NULL, MIN 1, MAX 5 | Student satisfaction rating (1 to 5 stars). |
+| comment | TextField(1000) | BLANK | Optional textual feedback. |
+| created_at | DateTimeField | Auto (creation) | Feedback submission timestamp. |
+
+### Table: ComplaintStatusHistory
+
+| **Field** | **Data Type** | **Constraints** | **Description** |
+|:---|:---|:---|:---|
+| id | BigAutoField | PK | Unique record identifier. |
+| complaint_id | Integer (FK to Complaint) | NOT NULL, CASCADE | Parent complaint reference. |
+| status | CharField(16) | NOT NULL | Recorded status at time of transition. |
+| note | TextField | BLANK | Contextual note (e.g., Auto-dispatched to technician). |
+| changed_by_id | Integer (FK to User) | NULLABLE, SET_NULL | User who triggered the transition (NULL for automated). |
+| created_at | DateTimeField | Auto (creation) | Immutable timestamp of the status change event. |
+
+## 6.3 Appendix B: Acceptance Criteria
+
+The following acceptance criteria define the formal validation gates required for system sign-off. Each criterion is linked to a specific functional requirement and specifies the pass/fail condition.
+
+| **AC ID** | **Linked Req.** | **Criterion** | **Pass Condition** |
+|:---:|:---:|:---|:---|
+| AC-01 | FR-01 | Complaint submission with valid data | A complaint record is created in the database with a unique reference and tracking token; the student is redirected to the success page displaying both values. |
+| AC-02 | FR-02 | Enrollment validation rejects invalid format | Submitting enrollment numbers A12345 (too long), 123456 (no letters), AB12 (too short), or 1A2B3C (wrong pattern) returns a descriptive validation error. |
+| AC-03 | FR-03 | Concurrent ticket cap enforcement | When a student with 3 active complaints attempts a 4th submission, the system returns: Active ticket limit reached: You currently have 3 open maintenance issues. |
+| AC-04 | FR-05 | AI category suggestion accuracy | For the text WiFi not working in Room A205, the /api/suggest-category/ endpoint returns Campus Wi-Fi and Network Services with confidence of 70% or higher. |
+| AC-05 | FR-06 | Cross-faculty isolation | For the text projector broken in Department of Computer Science, the system suggests Science Computer Systems and does NOT suggest Management Projector Equipment. |
+| AC-06 | FR-07 | Priority scoring for emergency keywords | For the text fire detected in hostel corridor, the system assigns Urgent priority with score of 90 or higher. |
+| AC-07 | FR-08 | SLA assignment for Urgent priority | An Urgent-priority complaint receives sla_due_at = creation time + 2 hours. |
+| AC-08 | FR-09 | Spatial binding resolves building alias | A complaint with location SSN Room 205 is spatially bound to Building Sir Syed Hall (North), then resolved to the appropriate Floor and Room. |
+| AC-09 | FR-10 | Auto-dispatch assigns technician | Upon complaint creation, the assigned_to field is populated with a valid maintenance staff user, status transitions to assigned, and assigned_at is set. |
+| AC-10 | FR-11 | Mess complaint routes to Dining Incharge | A complaint with category Food Quality and Hygiene at Sir Syed Hall is assigned to the dining incharge user (dining_ username pattern) for that hall. |
+| AC-11 | FR-13 | Anti-fraud dwell timer enforcement | A technician who marks a task In Progress and attempts Resolved within 4 minutes receives an error; the attempt succeeds at 5+ minutes. |
+| AC-12 | FR-14 | Mandatory resolution proof | A resolution attempt without an uploaded image file is rejected with a validation error. |
+| AC-13 | FR-15 | Tracking portal displays status | Navigating to /track/valid_token/ renders the complaint's current status, priority, assigned technician, and timeline. |
+| AC-14 | FR-17 | Student confirmation closes complaint | A student selecting Yes, the issue is resolved transitions resolution_verification to verified and status to closed. |
+| AC-15 | FR-18 | Student dispute escalates complaint | A student disputing a resolution with valid reason (10 or more chars) and proof image transitions status to reopened, sets priority_score = 95, and decrements accountability_score by 15. |
+| AC-16 | FR-20 | Media purge on closure | After complaint closure, the evidence, resolution_proof, and reopen_proof files are deleted from the media directory, and the corresponding database fields are cleared. |
+| AC-17 | FR-21 | Duplicate detection | Two complaints with identical titles at the same room are linked via duplicate_of when similarity is 58% or higher. |
+| AC-18 | FR-23 | RBAC scoping — Provost | A Provost user logged into the dashboard sees ONLY complaints from their managed hall and its constituent hostels; complaints from other halls return zero results. |
+| AC-19 | FR-23 | RBAC scoping — HOD | An HOD user logged into the dashboard sees ONLY complaints within their managed department's trade jurisdiction; cross-department complaints return zero results. |
+| AC-20 | FR-24 | CSV report export | Navigating to /reports/complaints.csv as a Registrar downloads a valid CSV file containing all complaint records with correct headers and data encoding. |
+| AC-21 | FR-28 | SLA escalation | A complaint with sla_due_at in the past and status not in (resolved, closed) has escalation_level incremented and escalated_at set after the escalation job runs. |
+| AC-22 | — | Full test suite passes | python manage.py test core executes all 28 automated tests with 100% pass rate and zero failures. |
+
+---
+
+# 7. REFERENCES
+
+| **#** | **Reference** | **Description** |
+|:---:|:---|:---|
+| 1 | IEEE 830-1998 | IEEE Recommended Practice for Software Requirements Specifications. |
+| 2 | ISO/IEC/IEEE 29148:2018 | Systems and software engineering — Life cycle processes — Requirements engineering. |
+| 3 | Django Documentation v5.0 | Official Django framework documentation (https://docs.djangoproject.com/en/5.0/). |
+| 4 | Python 3.x Documentation | Official Python language reference (https://docs.python.org/3/). |
+| 5 | SQLite Documentation | Official SQLite database engine documentation (https://www.sqlite.org/docs.html). |
+| 6 | Pillow Documentation | Python Imaging Library documentation (https://pillow.readthedocs.io/). |
+| 7 | WhiteNoise Documentation | Static file serving middleware (https://whitenoise.readthedocs.io/). |
+| 8 | OWASP Top 10 (2021) | Open Web Application Security Project — Top 10 Web Application Security Risks. |
+| 9 | WCAG 2.1 | Web Content Accessibility Guidelines, Level AA conformance. |
+| 10 | RFC 4180 | Common Format and MIME Type for Comma-Separated Values (CSV) Files. |
+| 11 | AMU Campus Infrastructure Data | Internal university records: AMU Halls and Hostels Sheet1.csv (20 Halls, 84 Hostels), Updated AMU Departments and Residential Halls Data (Departments and Faculties), staff list.xlsx (157 maintenance personnel). |
+
+---
+
+<div align="center">
+
+**— END OF DOCUMENT —**
+
+**CampusCare Software Requirements Specification v2.0**
+
+**Department of Computer Science, Aligarh Muslim University**
+
+**14 October 2026**
+
+</div>

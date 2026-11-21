@@ -1,0 +1,49 @@
+%%{ init: { "theme": "base", "themeVariables": { "primaryColor": "#1e293b", "primaryTextColor": "#f8fafc", "primaryBorderColor": "#3b82f6", "lineColor": "#94a3b8", "fontFamily": "Inter, sans-serif" } } }%%
+graph LR
+    %% ─── External Entities ───────────────────────────────────────────────────
+    Student(["🧑‍🎓 Anonymous Student\n(Campus Citizen)"])
+    Technician(["🔧 Maintenance Technician\n(Zero-Login Staff)"])
+    Provost(["🏛️ Hall Provost / Caretaker\n(Building-Scoped Admin)"])
+    HOD(["📋 Maintenance HOD\n(Trade-Scoped Admin)"])
+    Registrar(["🎓 Central Registrar\n(University-Wide Admin)"])
+
+    %% ─── System Boundary ─────────────────────────────────────────────────────
+    subgraph SYSTEM["System Boundary: CampusCare Facility Maintenance Platform"]
+        direction TB
+        CC[["CampusCare\nFacility Maintenance\nInformation System\n(Django Monolith)"]]
+    end
+
+    %% ─── Student Flows ───────────────────────────────────────────────────────
+    Student -->|"Complaint title, description,\nlocation, enrollment no., photo"| CC
+    CC -->|"Hex-32 tracking token\nCC-XXXXXXXX reference"| Student
+    Student -->|"Tracking token lookup"| CC
+    CC -->|"Ticket status & timeline"| Student
+    Student -->|"Resolution confirmation / rejection\n+ reopen_proof image"| CC
+    Student -->|"Satisfaction rating (1-5)\n+ feedback comment"| CC
+    CC -->|"Public issue board listing\ncommunity upvote count"| Student
+
+    %% ─── Technician Flows ────────────────────────────────────────────────────
+    Technician -->|"Task access via UUID URL\nAccept / In-Progress action"| CC
+    Technician -->|"Resolution photo proof upload\nCompletion confirmation"| CC
+    CC -->|"Task details: location, description\nSLA deadline"| Technician
+
+    %% ─── Provost Flows ───────────────────────────────────────────────────────
+    Provost -->|"Technician assignment\nBuilding-scoped queue actions"| CC
+    CC -->|"Hall complaint queue\nSLA breach alerts\nAccountability scores"| Provost
+
+    %% ─── HOD Flows ───────────────────────────────────────────────────────────
+    HOD -->|"Technician assignment\nTrade-scoped queue actions"| CC
+    CC -->|"Department complaint queue\nSLA breach alerts\nStaff accountability metrics"| HOD
+
+    %% ─── Registrar Flows ─────────────────────────────────────────────────────
+    Registrar -->|"University-wide oversight actions\nTechnician assignment"| CC
+    CC -->|"Spatial heatmap & analytics\nAudit log CSV export\nGlobal complaint data"| Registrar
+
+    style SYSTEM fill:#f8fafc,stroke:#0f172a,stroke-width:2.5px,color:#0f172a
+    style CC fill:#1e3a5f,stroke:#3b82f6,stroke-width:2px,color:#f8fafc
+
+    style Student fill:#dbeafe,stroke:#2563eb,stroke-width:1.5px,color:#0f172a
+    style Technician fill:#fef9c3,stroke:#ca8a04,stroke-width:1.5px,color:#0f172a
+    style Provost fill:#f3e8ff,stroke:#9333ea,stroke-width:1.5px,color:#0f172a
+    style HOD fill:#fce7f3,stroke:#db2777,stroke-width:1.5px,color:#0f172a
+    style Registrar fill:#dcfce7,stroke:#16a34a,stroke-width:1.5px,color:#0f172a

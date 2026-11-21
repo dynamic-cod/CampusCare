@@ -1,0 +1,188 @@
+%%{ init: { "theme": "base", "themeVariables": { "primaryColor": "#1e293b", "primaryTextColor": "#f8fafc", "primaryBorderColor": "#3b82f6", "lineColor": "#94a3b8", "fontFamily": "Inter, sans-serif" } } }%%
+erDiagram
+    Campus {
+        bigint id PK
+        varchar name UK
+        varchar code UK
+        text address
+        boolean is_active
+        datetime created_at
+        datetime updated_at
+    }
+
+    Building {
+        bigint id PK
+        bigint campus_id FK
+        bigint department_id FK "nullable"
+        bigint parent_id FK "self-ref nullable"
+        varchar name
+        varchar code
+        varchar short_name
+        varchar gender
+        varchar building_type
+        varchar wing_detail
+        varchar capacity_detail
+        decimal latitude "nullable"
+        decimal longitude "nullable"
+        boolean is_active
+        datetime created_at
+        datetime updated_at
+    }
+
+    Floor {
+        bigint id PK
+        bigint building_id FK
+        integer number
+        varchar label
+        datetime created_at
+        datetime updated_at
+    }
+
+    Room {
+        bigint id PK
+        bigint floor_id FK
+        varchar number
+        varchar name
+        varchar qr_code_token UK "nullable"
+        boolean is_active
+        datetime created_at
+        datetime updated_at
+    }
+
+    Department {
+        bigint id PK
+        varchar name UK
+        varchar code UK
+        varchar email
+        varchar phone
+        boolean is_active
+        datetime created_at
+        datetime updated_at
+    }
+
+    ComplaintCategory {
+        bigint id PK
+        bigint department_id FK
+        varchar name UK
+        text description
+        integer default_sla_hours
+        boolean is_active
+        datetime created_at
+        datetime updated_at
+    }
+
+    AuthUser {
+        bigint id PK
+        varchar username UK
+        varchar email
+        varchar password
+        boolean is_staff
+        boolean is_superuser
+        boolean is_active
+    }
+
+    UserProfile {
+        bigint id PK
+        bigint user_id FK "OneToOne"
+        bigint department_id FK "nullable"
+        bigint managed_building_id FK "nullable"
+        bigint managed_department_id FK "nullable"
+        varchar role
+        integer accountability_score
+        varchar phone
+        varchar hall_location
+        datetime created_at
+        datetime updated_at
+    }
+
+    Complaint {
+        bigint id PK
+        bigint reporter_id FK "nullable"
+        bigint category_id FK
+        bigint room_id FK "nullable"
+        bigint assigned_to_id FK "nullable"
+        bigint assigned_by_id FK "nullable"
+        bigint duplicate_of_id FK "self-ref nullable"
+        varchar reference UK
+        varchar tracking_token UK
+        uuid staff_task_token UK
+        varchar reporter_name
+        varchar reporter_enrollment_number
+        varchar title
+        text description
+        varchar priority
+        smallint priority_score
+        varchar priority_reason
+        varchar status
+        varchar location_description
+        boolean category_detected_automatically
+        smallint category_detection_confidence
+        varchar evidence "image path"
+        varchar resolution_proof "image path nullable"
+        varchar reopen_proof "image path nullable"
+        text resolution_note
+        text reopen_reason
+        smallint reopen_count
+        smallint reopened_count
+        boolean is_public
+        varchar resolution_verification
+        datetime assigned_at "nullable"
+        datetime in_progress_at "nullable"
+        datetime resolved_at "nullable"
+        datetime closed_at "nullable"
+        datetime reopened_at "nullable"
+        datetime sla_due_at "nullable"
+        datetime escalated_at "nullable"
+        smallint escalation_level
+        datetime resolution_verified_at "nullable"
+        datetime created_at
+        datetime updated_at
+    }
+
+    ComplaintStatusHistory {
+        bigint id PK
+        bigint complaint_id FK
+        bigint changed_by_id FK "nullable"
+        varchar status
+        text note
+        datetime created_at
+    }
+
+    ComplaintSupport {
+        bigint id PK
+        bigint complaint_id FK
+        bigint user_id FK "nullable"
+        varchar session_key
+        datetime created_at
+    }
+
+    ComplaintFeedback {
+        bigint id PK
+        bigint complaint_id FK "OneToOne"
+        smallint rating
+        text comment
+        datetime created_at
+    }
+
+    %% ─── Relationships ────────────────────────────────────────────────────────
+    Campus ||--o{ Building : "has buildings"
+    Building ||--o{ Building : "parent (hostel blocks)"
+    Building ||--o{ Floor : "contains floors"
+    Building }o--o| Department : "managed by"
+    Floor ||--o{ Room : "contains rooms"
+    Department ||--o{ ComplaintCategory : "owns categories"
+    Department ||--o{ UserProfile : "employs staff"
+    AuthUser ||--|| UserProfile : "extended by"
+    UserProfile }o--o| Building : "managed_building"
+    UserProfile }o--o| Department : "managed_department"
+    Complaint }o--o| Room : "located in"
+    Complaint }o--|| ComplaintCategory : "categorised as"
+    Complaint }o--o| AuthUser : "reported by (optional)"
+    Complaint }o--o| AuthUser : "assigned_to"
+    Complaint }o--o| AuthUser : "assigned_by"
+    Complaint }o--o| Complaint : "duplicate_of"
+    Complaint ||--o{ ComplaintStatusHistory : "audit trail"
+    Complaint ||--o{ ComplaintSupport : "community votes"
+    Complaint ||--o| ComplaintFeedback : "satisfaction rating"
+    ComplaintStatusHistory }o--o| AuthUser : "changed_by"
+    ComplaintSupport }o--o| AuthUser : "cast by (or anon session)"

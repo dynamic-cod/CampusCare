@@ -246,7 +246,7 @@ def suggest_staff(category_name, location_description="", title="", description=
                 "contact": member["contact"],
                 "dept_code": "EMERG",
                 "match_score": score,
-                "match_reason": "🚨 Dedicated Campus Emergency Response Team",
+                "match_reason": "Dedicated Campus Emergency Response Team",
             })
         return results
 

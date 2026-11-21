@@ -1,0 +1,90 @@
+%%{ init: { "theme": "base", "themeVariables": { "primaryColor": "#1e293b", "primaryTextColor": "#f8fafc", "primaryBorderColor": "#3b82f6", "lineColor": "#94a3b8", "fontFamily": "Inter, sans-serif" } } }%%
+graph TB
+    %% ─── Stores (shared across decomposed processes) ──────────────────────────
+    D1[("D1: Complaint Store\ncore_complaint")]
+    D3[("D3: Campus Topology\ncore_building · core_floor · core_room")]
+    D5[("D5: ML Cache\nurgency_classifier.joblib\n_BUILDINGS_CACHE")]
+
+    %% ═══════════════════════════════════════════════════════════════════════════
+    %% Process 2.0 Decomposition — NLP Duplicate Triage & Spatial Binding
+    %% ═══════════════════════════════════════════════════════════════════════════
+    subgraph P2_DECOMP["Process 2.0 — NLP Duplicate Triage & AI Routing (ai_triage.py / smart.py)"]
+        direction TB
+
+        P2_1["2.1\nLoad ML Urgency Classifier\nsmart.py: classify_urgency()\nJoblib model from ml_models/"]
+        P2_2["2.2\nTF-IDF Vectorise\n& Predict Priority\nOutputs: priority_label\npriority_score (0-100)\npriority_reason text"]
+        P2_3["2.3\nLoad Building Cache\nai_triage.get_cached_buildings()\n_BUILDINGS_CACHE (cold→DB, warm→mem)"]
+        P2_4["2.4\nSpatial Text Extraction\nalias dict (80+ entries)\nPhrase-length-sorted matching\nPriority A: Faculty dept detection\nPriority B: Hall name detection\nPriority C: Alias dict match\nPriority D: Code / short-name match"]
+        P2_5["2.5\nFloor & Room Resolution\nresolve_room_for_building()\nRegex token extraction\nQR token direct match\nFallback: GEN-01 room creation"]
+        P2_6["2.6\nDuplicate Candidate Scoring\nCompare open complaint titles\nTF-IDF cosine similarity\nMark duplicate_of FK if score ≥ θ"]
+        P2_7["2.7\nWrite Triage Results\nto Complaint Record\npriority · priority_score\nroom FK · location_description\ncategory_detected_automatically\nduplicate_of FK (optional)"]
+
+        P2_1 --> P2_2
+        P2_3 --> P2_4
+        P2_2 --> P2_7
+        P2_4 --> P2_5
+        P2_5 --> P2_7
+        P2_6 --> P2_7
+    end
+
+    %% ═══════════════════════════════════════════════════════════════════════════
+    %% Process 3.0 Decomposition — Automated Worker Dispatch
+    %% ═══════════════════════════════════════════════════════════════════════════
+    subgraph P3_DECOMP["Process 3.0 — Automated Worker Dispatch (dispatcher.py / staff_matcher.py)"]
+        direction TB
+
+        P3_1["3.1\nFilter Eligible Staff\nRole = STAFF\ndepartment = complaint.category.department\nis_active = True"]
+        P3_2["3.2\nCompute Least-Load Score\nCount active assigned complaints\nper technician\nWeighted by SLA proximity"]
+        P3_3["3.3\nRead Accountability Scores\ncore_userprofile.accountability_score\nPenalise breach history\nPrioritise recovered performers"]
+        P3_4["3.4\nRank & Select Optimal Technician\nComposite: load score + accountability\nMin-heap selection (O(n log n))\nReturn top candidate"]
+        P3_5["3.5\nGenerate Task Token\nstaff_task_token = uuid4() (already set)\nConstruct UUID direct URL\n/task/<token>/"]
+        P3_6["3.6\nSLA Deadline Calculation\nsla_due_at = now() + category.default_sla_hours\nSet assigned_at timestamp\nWrite ComplaintStatusHistory"]
+        P3_7["3.7\nPersist Assignment\nassigned_to FK\nassigned_by FK\nstatus = ASSIGNED\nCreate status history entry"]
+
+        P3_1 --> P3_2
+        P3_2 --> P3_4
+        P3_3 --> P3_4
+        P3_4 --> P3_5
+        P3_4 --> P3_6
+        P3_5 --> P3_7
+        P3_6 --> P3_7
+    end
+
+    %% ─── External data flows into decomposed processes ─────────────────────────
+    D5 -->|"Load cached model\nor cold-load from disk"| P2_1
+    D5 -->|"Load _BUILDINGS_CACHE\nor cold-query DB"| P2_3
+    D1 -->|"Open complaint record\nfor duplicate comparison"| P2_6
+    D3 -->|"Floor & room records\nfor spatial resolution"| P2_5
+
+    P2_7 -->|"Update complaint:\npriority, room FK,\ndup FK"| D1
+
+    D1 -->|"Read department & category\nfrom complaint"| P3_1
+    D1 -->|"Active complaint\ncount per technician"| P3_2
+
+    P3_7 -->|"Update complaint:\nassigned_to, status=ASSIGNED,\nsla_due_at, status history"| D1
+
+    %% Cascade: P2 → P3
+    P2_DECOMP -->|"Triaged complaint with\npriority_score & room binding"| P3_DECOMP
+
+    style D1 fill:#fef3c7,stroke:#d97706,stroke-width:1.5px,color:#0f172a
+    style D3 fill:#dcfce7,stroke:#16a34a,stroke-width:1.5px,color:#0f172a
+    style D5 fill:#e0f2fe,stroke:#0284c7,stroke-width:1.5px,color:#0f172a
+
+    style P2_DECOMP fill:#0f2e1a,stroke:#22c55e,stroke-width:2px,color:#f8fafc
+    style P3_DECOMP fill:#1c1003,stroke:#f97316,stroke-width:2px,color:#f8fafc
+
+    style P2_1 fill:#14532d,stroke:#22c55e,color:#f8fafc
+    style P2_2 fill:#14532d,stroke:#22c55e,color:#f8fafc
+    style P2_3 fill:#14532d,stroke:#22c55e,color:#f8fafc
+    style P2_4 fill:#14532d,stroke:#22c55e,color:#f8fafc
+    style P2_5 fill:#14532d,stroke:#22c55e,color:#f8fafc
+    style P2_6 fill:#14532d,stroke:#22c55e,color:#f8fafc
+    style P2_7 fill:#14532d,stroke:#22c55e,color:#f8fafc
+
+    style P3_1 fill:#451a03,stroke:#f97316,color:#f8fafc
+    style P3_2 fill:#451a03,stroke:#f97316,color:#f8fafc
+    style P3_3 fill:#451a03,stroke:#f97316,color:#f8fafc
+    style P3_4 fill:#451a03,stroke:#f97316,color:#f8fafc
+    style P3_5 fill:#451a03,stroke:#f97316,color:#f8fafc
+    style P3_6 fill:#451a03,stroke:#f97316,color:#f8fafc
+    style P3_7 fill:#451a03,stroke:#f97316,color:#f8fafc

@@ -1,0 +1,87 @@
+%%{ init: { "theme": "base", "themeVariables": { "primaryColor": "#1e293b", "primaryTextColor": "#f8fafc", "primaryBorderColor": "#3b82f6", "lineColor": "#94a3b8", "fontFamily": "Inter, sans-serif" } } }%%
+flowchart TD
+    START(["🟢 Start"])
+    OPEN_FORM["Student opens /complaints/new/\non Mobile Browser"]
+    QR_SCAN{{"QR Code Scanned?"}}
+    QR_FILL["Auto-fill Room Number\nfrom qr_code_token lookup\n(Room model DB query)"]
+    FILL_FORM["Student fills form:\nTitle · Description · Location\nEnrollment No. · Category · Photo"]
+    VALIDATE_ENROLL{"Enrollment\nnumber\nformat valid?"}
+    FORM_ERR["Show Validation Error\nRe-render form with messages"]
+    QUOTA_CHECK{"Active ticket\ncount ≥ 3 for\nenrollment?"}
+    QUOTA_ERR["Reject with:\n'Maximum 3 active tickets\nallowed per enrollment'"]
+    CLASSIFY["ML Urgency Classification\nsmart.py: classify_urgency()\nTF-IDF pipeline → priority_score"]
+    SPATIAL_TRIAGE["Spatial AI Triage\nai_triage.bind_complaint_spatial_origin()\nAlias dict → Building → Floor → Room"]
+    ROOM_MATCHED{{"Building &\nRoom matched?"}}
+    SAVE_WITH_ROOM["Persist Complaint\nwith room FK\nstatus=OPEN"]
+    SAVE_NO_ROOM["Persist Complaint\nwith location_description only\nstatus=OPEN"]
+    CREATE_HISTORY["Insert ComplaintStatusHistory\nstatus=OPEN · auto-note"]
+    SEND_TOKEN["Redirect to /track/\nDisplay CC-XXXXXXXX reference\n& hex-32 tracking token"]
+
+    DISPATCH_CHECK{{"Staff\nauto-matched?"}}
+    AUTO_ASSIGN["dispatcher.py:\nLeast-load + accountability rank\nAssign technician\nsla_due_at = now + SLA hours\nstatus = ASSIGNED\nGenerate UUID task URL"]
+    MANUAL_ASSIGN["Provost / HOD / Registrar\nManually selects technician\n& assigns from dashboard"]
+
+    TECH_ACCEPT["Technician opens UUID URL\nAccepts task\nin_progress_at = now()\nstatus = IN_PROGRESS"]
+    DWELL_TIMER["Server enforces\nDwell Timer ≥ 5 minutes\n(Anti-fraud guard)"]
+    DWELL_OK{{"Dwell time\n≥ 5 min?"}}
+    DWELL_BLOCK["Block proof upload\nReturn timer warning response"]
+    UPLOAD_PROOF["Technician uploads\nresolution_proof image\nstatus = RESOLVED\nresolution_verification = PENDING"]
+
+    STUDENT_VERIFY{{"Student\nverifies\nresolution?"}}
+    STUDENT_CONFIRM["Student confirms resolution\nresolution_verification = VERIFIED"]
+    STUDENT_REJECT["Student rejects resolution\nProvides reopen_proof + reason\nstatus = REOPENED\nreopen_count++"]
+    COLLECT_FEEDBACK["Student submits\nSatisfaction Rating (1-5)\n& optional comment\n→ ComplaintFeedback record"]
+    AUTO_CLOSE["Auto-close timer fires\nresolution_verification = VERIFIED\n(if student inactive)"]
+
+    CLOSE["status = CLOSED\nclosed_at = now()\nMedia purge:\npurge_attached_media()\nevidence · proof deleted from disk"]
+    END_TERMINAL(["🔴 Terminal — Ticket Archived"])
+    REOPEN_DISPATCH["Re-dispatch to\nProvost / HOD\nsla_due_at recalculated\nstatus = ASSIGNED"]
+
+    START --> OPEN_FORM
+    OPEN_FORM --> QR_SCAN
+    QR_SCAN -->|"Yes"| QR_FILL --> FILL_FORM
+    QR_SCAN -->|"No"| FILL_FORM
+    FILL_FORM --> VALIDATE_ENROLL
+    VALIDATE_ENROLL -->|"Invalid"| FORM_ERR --> FILL_FORM
+    VALIDATE_ENROLL -->|"Valid"| QUOTA_CHECK
+    QUOTA_CHECK -->|"Yes (≥ 3)"| QUOTA_ERR --> FILL_FORM
+    QUOTA_CHECK -->|"No (< 3)"| CLASSIFY
+    CLASSIFY --> SPATIAL_TRIAGE
+    SPATIAL_TRIAGE --> ROOM_MATCHED
+    ROOM_MATCHED -->|"Yes"| SAVE_WITH_ROOM --> CREATE_HISTORY
+    ROOM_MATCHED -->|"No"| SAVE_NO_ROOM --> CREATE_HISTORY
+    CREATE_HISTORY --> SEND_TOKEN
+    SEND_TOKEN --> DISPATCH_CHECK
+    DISPATCH_CHECK -->|"Yes"| AUTO_ASSIGN
+    DISPATCH_CHECK -->|"No"| MANUAL_ASSIGN
+    AUTO_ASSIGN --> TECH_ACCEPT
+    MANUAL_ASSIGN --> TECH_ACCEPT
+    TECH_ACCEPT --> DWELL_TIMER --> DWELL_OK
+    DWELL_OK -->|"No"| DWELL_BLOCK --> DWELL_TIMER
+    DWELL_OK -->|"Yes"| UPLOAD_PROOF
+    UPLOAD_PROOF --> STUDENT_VERIFY
+    STUDENT_VERIFY -->|"Confirms"| STUDENT_CONFIRM
+    STUDENT_VERIFY -->|"Rejects"| STUDENT_REJECT
+    STUDENT_VERIFY -->|"No action (timeout)"| AUTO_CLOSE
+    STUDENT_CONFIRM --> COLLECT_FEEDBACK --> CLOSE
+    AUTO_CLOSE --> CLOSE
+    STUDENT_REJECT --> REOPEN_DISPATCH --> TECH_ACCEPT
+    CLOSE --> END_TERMINAL
+
+    style START fill:#16a34a,stroke:#14532d,color:#fff
+    style END_TERMINAL fill:#dc2626,stroke:#7f1d1d,color:#fff
+    style DWELL_BLOCK fill:#7f1d1d,stroke:#dc2626,color:#fff
+    style QUOTA_ERR fill:#7f1d1d,stroke:#dc2626,color:#fff
+    style FORM_ERR fill:#7f1d1d,stroke:#dc2626,color:#fff
+
+    style QR_SCAN fill:#1e3a5f,stroke:#3b82f6,color:#f8fafc
+    style VALIDATE_ENROLL fill:#1e3a5f,stroke:#3b82f6,color:#f8fafc
+    style QUOTA_CHECK fill:#1e3a5f,stroke:#3b82f6,color:#f8fafc
+    style ROOM_MATCHED fill:#1e3a5f,stroke:#3b82f6,color:#f8fafc
+    style DISPATCH_CHECK fill:#1e3a5f,stroke:#3b82f6,color:#f8fafc
+    style DWELL_OK fill:#1e3a5f,stroke:#3b82f6,color:#f8fafc
+    style STUDENT_VERIFY fill:#1e3a5f,stroke:#3b82f6,color:#f8fafc
+
+    style CLASSIFY fill:#14532d,stroke:#22c55e,color:#f8fafc
+    style SPATIAL_TRIAGE fill:#14532d,stroke:#22c55e,color:#f8fafc
+    style AUTO_ASSIGN fill:#451a03,stroke:#f97316,color:#f8fafc
