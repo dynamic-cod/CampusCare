@@ -13,6 +13,7 @@ from django.http import HttpResponse, JsonResponse
 from django.shortcuts import get_object_or_404, redirect, render
 from django.utils import timezone
 from django.utils.http import url_has_allowed_host_and_scheme
+from django.views.decorators.csrf import csrf_exempt
 
 
 def _safe_redirect_target(request, next_url, fallback="core:home"):
@@ -244,11 +245,15 @@ def complaint_list(request):
     # Annotate with support count and user's support status
     complaints = complaints.annotate(support_count=Count("supports"))
     
-    # For authenticated users, mark which complaints they've supported
+    # For authenticated or anonymous session users, mark which complaints they've supported
     user_supported_ids = set()
     if request.user.is_authenticated:
         user_supported_ids = set(
             ComplaintSupport.objects.filter(user=request.user, complaint__in=complaints).values_list("complaint_id", flat=True)
+        )
+    elif request.session.session_key:
+        user_supported_ids = set(
+            ComplaintSupport.objects.filter(session_key=request.session.session_key, complaint__in=complaints).values_list("complaint_id", flat=True)
         )
     
     return render(
@@ -326,7 +331,15 @@ def complaint_detail(request, reference):
             "admin_resolution_form": AdminResolutionForm(),
             "assignment_form": ComplaintAssignmentForm(instance=complaint) if can_assign_and_update_status else None,
             "status_form": ComplaintStatusForm(initial={"status": complaint.status}) if can_assign_and_update_status else None,
-            "has_supported": ComplaintSupport.objects.filter(complaint=complaint, user=request.user).exists(),
+            "has_supported": (
+                ComplaintSupport.objects.filter(complaint=complaint, user=request.user).exists()
+                if request.user.is_authenticated
+                else (
+                    ComplaintSupport.objects.filter(complaint=complaint, session_key=request.session.session_key).exists()
+                    if request.session.session_key
+                    else False
+                )
+            ),
             "verification_form": None,  # NEVER leak student verification form into administrative detail view
             "reopen_form": None,        # NEVER leak student reopen form into administrative detail view
             "feedback_form": None,
@@ -435,6 +448,7 @@ def complaint_tracking(request, tracking_token):
     )
 
 
+@csrf_exempt
 def complaint_toggle_support(request, reference):
     """Allow both logged-in and anonymous visitors to support a complaint."""
     if request.method != "POST":
@@ -467,6 +481,7 @@ def complaint_toggle_support(request, reference):
     return redirect(_safe_redirect_target(request, next_url, fallback="core:home"))
 
 
+@csrf_exempt
 def complaint_support_api(request, reference):
     """
     JSON endpoint: POST to toggle support, returns updated count + state.

@@ -2,15 +2,18 @@
 {% block title %}AMU CampusCare · Campus Maintenance Portal{% endblock %}
 
 {% block content %}
+{% csrf_token %}
 <div style="max-width:960px; margin:0 auto; padding:0 16px;">
 
   {# Hero Section #}
-  <div class="hero-ambient-wrap" style="margin-bottom: 32px; border: 1px solid rgba(226, 232, 240, 0.6); background: rgba(255, 255, 255, 0.7); backdrop-filter: blur(8px);">
+  <div class="hero-ambient-wrap"
+    style="margin-bottom: 32px; border: 1px solid rgba(226, 232, 240, 0.6); background: rgba(255, 255, 255, 0.7); backdrop-filter: blur(8px);">
     <div class="hero-ambient-grid"></div>
     <div class="hero-ambient-glow"></div>
 
     <section style="position: relative; z-index: 1; padding: 48px 16px 36px; text-align: center;">
-      <div class="reveal-up" style="display:inline-flex; align-items:center; gap:8px; background:#f0fdf4; color:#065f46; padding:5px 14px; border-radius:9999px; font-size:12px; font-weight:700; letter-spacing:.4px; border:1px solid #bbf7d0; margin-bottom:18px;">
+      <div class="reveal-up"
+        style="display:inline-flex; align-items:center; gap:8px; background:#f0fdf4; color:#065f46; padding:5px 14px; border-radius:9999px; font-size:12px; font-weight:700; letter-spacing:.4px; border:1px solid #bbf7d0; margin-bottom:18px;">
         <span class="radar-pulse-wrap">
           <span class="radar-ping"></span>
           <span class="radar-dot"></span>
@@ -18,21 +21,22 @@
         LIVE SYSTEM · AMU Care · CAMPUS MAINTENANCE
       </div>
 
-      <h1 class="reveal-up delay-1" style="margin:0 0 12px; font-size:clamp(1.75rem,4vw,2.6rem); font-weight:800; color:var(--amu-navy-950); line-height:1.2; letter-spacing:-.5px;">
+      <h1 class="reveal-up delay-1"
+        style="margin:0 0 12px; font-size:clamp(1.75rem,4vw,2.6rem); font-weight:800; color:var(--amu-navy-950); line-height:1.2; letter-spacing:-.5px;">
         Report. Track. Resolve.<br>
         <span style="color:var(--amu-emerald-700);">Campus issues handled fast.</span>
       </h1>
-      <p class="reveal-up delay-2" style="margin:0 auto 32px; max-width:520px; font-size:1rem; color:var(--amu-navy-700); line-height:1.65;">
+      <p class="reveal-up delay-2"
+        style="margin:0 auto 32px; max-width:520px; font-size:1rem; color:var(--amu-navy-700); line-height:1.65;">
         Lodge a maintenance complaint or track your ticket instantly — no login required.
       </p>
 
       {# Primary CTA + Track bar #}
-      <div class="reveal-up delay-3" style="display:flex; flex-direction:column; align-items:center; gap:14px; max-width:540px; margin:0 auto;">
+      <div class="reveal-up delay-3"
+        style="display:flex; flex-direction:column; align-items:center; gap:14px; max-width:540px; margin:0 auto;">
 
         {# Lodge complaint button #}
-        <a href="{% url 'core:complaint_create' %}"
-           class="btn-tactile cta-arrow-hover"
-           style="display:inline-flex; align-items:center; justify-content:center; gap:10px;
+        <a href="{% url 'core:complaint_create' %}" class="btn-tactile cta-arrow-hover" style="display:inline-flex; align-items:center; justify-content:center; gap:10px;
                   width:100%; padding:14px 28px; border-radius:10px; font-size:1rem; font-weight:700;
                   background:var(--amu-emerald-700); color:#ffffff; text-decoration:none;
                   box-shadow:0 4px 14px rgba(5,150,105,.35);">
@@ -42,14 +46,12 @@
 
         {# Track ticket inline bar #}
         <form action="{% url 'core:tracking_form' %}" method="get"
-              style="display:flex; width:100%; border-radius:10px; overflow:hidden; border:1.5px solid #cbd5e1; background:#fff; box-shadow:0 2px 8px rgba(0,0,0,.06);">
-          <input type="text" name="token"
-                 placeholder="Paste your tracking token to check status…"
-                 style="flex:1; padding:12px 16px; border:none; outline:none; font-size:0.9rem; color:var(--amu-navy-900); background:transparent;"
-                 aria-label="Tracking token">
-          <button type="submit"
-                  class="btn-tactile"
-                  style="padding:12px 20px; background:#f8fafc; border:none; border-left:1.5px solid #cbd5e1; cursor:pointer; font-size:0.85rem; font-weight:700; color:var(--amu-navy-700); white-space:nowrap;">
+          style="display:flex; width:100%; border-radius:10px; overflow:hidden; border:1.5px solid #cbd5e1; background:#fff; box-shadow:0 2px 8px rgba(0,0,0,.06);">
+          <input type="text" name="token" placeholder="Paste your tracking token to check status…"
+            style="flex:1; padding:12px 16px; border:none; outline:none; font-size:0.9rem; color:var(--amu-navy-900); background:transparent;"
+            aria-label="Tracking token">
+          <button type="submit" class="btn-tactile"
+            style="padding:12px 20px; background:#f8fafc; border:none; border-left:1.5px solid #cbd5e1; cursor:pointer; font-size:0.85rem; font-weight:700; color:var(--amu-navy-700); white-space:nowrap;">
             Track
           </button>
         </form>
@@ -63,28 +65,33 @@
     <div style="display:flex; flex-wrap:wrap; justify-content:center; gap:10px;">
 
       {% with pills=count_active|add:0 %}
-      <div class="spotlight-card btn-tactile" style="display:flex; align-items:center; gap:8px; background:#fff7ed; border:1.5px solid #fed7aa; border-radius:8px; padding:9px 16px; min-width:110px;">
+      <div class="spotlight-card btn-tactile"
+        style="display:flex; align-items:center; gap:8px; background:#fff7ed; border:1.5px solid #fed7aa; border-radius:8px; padding:9px 16px; min-width:110px;">
         <span style="font-size:1.1rem; font-weight:800; color:#c2410c;">{{ count_active }}</span>
         <span style="font-size:12px; font-weight:600; color:#9a3412; line-height:1.2;">Active<br>Queue</span>
       </div>
       {% endwith %}
 
-      <div class="spotlight-card btn-tactile" style="display:flex; align-items:center; gap:8px; background:#eff6ff; border:1.5px solid #bfdbfe; border-radius:8px; padding:9px 16px; min-width:110px;">
+      <div class="spotlight-card btn-tactile"
+        style="display:flex; align-items:center; gap:8px; background:#eff6ff; border:1.5px solid #bfdbfe; border-radius:8px; padding:9px 16px; min-width:110px;">
         <span style="font-size:1.1rem; font-weight:800; color:#1d4ed8;">{{ count_open }}</span>
         <span style="font-size:12px; font-weight:600; color:#1e40af; line-height:1.2;">Open</span>
       </div>
 
-      <div class="spotlight-card btn-tactile" style="display:flex; align-items:center; gap:8px; background:#faf5ff; border:1.5px solid #e9d5ff; border-radius:8px; padding:9px 16px; min-width:110px;">
+      <div class="spotlight-card btn-tactile"
+        style="display:flex; align-items:center; gap:8px; background:#faf5ff; border:1.5px solid #e9d5ff; border-radius:8px; padding:9px 16px; min-width:110px;">
         <span style="font-size:1.1rem; font-weight:800; color:#7c3aed;">{{ count_in_progress }}</span>
         <span style="font-size:12px; font-weight:600; color:#6d28d9; line-height:1.2;">In Progress</span>
       </div>
 
-      <div class="spotlight-card btn-tactile" style="display:flex; align-items:center; gap:8px; background:#f0fdf4; border:1.5px solid #bbf7d0; border-radius:8px; padding:9px 16px; min-width:110px;">
+      <div class="spotlight-card btn-tactile"
+        style="display:flex; align-items:center; gap:8px; background:#f0fdf4; border:1.5px solid #bbf7d0; border-radius:8px; padding:9px 16px; min-width:110px;">
         <span style="font-size:1.1rem; font-weight:800; color:var(--amu-emerald-700);">{{ count_resolved }}</span>
         <span style="font-size:12px; font-weight:600; color:#065f46; line-height:1.2;">Resolved</span>
       </div>
 
-      <div class="spotlight-card btn-tactile" style="display:flex; align-items:center; gap:8px; background:#f8fafc; border:1.5px solid #e2e8f0; border-radius:8px; padding:9px 16px; min-width:110px;">
+      <div class="spotlight-card btn-tactile"
+        style="display:flex; align-items:center; gap:8px; background:#f8fafc; border:1.5px solid #e2e8f0; border-radius:8px; padding:9px 16px; min-width:110px;">
         <span style="font-size:1.1rem; font-weight:800; color:#475569;">{{ total }}</span>
         <span style="font-size:12px; font-weight:600; color:#64748b; line-height:1.2;">Total Filed</span>
       </div>
@@ -96,19 +103,15 @@
   <section id="activeComplaintsSection" style="margin-bottom:52px;">
 
     {# ── Accordion Header / Toggle Button ── #}
-    <button id="activeToggle" type="button" onclick="toggleActivePanel()"
-            class="spotlight-card btn-tactile"
-            style="width:100%; display:flex; align-items:center; justify-content:space-between;
+    <button id="activeToggle" type="button" onclick="toggleActivePanel()" class="spotlight-card btn-tactile" style="width:100%; display:flex; align-items:center; justify-content:space-between;
                    background:#fff; border:1.5px solid #e2e8f0; border-radius:12px;
                    padding:16px 20px; cursor:pointer; text-align:left;
-                   box-shadow:0 1px 4px rgba(0,0,0,.06);"
-            aria-expanded="false" aria-controls="activePanel">
+                   box-shadow:0 1px 4px rgba(0,0,0,.06);" aria-expanded="false" aria-controls="activePanel">
       <div style="display:flex; align-items:center; gap:12px;">
         <span style="font-size:1.05rem; font-weight:700; color:var(--amu-navy-950);">
           Active Campus Complaints
         </span>
-        <span id="activeBadge"
-              style="display:inline-flex; align-items:center; gap:6px; background:{% if count_active > 0 %}#fff7ed{% else %}#f1f5f9{% endif %};
+        <span id="activeBadge" style="display:inline-flex; align-items:center; gap:6px; background:{% if count_active > 0 %}#fff7ed{% else %}#f1f5f9{% endif %};
                      color:{% if count_active > 0 %}#c2410c{% else %}#64748b{% endif %};
                      border:1px solid {% if count_active > 0 %}#fed7aa{% else %}#e2e8f0{% endif %};
                      border-radius:9999px; font-size:12px; font-weight:700; padding:3px 10px;">
@@ -121,9 +124,9 @@
           {{ count_active }} Open
         </span>
       </div>
-      <svg id="chevron" class="chevron-rotate" xmlns="http://www.w3.org/2000/svg" width="20" height="20" viewBox="0 0 24 24"
-           fill="none" stroke="currentColor" stroke-width="2.5" stroke-linecap="round" stroke-linejoin="round"
-           style="color:#94a3b8; flex-shrink:0;">
+      <svg id="chevron" class="chevron-rotate" xmlns="http://www.w3.org/2000/svg" width="20" height="20"
+        viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2.5" stroke-linecap="round"
+        stroke-linejoin="round" style="color:#94a3b8; flex-shrink:0;">
         <polyline points="6 9 12 15 18 9"></polyline>
       </svg>
     </button>
@@ -131,71 +134,75 @@
     {# ── Collapsible Panel Body ── #}
     <div id="activePanel" class="grid-accordion" style="border-radius:0 0 12px 12px;">
       <div class="grid-accordion-inner" style="min-height:0; overflow:hidden;">
-        <div style="border:1.5px solid #e2e8f0; border-top:none; border-radius:0 0 12px 12px; background:#fff; padding:20px;">
+        <div
+          style="border:1.5px solid #e2e8f0; border-top:none; border-radius:0 0 12px 12px; background:#fff; padding:20px;">
 
-        {# ── Mini Dept Breakdown Bar ── #}
-        {% if dept_breakdown %}
-        <div style="margin-bottom:20px;">
-          <p style="font-size:12px; font-weight:600; color:#94a3b8; text-transform:uppercase; letter-spacing:.6px; margin:0 0 10px;">
-            Active Issues by Department
-          </p>
-          <div style="display:flex; flex-wrap:wrap; gap:8px;">
-            {% for d in dept_breakdown %}
-            <span class="spotlight-card" style="display:inline-flex; align-items:center; gap:5px; background:#f8fafc;
+          {# ── Mini Dept Breakdown Bar ── #}
+          {% if dept_breakdown %}
+          <div style="margin-bottom:20px;">
+            <p
+              style="font-size:12px; font-weight:600; color:#94a3b8; text-transform:uppercase; letter-spacing:.6px; margin:0 0 10px;">
+              Active Issues by Department
+            </p>
+            <div style="display:flex; flex-wrap:wrap; gap:8px;">
+              {% for d in dept_breakdown %}
+              <span class="spotlight-card"
+                style="display:inline-flex; align-items:center; gap:5px; background:#f8fafc;
                          border:1px solid #e2e8f0; border-radius:6px; padding:4px 10px; font-size:12px; font-weight:600; color:var(--amu-navy-800);">
-              {{ d.cnt }}
-              <span style="font-weight:400; color:#64748b;">{{ d.category__department__name|default:d.category__department__code|default:"General"|truncatechars:20 }}</span>
-            </span>
-            {% endfor %}
+                {{ d.cnt }}
+                <span style="font-weight:400; color:#64748b;">{{
+                  d.category__department__name|default:d.category__department__code|default:"General"|truncatechars:20
+                  }}</span>
+              </span>
+              {% endfor %}
+            </div>
           </div>
-        </div>
-        {% endif %}
+          {% endif %}
 
-        {# ── Quick Filter Bar ── #}
-        <div style="display:flex; flex-wrap:wrap; gap:10px; margin-bottom:18px; align-items:center;">
-          <div style="position:relative; flex:1; min-width:200px;">
-            <input id="activeSearch" type="text" placeholder="Filter by title, hall, category…"
-                   oninput="filterActiveComplaints()"
-                   style="width:100%; padding:9px 12px; border:1.5px solid #e2e8f0; border-radius:8px;
+          {# ── Quick Filter Bar ── #}
+          <div style="display:flex; flex-wrap:wrap; gap:10px; margin-bottom:18px; align-items:center;">
+            <div style="position:relative; flex:1; min-width:200px;">
+              <input id="activeSearch" type="text" placeholder="Filter by title, hall, category…"
+                oninput="filterActiveComplaints()" style="width:100%; padding:9px 12px; border:1.5px solid #e2e8f0; border-radius:8px;
                           font-size:0.875rem; outline:none; color:var(--amu-navy-900); background:#f8fafc;
                           box-sizing:border-box; transition:border-color .2s ease;"
-                   onfocus="this.style.borderColor='var(--amu-emerald-600)'; this.style.background='#fff'"
-                   onblur="this.style.borderColor='#e2e8f0'; this.style.background='#f8fafc'">
+                onfocus="this.style.borderColor='var(--amu-emerald-600)'; this.style.background='#fff'"
+                onblur="this.style.borderColor='#e2e8f0'; this.style.background='#f8fafc'">
+            </div>
+
+            <select id="activeFilterCat" onchange="filterActiveComplaints()"
+              style="padding:9px 12px; border:1.5px solid #e2e8f0; border-radius:8px;
+                         font-size:0.875rem; color:var(--amu-navy-700); background:#f8fafc; cursor:pointer; outline:none;">
+              <option value="">All Categories</option>
+              {% for cat in filter_categories %}
+              <option value="{{ cat|lower }}">{{ cat }}</option>
+              {% endfor %}
+            </select>
+
+            <select id="activeFilterBldg" onchange="filterActiveComplaints()"
+              style="padding:9px 12px; border:1.5px solid #e2e8f0; border-radius:8px;
+                         font-size:0.875rem; color:var(--amu-navy-700); background:#f8fafc; cursor:pointer; outline:none;">
+              <option value="">All Halls/Buildings</option>
+              {% for b in filter_buildings %}
+              <option value="{{ b|lower }}">{{ b }}</option>
+              {% endfor %}
+            </select>
+
+            <span id="activeCount"
+              style="font-size:12px; font-weight:600; color:var(--amu-emerald-800); background:#f0fdf4;
+                                        border:1px solid #bbf7d0; border-radius:6px; padding:5px 10px; white-space:nowrap;">
+              {{ active_complaints|length }} issue{{ active_complaints|length|pluralize }}
+            </span>
           </div>
 
-          <select id="activeFilterCat" onchange="filterActiveComplaints()"
-                  style="padding:9px 12px; border:1.5px solid #e2e8f0; border-radius:8px;
-                         font-size:0.875rem; color:var(--amu-navy-700); background:#f8fafc; cursor:pointer; outline:none;">
-            <option value="">All Categories</option>
-            {% for cat in filter_categories %}
-            <option value="{{ cat|lower }}">{{ cat }}</option>
-            {% endfor %}
-          </select>
-
-          <select id="activeFilterBldg" onchange="filterActiveComplaints()"
-                  style="padding:9px 12px; border:1.5px solid #e2e8f0; border-radius:8px;
-                         font-size:0.875rem; color:var(--amu-navy-700); background:#f8fafc; cursor:pointer; outline:none;">
-            <option value="">All Halls/Buildings</option>
-            {% for b in filter_buildings %}
-            <option value="{{ b|lower }}">{{ b }}</option>
-            {% endfor %}
-          </select>
-
-          <span id="activeCount" style="font-size:12px; font-weight:600; color:var(--amu-emerald-800); background:#f0fdf4;
-                                        border:1px solid #bbf7d0; border-radius:6px; padding:5px 10px; white-space:nowrap;">
-            {{ active_complaints|length }} issue{{ active_complaints|length|pluralize }}
-          </span>
-        </div>
-
-        {# ── Active Issue Cards ── #}
-        <div id="activeList" style="display:flex; flex-direction:column; gap:10px;">
-          {% if active_complaints %}
+          {# ── Active Issue Cards ── #}
+          <div id="activeList" style="display:flex; flex-direction:column; gap:10px;">
+            {% if active_complaints %}
             {% for c in active_complaints %}
             <div class="active-item spotlight-card"
-                 data-search="{{ c.reference|lower }} {{ c.title|lower }} {{ c.category.name|lower }} {{ c.location_description|lower }} {% if c.room %}{{ c.room.floor.building.name|lower }}{% endif %}"
-                 data-cat="{{ c.category.name|lower }}"
-                 data-bldg="{% if c.room %}{{ c.room.floor.building.name|lower }}{% endif %}"
-                 style="display:flex; align-items:flex-start; justify-content:space-between; gap:14px; flex-wrap:wrap;
+              data-search="{{ c.reference|lower }} {{ c.title|lower }} {{ c.category.name|lower }} {{ c.location_description|lower }} {% if c.room %}{{ c.room.floor.building.name|lower }}{% endif %}"
+              data-cat="{{ c.category.name|lower }}"
+              data-bldg="{% if c.room %}{{ c.room.floor.building.name|lower }}{% endif %}" style="display:flex; align-items:flex-start; justify-content:space-between; gap:14px; flex-wrap:wrap;
                         padding:14px 16px; border-radius:10px; border:1px solid #f1f5f9;
                         border-left:4px solid {% if c.priority == 'urgent' %}#dc2626{% elif c.priority == 'high' %}#ea580c{% elif c.priority == 'normal' %}#0284c7{% else %}#16a34a{% endif %};
                         background:#fafafa; transition:background .15s;">
@@ -203,8 +210,7 @@
               <div style="flex:1; min-width:200px;">
                 {# Title + ref #}
                 <div style="display:flex; align-items:center; flex-wrap:wrap; gap:6px; margin-bottom:5px;">
-                  <a href="{% url 'core:complaint_detail' c.reference %}"
-                     style="font-size:12px; font-family:ui-monospace,monospace; font-weight:700;
+                  <a href="{% url 'core:complaint_detail' c.reference %}" style="font-size:12px; font-family:ui-monospace,monospace; font-weight:700;
                             color:var(--amu-navy-700); background:#f1f5f9; padding:1px 7px;
                             border-radius:4px; border:1px solid #e2e8f0; text-decoration:none;">
                     {{ c.reference }}
@@ -225,8 +231,9 @@
 
                 {# Issue title #}
                 <a href="{% url 'core:complaint_detail' c.reference %}"
-                   style="font-size:0.95rem; font-weight:600; color:var(--amu-navy-950); text-decoration:none; display:block; margin-bottom:4px; line-height:1.3;"
-                   onmouseover="this.style.color='var(--amu-emerald-700)'" onmouseout="this.style.color='var(--amu-navy-950)'">
+                  style="font-size:0.95rem; font-weight:600; color:var(--amu-navy-950); text-decoration:none; display:block; margin-bottom:4px; line-height:1.3;"
+                  onmouseover="this.style.color='var(--amu-emerald-700)'"
+                  onmouseout="this.style.color='var(--amu-navy-950)'">
                   {{ c.title|truncatechars:90 }}
                 </a>
 
@@ -234,9 +241,9 @@
                 <div style="font-size:12px; color:#64748b; display:flex; flex-wrap:wrap; gap:8px; align-items:center;">
                   <span style="font-weight:600; color:var(--amu-emerald-800);">{{ c.category.name }}</span>
                   {% if c.room %}
-                    <span>{{ c.room.floor.building.name }}</span>
+                  <span>{{ c.room.floor.building.name }}</span>
                   {% elif c.location_description %}
-                    <span>{{ c.location_description|truncatechars:40 }}</span>
+                  <span>{{ c.location_description|truncatechars:40 }}</span>
                   {% endif %}
                   <span style="color:#94a3b8;">{{ c.created_at|timesince }} ago</span>
                 </div>
@@ -244,12 +251,8 @@
 
               {# ── Support / Upvote Button ── #}
               <div style="display:flex; flex-direction:column; align-items:center; gap:4px; flex-shrink:0;">
-                <button
-                  class="support-btn upvote-btn btn-tactile {% if c.id in supported_ids %}supported{% endif %}"
-                  data-ref="{{ c.reference }}"
-                  data-count="{{ c.support_count }}"
-                  onclick="handleSupport(this)"
-                  style="display:inline-flex; align-items:center; gap:5px; padding:7px 14px; border-radius:8px;
+                <button class="support-btn upvote-btn btn-tactile {% if c.id in supported_ids %}supported{% endif %}"
+                  data-ref="{{ c.reference }}" data-count="{{ c.support_count }}" onclick="handleSupport(this)" style="display:inline-flex; align-items:center; gap:5px; padding:7px 14px; border-radius:8px;
                          font-size:13px; font-weight:700; cursor:pointer; border:1.5px solid;
                          transition:all .2s ease;
                          {% if c.id in supported_ids %}
@@ -274,16 +277,17 @@
               <p style="margin:0; font-size:0.9rem; font-weight:500;">No complaints match your filter.</p>
             </div>
 
-          {% else %}
+            {% else %}
             <div style="text-align:center; padding:48px 20px; color:#94a3b8;">
-              <h3 style="margin:0 0 6px; color:var(--amu-navy-900); font-size:1.1rem; font-weight:700;">No active complaints</h3>
+              <h3 style="margin:0 0 6px; color:var(--amu-navy-900); font-size:1.1rem; font-weight:700;">No active
+                complaints</h3>
               <p style="margin:0 0 18px; font-size:0.9rem;">All campus facilities are running smoothly right now.</p>
               <a href="{% url 'core:complaint_create' %}" class="btn-unified btn-unified-emerald">
                 Lodge the first report
               </a>
             </div>
-          {% endif %}
-        </div>
+            {% endif %}
+          </div>
 
         </div>{# /inner padding border box #}
       </div>{# /grid-accordion-inner #}
@@ -292,7 +296,8 @@
   </section>
 
   {# Footer Note #}
-  <div style="text-align:center; padding:0 0 40px; color:#94a3b8; font-size:12px; border-top:1px solid #f1f5f9; padding-top:24px;">
+  <div
+    style="text-align:center; padding:0 0 40px; color:#94a3b8; font-size:12px; border-top:1px solid #f1f5f9; padding-top:24px;">
     <p style="margin:0;">
       AMU CampusCare · Transparent maintenance tracking for Aligarh Muslim University
     </p>
@@ -302,33 +307,89 @@
 
 {# Styles #}
 <style>
-.active-item:hover { background: #f8fafc !important; }
-.support-btn.supported { background:#dcfce7 !important; color:#15803d !important; border-color:#86efac !important; }
-.support-btn.supported:hover { background:#bbf7d0 !important; }
-.support-btn:not(.supported):hover { background:#f1f5f9 !important; border-color:#cbd5e1 !important; }
+  .active-item:hover {
+    background: #f8fafc !important;
+  }
 
-/* Pill statuses */
-.pill { display:inline-block; padding:2px 8px; border-radius:9999px; font-size:11px; font-weight:600; }
-.pill-open        { background:#eff6ff; color:#1d4ed8; border:1px solid #bfdbfe; }
-.pill-assigned    { background:#fef9c3; color:#854d0e; border:1px solid #fde047; }
-.pill-in_progress { background:#faf5ff; color:#7c3aed; border:1px solid #e9d5ff; }
-.pill-resolved    { background:#f0fdf4; color:#15803d; border:1px solid #bbf7d0; }
-.pill-reopened    { background:#fff1f2; color:#be123c; border:1px solid #fda4af; }
-.pill-closed      { background:#f8fafc; color:#475569; border:1px solid #e2e8f0; }
+  .support-btn.supported {
+    background: #dcfce7 !important;
+    color: #15803d !important;
+    border-color: #86efac !important;
+  }
 
-@media (max-width: 600px) {
-  .active-item { flex-direction: column; }
-  .active-item > div:last-child { flex-direction: row; align-items: center; }
-}
+  .support-btn.supported:hover {
+    background: #bbf7d0 !important;
+  }
+
+  .support-btn:not(.supported):hover {
+    background: #f1f5f9 !important;
+    border-color: #cbd5e1 !important;
+  }
+
+  /* Pill statuses */
+  .pill {
+    display: inline-block;
+    padding: 2px 8px;
+    border-radius: 9999px;
+    font-size: 11px;
+    font-weight: 600;
+  }
+
+  .pill-open {
+    background: #eff6ff;
+    color: #1d4ed8;
+    border: 1px solid #bfdbfe;
+  }
+
+  .pill-assigned {
+    background: #fef9c3;
+    color: #854d0e;
+    border: 1px solid #fde047;
+  }
+
+  .pill-in_progress {
+    background: #faf5ff;
+    color: #7c3aed;
+    border: 1px solid #e9d5ff;
+  }
+
+  .pill-resolved {
+    background: #f0fdf4;
+    color: #15803d;
+    border: 1px solid #bbf7d0;
+  }
+
+  .pill-reopened {
+    background: #fff1f2;
+    color: #be123c;
+    border: 1px solid #fda4af;
+  }
+
+  .pill-closed {
+    background: #f8fafc;
+    color: #475569;
+    border: 1px solid #e2e8f0;
+  }
+
+  @media (max-width: 600px) {
+    .active-item {
+      flex-direction: column;
+    }
+
+    .active-item>div:last-child {
+      flex-direction: row;
+      align-items: center;
+    }
+  }
 </style>
 
 {# JavaScript - Accordion, Filter, AJAX Upvote #}
 <script>
   // ── 1. Accordion toggle ──────────────────────────────
   function toggleActivePanel() {
-    const panel   = document.getElementById('activePanel');
+    const panel = document.getElementById('activePanel');
     const chevron = document.getElementById('chevron');
-    const btn     = document.getElementById('activeToggle');
+    const btn = document.getElementById('activeToggle');
     if (!panel || !btn) return;
 
     const isOpening = !panel.classList.contains('is-open');
@@ -342,20 +403,20 @@
 
   // ── 2. Quick filter (search + category + building) ──
   function filterActiveComplaints() {
-    const q    = (document.getElementById('activeSearch')?.value || '').trim().toLowerCase();
-    const cat  = (document.getElementById('activeFilterCat')?.value || '').trim().toLowerCase();
+    const q = (document.getElementById('activeSearch')?.value || '').trim().toLowerCase();
+    const cat = (document.getElementById('activeFilterCat')?.value || '').trim().toLowerCase();
     const bldg = (document.getElementById('activeFilterBldg')?.value || '').trim().toLowerCase();
 
     const items = document.querySelectorAll('.active-item');
     let visible = 0;
 
-    items.forEach(function(item) {
-      const search  = item.getAttribute('data-search') || '';
+    items.forEach(function (item) {
+      const search = item.getAttribute('data-search') || '';
       const itemCat = item.getAttribute('data-cat') || '';
-      const itemBldg= item.getAttribute('data-bldg') || '';
+      const itemBldg = item.getAttribute('data-bldg') || '';
 
-      const matchQ    = !q    || search.includes(q);
-      const matchCat  = !cat  || itemCat.includes(cat);
+      const matchQ = !q || search.includes(q);
+      const matchCat = !cat || itemCat.includes(cat);
       const matchBldg = !bldg || itemBldg.includes(bldg);
 
       if (matchQ && matchCat && matchBldg) {
@@ -374,25 +435,24 @@
   }
 
   // ── 3. AJAX Upvote (fetch + localStorage spam guard) ──
-  const CSRF_TOKEN = (function() {
-    // Try meta tag first, then cookie
+  function getCsrfToken() {
     const meta = document.querySelector('meta[name=csrf-token]');
-    if (meta) return meta.getAttribute('content');
+    if (meta && meta.getAttribute('content')) return meta.getAttribute('content');
+    const field = document.querySelector('[name=csrfmiddlewaretoken]');
+    if (field && field.value) return field.value;
     const cookie = document.cookie.split(';').map(c => c.trim());
     for (const c of cookie) {
       if (c.startsWith('csrftoken=')) return c.slice('csrftoken='.length);
     }
-    // Fall back to hidden field if present
-    const field = document.querySelector('[name=csrfmiddlewaretoken]');
-    return field ? field.value : '';
-  })();
+    return '';
+  }
 
   // Key for localStorage: tracks refs this browser session already supported
   const LS_KEY = 'campuscare_supported_v2';
 
   function getLocallySupported() {
     try { return JSON.parse(localStorage.getItem(LS_KEY) || '{}'); }
-    catch(e) { return {}; }
+    catch (e) { return {}; }
   }
   function setLocallySupported(ref, state) {
     try {
@@ -400,7 +460,7 @@
       if (state) { obj[ref] = true; }
       else { delete obj[ref]; }
       localStorage.setItem(LS_KEY, JSON.stringify(obj));
-    } catch(e) {}
+    } catch (e) { }
   }
 
   async function handleSupport(btn) {
@@ -410,7 +470,7 @@
     // Optimistic UI update
     const isNowSupported = !btn.classList.contains('supported');
     const countEl = btn.querySelector('.support-count');
-    const iconEl  = btn.querySelector('.support-icon');
+    const iconEl = btn.querySelector('.support-icon');
     const labelEl = btn.nextElementSibling;
     const currentCount = parseInt(countEl?.textContent || '0', 10);
 
@@ -418,13 +478,18 @@
     btn.style.opacity = '.6';
 
     try {
+      const token = getCsrfToken();
+      const headers = {
+        'Content-Type': 'application/json',
+        'X-Requested-With': 'XMLHttpRequest',
+      };
+      if (token) {
+        headers['X-CSRFToken'] = token;
+      }
+
       const res = await fetch(`/api/complaints/${ref}/support/`, {
         method: 'POST',
-        headers: {
-          'X-CSRFToken': CSRF_TOKEN,
-          'Content-Type': 'application/json',
-          'X-Requested-With': 'XMLHttpRequest',
-        },
+        headers: headers,
       });
 
       if (!res.ok) throw new Error('HTTP ' + res.status);
@@ -436,23 +501,24 @@
 
         if (data.supported) {
           btn.classList.add('supported');
-          if (iconEl) iconEl.textContent = '✅';
+          if (iconEl) iconEl.textContent = '✓';
           if (labelEl) labelEl.textContent = 'Supported';
           btn.title = 'Remove support';
           setLocallySupported(ref, true);
         } else {
           btn.classList.remove('supported');
-          if (iconEl) iconEl.textContent = '👍';
+          if (iconEl) iconEl.textContent = '▲';
           if (labelEl) labelEl.textContent = 'Endorse';
           btn.title = 'Support this issue';
           setLocallySupported(ref, false);
         }
 
-        // Brief green flash feedback
-        btn.style.transform = 'scale(1.12)';
-        setTimeout(() => { btn.style.transform = 'scale(1)'; }, 200);
+        // Brief pop feedback
+        btn.classList.remove('upvote-pop');
+        void btn.offsetWidth;
+        btn.classList.add('upvote-pop');
       }
-    } catch(err) {
+    } catch (err) {
       console.warn('Support toggle failed:', err);
       // Revert optimistic UI
       if (countEl) countEl.textContent = currentCount;
@@ -463,26 +529,26 @@
   }
 
   // ── 4. Restore localStorage support state on load ──
-  document.addEventListener('DOMContentLoaded', function() {
+  document.addEventListener('DOMContentLoaded', function () {
     const supported = getLocallySupported();
-    document.querySelectorAll('.support-btn').forEach(function(btn) {
+    document.querySelectorAll('.support-btn').forEach(function (btn) {
       const ref = btn.getAttribute('data-ref');
-      if (ref && supported[ref] && !btn.classList.contains('supported')) {
+      if (ref && supported[ref]) {
         btn.classList.add('supported');
-        const iconEl  = btn.querySelector('.support-icon');
+        const iconEl = btn.querySelector('.support-icon');
         const labelEl = btn.nextElementSibling;
-        if (iconEl) iconEl.textContent = '✅';
+        if (iconEl) iconEl.textContent = '✓';
         if (labelEl) labelEl.textContent = 'Supported';
       }
     });
   });
 
   // ── 5. Live Poll: update active badge count every 10s ──
-  (function() {
-    const badge    = document.getElementById('activeBadge');
-    let latestId   = parseInt("{{ latest_id|default:0 }}", 10) || 0;
+  (function () {
+    const badge = document.getElementById('activeBadge');
+    let latestId = parseInt("{{ latest_id|default:0 }}", 10) || 0;
 
-    setInterval(async function() {
+    setInterval(async function () {
       try {
         const res = await fetch('/api/latest-complaints/?since_id=' + latestId + '&status=active', {
           headers: { 'Accept': 'application/json' }, cache: 'no-store'
@@ -494,7 +560,7 @@
           badge.innerHTML = (n > 0 ? '<span class="live-dot" style="background:#ea580c;"></span>' : '') + n + ' Open';
         }
         if (data?.latest_id > latestId) latestId = data.latest_id;
-      } catch(e) {}
+      } catch (e) { }
     }, 10000);
   })();
 </script>

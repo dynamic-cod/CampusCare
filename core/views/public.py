@@ -4,11 +4,13 @@ Public-facing informational and landing views.
 
 from django.db.models import Count, Prefetch, Q
 from django.shortcuts import render
+from django.views.decorators.csrf import ensure_csrf_cookie
 
 from core.decorators import staff_or_admin_required
 from core.models import Building, Campus, Complaint, ComplaintSupport, Department, Floor, Room
 
 
+@ensure_csrf_cookie
 def home(request):
     """Public homepage — minimal hero + collapsible active complaints panel."""
     stats = Complaint.objects.aggregate(

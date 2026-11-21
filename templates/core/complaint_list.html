@@ -101,10 +101,11 @@
           </div>
 
           <div style="display: flex; flex-direction: column; align-items: center; gap: 4px; min-width: 80px;">
-            {% if complaint.is_public and user.is_authenticated %}
+            {% if complaint.is_public %}
               <form method="post" action="{% url 'core:complaint_toggle_support' complaint.reference %}" style="margin: 0;">
                 {% csrf_token %}
-                <button type="submit" class="btn-unified" style="height: 38px; min-height: 38px; padding: 0 14px; font-size: 14px; background: {% if complaint.id in user_supported_ids %}#dcfce7; color: #15803d; border-color: #86efac;{% else %}#f8fafc; color: var(--amu-navy-700); border-color: #cbd5e1;{% endif %};" title="{% if complaint.id in user_supported_ids %}Remove support{% else %}Show support for this issue{% endif %}">
+                <input type="hidden" name="next" value="{{ request.get_full_path }}">
+                <button type="submit" class="btn-unified btn-tactile" style="height: 38px; min-height: 38px; padding: 0 14px; font-size: 14px; background: {% if complaint.id in user_supported_ids %}#dcfce7; color: #15803d; border-color: #86efac;{% else %}#f8fafc; color: var(--amu-navy-700); border-color: #cbd5e1;{% endif %};" title="{% if complaint.id in user_supported_ids %}Remove support{% else %}Show support for this issue{% endif %}">
                   <span>👍</span> <span>{{ complaint.support_count }}</span>
                 </button>
               </form>

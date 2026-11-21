@@ -323,10 +323,11 @@
       </p>
     {% endif %}
 
-    {% if complaint.is_public and user.is_authenticated %}
+    {% if complaint.is_public %}
       <form method="post" action="{% url 'core:complaint_toggle_support' complaint.reference %}" style="margin-top: 12px;">
         {% csrf_token %}
-        <button type="submit" class="btn-unified btn-unified-secondary">
+        <input type="hidden" name="next" value="{{ request.path }}">
+        <button type="submit" class="btn-unified btn-unified-secondary btn-tactile">
           {% if has_supported %}Remove support{% else %}👍 Support this issue{% endif %} ({{ complaint.support_count }})
         </button>
       </form>
