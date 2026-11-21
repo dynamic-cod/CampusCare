@@ -95,6 +95,7 @@ def complaint_status_poll_api(request, tracking_token):
     })
 
 
+@csrf_exempt
 def analyze_urgency_api(request):
     """API: POST JSON with title/description/category/location -> AI priority + SLA estimate."""
     if request.method != "POST":
@@ -128,6 +129,8 @@ def analyze_urgency_api(request):
     if is_emergency:
         priority = "urgent"
         priority_display = "Urgent"
+        score = 100
+        reason = "Life-safety / emergency hazard detected (Rapid 30m response)."
         sla_hours = 0.5
         sla_display = "30m (Emergency Rapid Response)"
     else:
