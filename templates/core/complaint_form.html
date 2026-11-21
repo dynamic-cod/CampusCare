@@ -78,7 +78,7 @@
             <label for="faculty_dept_select" class="block text-xs font-medium text-slate-600 mb-1">Academic Faculty or Department</label>
             <select id="faculty_dept_select"
               class="w-full px-3.5 py-2.5 text-sm bg-white border border-slate-300 rounded-lg text-slate-800 focus:outline-none focus:ring-2 focus:ring-slate-900/10 focus:border-slate-900 transition-colors">
-              <option value="">Select Faculty or Department</option>
+              <option value="">Select Academic Faculty or Teaching Department</option>
               {% for faculty in active_faculties %}
               <optgroup label="{{ faculty.name }} ({{ faculty.code }})">
                 <option value="{{ faculty.name }}" data-type="faculty" data-faculty="{{ faculty.code }}">

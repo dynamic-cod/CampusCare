@@ -55,20 +55,26 @@ function initCursorSpotlight() {
 
 // 3. Fluid Grid Accordions
 function initGridAccordions() {
-  const toggleBtn = document.getElementById('activeToggle');
   const panel = document.getElementById('activePanel');
-  if (!toggleBtn || !panel) return;
+  if (panel && !panel.classList.contains('grid-accordion')) {
+    panel.classList.add('grid-accordion');
+  }
 
-  // Ensure grid accordion class is present
-  panel.classList.add('grid-accordion');
+  // Define global toggleActivePanel function (single source of truth)
+  window.toggleActivePanel = function() {
+    const panel = document.getElementById('activePanel');
+    const chevron = document.getElementById('chevron');
+    const btn = document.getElementById('activeToggle');
+    if (!panel || !btn) return;
 
-  toggleBtn.addEventListener('click', (e) => {
-    e.preventDefault();
     const isOpening = !panel.classList.contains('is-open');
     panel.classList.toggle('is-open', isOpening);
-    toggleBtn.classList.toggle('is-open', isOpening);
-    toggleBtn.setAttribute('aria-expanded', isOpening ? 'true' : 'false');
-  });
+    btn.classList.toggle('is-open', isOpening);
+    btn.setAttribute('aria-expanded', isOpening ? 'true' : 'false');
+    if (chevron) {
+      chevron.style.transform = isOpening ? 'rotate(180deg)' : 'rotate(0deg)';
+    }
+  };
 }
 
 // 4. Upvote Spring Animation Helper
