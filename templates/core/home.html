@@ -150,9 +150,7 @@
                 style="display:inline-flex; align-items:center; gap:5px; background:#f8fafc;
                          border:1px solid #e2e8f0; border-radius:6px; padding:4px 10px; font-size:12px; font-weight:600; color:var(--amu-navy-800);">
                 {{ d.cnt }}
-                <span style="font-weight:400; color:#64748b;">{{
-                  d.category__department__name|default:d.category__department__code|default:"General"|truncatechars:20
-                  }}</span>
+                <span style="font-weight:400; color:#64748b;">{{ d.category__department__name|default:d.category__department__code|default:"General"|truncatechars:20 }}</span>
               </span>
               {% endfor %}
             </div>
