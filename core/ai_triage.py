@@ -8,142 +8,95 @@ from .models import Building, Complaint, ComplaintCategory, Department, Floor, R
 # ============================================================
 # SAFETY KEYWORD GUARDRAIL
 # Deterministic override that fires *before* ML inference.
-# Any match forces priority=URGENT, confidence=1.0, dept=EMERG.
-# Covers English, transliterated Urdu/Hindi (Hinglish), and
-# descriptive phrasing that the TF-IDF model might misclassify.
+# Life-safety matches force priority=URGENT, confidence=1.0, dept=EMERG (30m SLA).
+# Food-safety / poisoning hazards force priority=URGENT, confidence=1.0, dept=MESS (2h SLA).
 # ============================================================
 
-# Compiled once at import time for zero-overhead repeated calls.
-# Covers: snakes/reptiles, scorpions, bees/wasps/hornets, fire/gas/smoke, animal attacks, structural/electrical
+# Life-safety patterns (EMERG)
 _SAFETY_PATTERNS = re.compile(
     r"\b("
     r"snake|saanp|saap|saamp|cobra|viper|python|adder|mamba|krait|anaconda"
     r"|reptile|reptiles|slithering|slithered|serpent"
     r"|scorpion|bichhu"
-    r"|beehive|hornet|hornets|wasp|wasps"
+    r"|beehive|hornet|hornets|wasp|wasps|yellow\.jacket"
     r"|fire|flames|flame|blaze|arson"
     r"|smoke|smoking|smoldering"
-    r"|gas.leak|cylinder.leak|lpg.leak|gas.smell|burning.smell"
+    r"|gas\.leak|cylinder\.leak|lpg\.leak|gas\.smell|burning\.smell"
     r"|explosion|exploding"
-    r"|dog.bite|dogbite|rabid|rabies"
-    r"|monkey.attack|monkey.bite"
-    r"|wild.animal|aggressive.animal"
-    r"|electrocution|electric.shock|live.wire|live.electrical"
-    r"|ceiling.collapse|wall.collapse|roof.collapse|building.collapse"
-    r"|structural.collapse"
+    r"|dog\.bite|dogbite|rabid|rabies"
+    r"|monkey\.attack|monkey\.bite"
+    r"|wild\.animal|aggressive\.animal"
+    r"|electrocution|electric\.shock|live\.wire|live\.electrical"
+    r"|ceiling\.collapse|wall\.collapse|roof\.collapse|building\.collapse"
+    r"|structural\.collapse"
     r")\b",
     re.IGNORECASE,
 )
 
-# SLA for safety emergencies: 30 minutes expressed as fractional hours
-SAFETY_EMERGENCY_SLA_HOURS = 0.5  # = 30 minutes
-
-
-def check_safety_guardrail(title: str = "", description: str = "", location: str = "") -> dict:
-    """
-    Run deterministic safety-keyword scan on complaint text.
-
-    Returns a dict with:
-        matched      (bool)   – True if any safety keyword was detected
-        keywords     (list)   – All matched keywords (deduplicated, lowercase)
-        priority     (str)    – Always 'urgent' when matched
-        confidence   (float)  – Always 1.0 when matched
-        dept_code    (str)    – 'EMERG' (the override department code)
-        reason       (str)    – Human-readable explanation
-    """
-    combined = f"{title} {description} {location}"
-    matches = _SAFETY_PATTERNS.findall(combined)
-    if not matches:
-        return {"matched": False}
-
-    unique_kw = list(dict.fromkeys(kw.lower() for kw in matches))
-    return {
-        "matched": True,
-        "keywords": unique_kw,
-        "priority": "urgent",
-        "confidence": 1.0,
-        "dept_code": "EMERG",
-        "sla_hours": SAFETY_EMERGENCY_SLA_HOURS,
-        "reason": (
-            f"⚠ SAFETY OVERRIDE: Life-safety keywords detected "
-            f"({', '.join(unique_kw[:3])}{'…' if len(unique_kw) > 3 else ''}). "
-            f"Auto-escalated to Campus Safety & Emergency Response (EMERG). "
-            f"Rapid response SLA: 30 minutes."
-        ),
-    }
-
-# ============================================================
-# SAFETY KEYWORD GUARDRAIL
-# Deterministic override that fires *before* ML inference.
-# Any match forces priority=URGENT, confidence=1.0, dept=EMERG.
-# Covers English, transliterated Urdu/Hindi (Hinglish), and
-# descriptive phrasing that the TF-IDF model might misclassify.
-# ============================================================
-
-# Compiled once at import time for zero-overhead repeated calls.
-_SAFETY_PATTERNS = re.compile(
+# Critical Food-Safety / Poisoning hazards (MESS)
+_FOOD_SAFETY_PATTERNS = re.compile(
     r"\b("
-    # Snakes / reptiles
-    r"snake|saamp|cobra|viper|python|adder|mamba|krait|anaconda"
-    r"|reptile|reptiles|slithering|slithered|serpent"
-    # Scorpions
-    r"|scorpion|bichhu"
-    # Bee / wasp / hornet hazards
-    r"|beehive|hornet|hornets|wasp|wasps"
-    r"|yellow.jacket"
-    # Fire / smoke / gas
-    r"|fire|flames|flame|blaze|arson"
-    r"|smoke|smoking|smoldering"
-    r"|gas.leak|cylinder.leak|lpg.leak|gas.smell|burning.smell"
-    r"|explosion|exploding"
-    # Animal attacks
-    r"|dog.bite|dogbite|rabid|rabies"
-    r"|monkey.attack|monkey.bite"
-    r"|wild.animal|aggressive.animal"
-    # Structural / electrical emergencies
-    r"|electrocution|electric.shock|live.wire|live.electrical"
-    r"|ceiling.collapse|wall.collapse|roof.collapse|building.collapse"
-    r"|structural.collapse"
+    r"food\.poisoning|foodpoisoning"
+    r"|rotten\.food|spoiled\.food|stale\.food|fungus\.on\.food"
+    r"|worms?\.in\.food|insects?\.in\.food|cockroach\.in\.food"
+    r"|dead\.lizard|lizard\.in\.food|maggots?"
+    r"|contaminated\.drinking\.water|contaminated\.water"
+    r"|poisonous\.food|toxic\.food"
+    r"|vomiting\.after\.eating|fell\.sick\.after\.food"
     r")\b",
     re.IGNORECASE,
 )
 
-# SLA for safety emergencies: 30 minutes expressed as fractional hours
-SAFETY_EMERGENCY_SLA_HOURS = 0.5  # = 30 minutes
+SAFETY_EMERGENCY_SLA_HOURS = 0.5  # 30 minutes for physical emergencies
+FOOD_SAFETY_SLA_HOURS = 2.0       # 2 hours for critical food poisoning/hazard
 
 
 def check_safety_guardrail(title: str = "", description: str = "", location: str = "") -> dict:
     """
     Run deterministic safety-keyword scan on complaint text.
-
-    Returns a dict with:
-        matched      (bool)   – True if any safety keyword was detected
-        keywords     (list)   – All matched keywords (deduplicated, lowercase)
-        priority     (str)    – Always 'urgent' when matched
-        confidence   (float)  – Always 1.0 when matched
-        dept_code    (str)    – 'EMERG' (the override department code)
-        reason       (str)    – Human-readable explanation
+    Handles both life-safety (EMERG) and acute food-safety (MESS) overrides.
     """
     combined = f"{title} {description} {location}"
-    matches = _SAFETY_PATTERNS.findall(combined)
-    if not matches:
-        return {"matched": False}
+    
+    # 1. Physical / Life-Safety Emergency check
+    life_matches = _SAFETY_PATTERNS.findall(combined)
+    if life_matches:
+        unique_kw = list(dict.fromkeys(kw.lower() for kw in life_matches))
+        return {
+            "matched": True,
+            "keywords": unique_kw,
+            "priority": "urgent",
+            "confidence": 1.0,
+            "dept_code": "EMERG",
+            "sla_hours": SAFETY_EMERGENCY_SLA_HOURS,
+            "reason": (
+                f"⚠ SAFETY OVERRIDE: Life-safety hazard detected "
+                f"({', '.join(unique_kw[:3])}{'…' if len(unique_kw) > 3 else ''}). "
+                f"Auto-escalated to Campus Safety & Emergency Response (EMERG). "
+                f"Rapid response SLA: 30 minutes."
+            ),
+        }
 
-    unique_kw = list(dict.fromkeys(kw.lower() for kw in matches))
-    return {
-        "matched": True,
-        "keywords": unique_kw,
-        "priority": "urgent",
-        "confidence": 1.0,
-        "dept_code": "EMERG",
-        "sla_hours": SAFETY_EMERGENCY_SLA_HOURS,
-        "reason": (
-            f"⚠ SAFETY OVERRIDE: Life-safety keywords detected "
-            f"({', '.join(unique_kw[:3])}{'…' if len(unique_kw) > 3 else ''}). "
-            f"Auto-escalated to Campus Safety & Emergency Response (EMERG). "
-            f"Rapid response SLA: 30 minutes."
-        ),
-    }
+    # 2. Critical Food Poisoning / Food Safety check
+    food_matches = _FOOD_SAFETY_PATTERNS.findall(combined)
+    if food_matches:
+        unique_kw = list(dict.fromkeys(kw.lower() for kw in food_matches))
+        return {
+            "matched": True,
+            "keywords": unique_kw,
+            "priority": "urgent",
+            "confidence": 1.0,
+            "dept_code": "MESS",
+            "sla_hours": FOOD_SAFETY_SLA_HOURS,
+            "reason": (
+                f"⚠ HEALTH OVERRIDE: Severe food safety / contamination hazard detected "
+                f"({', '.join(unique_kw[:3])}{'…' if len(unique_kw) > 3 else ''}). "
+                f"Auto-escalated to Hostel Mess & Dining Services (MESS). "
+                f"Target SLA: 2 hours."
+            ),
+        }
+
+    return {"matched": False}
 
 BUILDING_ALIASES = {
     "sir syed hall (north)": "SSN",
@@ -270,14 +223,14 @@ def extract_building_and_department(
                 break
         fac_code = dept_info["faculty"].upper()
         for b in buildings:
-            if b.building_type == "academic" and b.code.upper() == fac_code:
+            if b.building_type.upper() in ("ACADEMIC", "FACULTY") and b.code.upper() == fac_code:
                 matched_building = b
                 break
 
     # 2. PRIORITY B: Check if a Residential Hall is explicitly named
     mentioned_hall = None
     for b in buildings:
-        if b.building_type == "hall":
+        if b.building_type.upper() in ("HALL",):
             h_name_low = b.name.lower()
             code_low = b.code.lower()
             if h_name_low in combined or re.search(r"\b" + re.escape(code_low) + r"\b", combined):
@@ -287,7 +240,7 @@ def extract_building_and_department(
     # Constituent Hostel -> If a hall is mentioned, strictly match that hall's hostels
     if not matched_building:
         for b in buildings:
-            if b.building_type == "hostel" and b.parent_id:
+            if b.building_type.upper() in ("HOSTEL",) and b.parent_id:
                 h_name_low = b.name.lower()
                 short_low = b.short_name.lower() if b.short_name else ""
                 if mentioned_hall:

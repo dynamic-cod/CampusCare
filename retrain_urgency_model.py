@@ -62,6 +62,14 @@ TRAINING_DATA = [
     ("burning smell from mess gas line potential cylinder explosion risk", "urgent"),
     ("there is a snake in my hostel please somebody come now URGENT", "urgent"),
     ("kuch ripta hua jaisa dikh raha hai kamre mein shayad saamp ho immediate help", "urgent"),
+    # Dining / Food Safety Emergencies (URGENT)
+    ("severe food poisoning in aftab hall dining multiple students vomiting and hospitalized", "urgent"),
+    ("live worms found crawling in hostel mess daal several residents fell sick immediately", "urgent"),
+    ("dead cockroach in cooked food served in dining hall acute contamination hazard", "urgent"),
+    ("drinking water in dining hall contaminated with foul sewage smell immediate biohazard", "urgent"),
+    ("maggots found in dinner rice in sir syed hall students falling ill acute food poisoning", "urgent"),
+    ("toxic smell and green fungus on food served in hostel dining hall health hazard", "urgent"),
+    ("dead lizard found in sambar in hostel mess students vomiting urgent medical team needed", "urgent"),
 
     # ─── HIGH – Serious maintenance but not life-safety ─────
     ("water pipe burst flooding hostel corridor immediate repair needed", "high"),
@@ -78,6 +86,13 @@ TRAINING_DATA = [
     ("major plumbing leak under mess kitchen floor needs urgent repair", "high"),
     ("geyser sparking when switched on could cause electrocution", "high"),
     ("door lock broken cannot lock room from inside security issue", "high"),
+    # Dining / Food Quality Issues (HIGH)
+    ("rotten vegetables used in mess kitchen sour spoiled dinner served to all residents", "high"),
+    ("spoiled food in dining hall milk is completely curdled and stale food served", "high"),
+    ("undercooked raw chicken and foul smell in hostel dinner health risk", "high"),
+    ("food contamination in dining hall dirty serving utensils with flies swarming over food", "high"),
+    ("water cooler in dining hall dispensing yellow cloudy unhygienic drinking water", "high"),
+    ("mess kitchen extremely unhygienic with rats spotted running across food preparation tables", "high"),
 
     # ─── NORMAL – Standard maintenance ──────────────────────
     ("fan making noise in hostel room please fix", "normal"),
@@ -109,6 +124,12 @@ TRAINING_DATA = [
     ("mess water cooler has odd smell", "normal"),
     ("campus road pothole near engineering college gate", "normal"),
     ("broken bench outside hostel common room", "normal"),
+    # Dining Maintenance / Service (NORMAL)
+    ("mess timings delayed by over 45 minutes students waiting outside dining hall", "normal"),
+    ("dinner served cold and chapati extremely hard today in hostel mess", "normal"),
+    ("ration shortage in dining hall dinner ran out early for top floor students", "normal"),
+    ("dining hall tables not wiped down oily plates left on serving counters", "normal"),
+    ("water cooler in dining hall not cooling properly water is room temperature", "normal"),
 
     # ─── LOW – Minor cosmetic / administrative ───────────────
     ("paint peeling on hostel room wall cosmetic issue", "low"),
@@ -137,6 +158,11 @@ TRAINING_DATA = [
     ("minor leakage from terrace cosmetic water stain only", "low"),
     ("request for insect repellent spray in hostel monthly routine", "low"),
     ("wooden cabinet door slightly misaligned minor issue", "low"),
+    # Dining Requests (LOW)
+    ("request to adjust breakfast timing by fifteen minutes for morning 8am classes", "low"),
+    ("suggestion to include fresh curd in dining hall lunch menu on wednesdays", "low"),
+    ("handwash liquid soap dispenser in dining hall entrance is empty", "low"),
+    ("request for more spoons and water glasses in dining hall during dinner rush", "low"),
 ]
 
 # ============================================================

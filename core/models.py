@@ -93,8 +93,19 @@ class Building(TimestampedModel):
     name = models.CharField(max_length=150)
     short_name = models.CharField(max_length=120, blank=True, help_text="Constituent hostel / block short name")
     code = models.CharField(max_length=20)
+    class BuildingType(models.TextChoices):
+        HALL = "HALL", "Residential Hall"
+        HOSTEL = "HOSTEL", "Hostel Block"
+        FACULTY = "FACULTY", "Academic / Faculty"
+        ADMIN = "ADMIN", "Administrative Block"
+
     gender = models.CharField(max_length=10, blank=True, help_text="e.g. Boys, Girls, Co-ed")
-    building_type = models.CharField(max_length=50, default="hall", help_text="e.g. hall, hostel, academic, administrative")
+    building_type = models.CharField(
+        max_length=50,
+        choices=BuildingType.choices,
+        default=BuildingType.HALL,
+        help_text="e.g. HALL, HOSTEL, FACULTY, ADMIN",
+    )
     wing_detail = models.CharField(max_length=150, blank=True)
     capacity_detail = models.CharField(max_length=255, blank=True)
     latitude = models.DecimalField(max_digits=9, decimal_places=6, null=True, blank=True, help_text="GPS Latitude")

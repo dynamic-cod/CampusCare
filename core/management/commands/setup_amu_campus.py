@@ -47,7 +47,7 @@ class Command(BaseCommand):
             building, created = Building.objects.get_or_create(
                 campus=campus,
                 code=hall_data['code'],
-                defaults={'name': hall_data['name']}
+                defaults={'name': hall_data['name'], 'building_type': 'HALL'}
             )
             if created:
                 self.stdout.write(f'  ✓ Created building: {building.name} ({hall_data["type"]})')
@@ -101,7 +101,7 @@ class Command(BaseCommand):
             building, created = Building.objects.get_or_create(
                 campus=campus,
                 code=building_data['code'],
-                defaults={'name': building_data['name']}
+                defaults={'name': building_data['name'], 'building_type': 'FACULTY'}
             )
             if created:
                 self.stdout.write(f'  ✓ Created academic building: {building.name}')

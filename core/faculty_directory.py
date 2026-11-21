@@ -443,8 +443,8 @@ def verify_hostel_and_hall(text: str) -> Tuple[bool, Optional[str]]:
     # Lazy import to avoid circular dependencies during Django startup
     from core.models import Building
 
-    all_hostels = list(Building.objects.filter(building_type="hostel", parent__isnull=False).select_related("parent"))
-    all_halls = list(Building.objects.filter(building_type="hall", parent__isnull=True))
+    all_hostels = list(Building.objects.filter(building_type__in=["hostel", "HOSTEL"], parent__isnull=False).select_related("parent"))
+    all_halls = list(Building.objects.filter(building_type__in=["hall", "HALL"], parent__isnull=True))
 
     detected_hostel = None
     # Sort hostels by name length descending for most specific match

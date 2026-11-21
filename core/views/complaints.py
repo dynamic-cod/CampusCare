@@ -43,20 +43,31 @@ from core.utils import compress_uploaded_image, get_scoped_complaints
 from .helpers import _can_student_modify_complaint, is_rate_limited
 
 
+def _get_location_context():
+    """Return strictly separated active residential halls, hostels, and academic faculties."""
+    academic_codes = ["AGRI", "ARTS", "COMM", "ENGG", "INTL", "LAW", "LIFE", "MGMT", "MED", "SCI", "SOC", "THEO", "UNANI", "LIB"]
+    return {
+        "active_halls": Building.objects.filter(
+            is_active=True, parent__isnull=True, building_type__in=["HALL", "hall"]
+        ).exclude(code__in=academic_codes).prefetch_related("hostels").order_by("name"),
+        "active_hostels": Building.objects.filter(
+            is_active=True, parent__isnull=False, building_type__in=["HOSTEL", "hostel"]
+        ).select_related("parent").order_by("parent__name", "short_name"),
+        "active_faculties": get_faculties_with_departments(),
+    }
+
+
 def complaint_create(request):
     if request.method == "POST":
         if is_rate_limited(request, key_prefix="complaint_submit", max_requests=10, window_seconds=60, ip_only=True):
             messages.error(request, "Too many complaint submissions. Please wait a minute before lodging another issue.")
             form = ComplaintSubmissionForm(request.POST, request.FILES)
+            context = {"form": form}
+            context.update(_get_location_context())
             return render(
                 request,
                 "core/complaint_form.html",
-                {
-                    "form": form,
-                    "active_halls": Building.objects.filter(is_active=True, parent__isnull=True, building_type="hall").prefetch_related("hostels").order_by("name"),
-                    "active_hostels": Building.objects.filter(is_active=True, parent__isnull=False).select_related("parent").order_by("parent__name", "short_name"),
-                    "active_faculties": get_faculties_with_departments(),
-                },
+                context,
                 status=429,
             )
         form = ComplaintSubmissionForm(request.POST, request.FILES)
@@ -147,15 +158,12 @@ def complaint_create(request):
                 complaint.full_clean()
             except DjangoValidationError as exc:
                 form.add_error(None, exc)
+                context = {"form": form}
+                context.update(_get_location_context())
                 return render(
                     request,
                     "core/complaint_form.html",
-                    {
-                        "form": form,
-                        "active_halls": Building.objects.filter(is_active=True, parent__isnull=True, building_type="hall").prefetch_related("hostels").order_by("name"),
-                        "active_hostels": Building.objects.filter(is_active=True, parent__isnull=False).select_related("parent").order_by("parent__name", "short_name"),
-                        "active_faculties": get_faculties_with_departments(),
-                    },
+                    context,
                 )
             complaint.save()
             duplicate = find_potential_duplicate(complaint)
@@ -180,16 +188,29 @@ def complaint_create(request):
                 messages.success(request, f"Complaint {complaint.reference} has been submitted. Your tracking token is: {complaint.tracking_token}")
             return redirect("core:complaint_tracking", tracking_token=complaint.tracking_token)
     else:
-        form = ComplaintSubmissionForm()
+        initial = {}
+        qr_room_param = request.GET.get("room") or request.GET.get("token")
+        if qr_room_param:
+            matched_qr_room = Room.objects.filter(
+                Q(qr_code_token=qr_room_param) | Q(id__iexact=str(qr_room_param))
+            ).first() if str(qr_room_param).isdigit() else Room.objects.filter(qr_code_token=qr_room_param).first()
+            if matched_qr_room:
+                initial["room_number"] = matched_qr_room.number
+                bldg = matched_qr_room.floor.building
+                parent_hall = bldg.parent if bldg.parent else bldg
+                b_type = (bldg.building_type or "HALL").upper()
+                if b_type in ("FACULTY", "ACADEMIC"):
+                    initial["location_description"] = f"{bldg.name} · Room {matched_qr_room.number}"
+                else:
+                    hostel_name = bldg.short_name if bldg.parent else ""
+                    initial["location_description"] = f"{parent_hall.name} · {hostel_name + ' · ' if hostel_name else ''}Room {matched_qr_room.number}"
+        form = ComplaintSubmissionForm(initial=initial)
+    context = {"form": form}
+    context.update(_get_location_context())
     return render(
         request,
         "core/complaint_form.html",
-        {
-            "form": form,
-            "active_halls": Building.objects.filter(is_active=True, parent__isnull=True, building_type="hall").prefetch_related("hostels").order_by("name"),
-            "active_hostels": Building.objects.filter(is_active=True, parent__isnull=False).select_related("parent").order_by("parent__name", "short_name"),
-            "active_faculties": get_faculties_with_departments(),
-        },
+        context,
     )
 
 

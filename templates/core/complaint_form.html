@@ -36,30 +36,24 @@
         <div class="text-xs font-semibold uppercase tracking-wider text-slate-400 mb-4">Location</div>
 
         <div class="space-y-4">
-          {# Academic Department Selector #}
+          {# Location Zone Toggle #}
           <div>
-            <label for="faculty_dept_select" class="block text-xs font-medium text-slate-600 mb-1">Academic Faculty or Department (Optional)</label>
-            <select id="faculty_dept_select"
-              class="w-full px-3.5 py-2.5 text-sm bg-white border border-slate-300 rounded-lg text-slate-800 focus:outline-none focus:ring-2 focus:ring-slate-900/10 focus:border-slate-900 transition-colors">
-              <option value="">Select Faculty or Department</option>
-              {% for faculty in active_faculties %}
-              <optgroup label="{{ faculty.name }} ({{ faculty.code }})">
-                <option value="{{ faculty.name }}" data-type="faculty" data-faculty="{{ faculty.code }}">
-                  {{ faculty.name }}
-                </option>
-                {% for dept in faculty.departments %}
-                <option value="Department of {{ dept.name }} · {{ faculty.name }}" data-type="department" data-faculty="{{ faculty.code }}" data-dept="{{ dept.code }}">
-                  Department of {{ dept.name }}
-                </option>
-                {% endfor %}
-              </optgroup>
-              {% endfor %}
-            </select>
+            <label class="block text-xs font-medium text-slate-600 mb-1.5">Campus Location Type</label>
+            <div class="grid grid-cols-2 gap-2 p-1 bg-slate-100 rounded-lg text-xs font-medium text-slate-600">
+              <button type="button" id="zone-hall-btn"
+                class="py-2 px-3 rounded-md text-center transition-all bg-white text-slate-900 shadow-sm font-semibold">
+                Residential Hall / Hostel
+              </button>
+              <button type="button" id="zone-faculty-btn"
+                class="py-2 px-3 rounded-md text-center transition-all text-slate-600 hover:text-slate-900">
+                Academic Faculty / Dept
+              </button>
+            </div>
           </div>
 
           {# Residential Hall Selector #}
-          <div>
-            <label for="hall_hostel_select" class="block text-xs font-medium text-slate-600 mb-1">Residential Hall or Hostel (Optional)</label>
+          <div id="hall-selector-container">
+            <label for="hall_hostel_select" class="block text-xs font-medium text-slate-600 mb-1">Residential Hall or Hostel Block</label>
             <select id="hall_hostel_select"
               class="w-full px-3.5 py-2.5 text-sm bg-white border border-slate-300 rounded-lg text-slate-800 focus:outline-none focus:ring-2 focus:ring-slate-900/10 focus:border-slate-900 transition-colors">
               <option value="">Select Hall or Hostel Block</option>
@@ -73,6 +67,27 @@
                   {{ hostel.short_name }} ({{ hostel.wing_detail|default:"Block" }})
                 </option>
                 {% endif %}
+                {% endfor %}
+              </optgroup>
+              {% endfor %}
+            </select>
+          </div>
+
+          {# Academic Department Selector #}
+          <div id="faculty-selector-container" class="hidden">
+            <label for="faculty_dept_select" class="block text-xs font-medium text-slate-600 mb-1">Academic Faculty or Department</label>
+            <select id="faculty_dept_select"
+              class="w-full px-3.5 py-2.5 text-sm bg-white border border-slate-300 rounded-lg text-slate-800 focus:outline-none focus:ring-2 focus:ring-slate-900/10 focus:border-slate-900 transition-colors">
+              <option value="">Select Faculty or Department</option>
+              {% for faculty in active_faculties %}
+              <optgroup label="{{ faculty.name }} ({{ faculty.code }})">
+                <option value="{{ faculty.name }}" data-type="faculty" data-faculty="{{ faculty.code }}">
+                  {{ faculty.name }}
+                </option>
+                {% for dept in faculty.departments %}
+                <option value="Department of {{ dept.name }} · {{ faculty.name }}" data-type="department" data-faculty="{{ faculty.code }}" data-dept="{{ dept.code }}">
+                  Department of {{ dept.name }}
+                </option>
                 {% endfor %}
               </optgroup>
               {% endfor %}
@@ -255,6 +270,10 @@
     const categoryField = document.querySelector('#id_category');
     const locationField = document.querySelector('#id_location_description');
     const roomField = document.querySelector('#id_room_number');
+    const zoneHallBtn = document.getElementById('zone-hall-btn');
+    const zoneFacultyBtn = document.getElementById('zone-faculty-btn');
+    const hallContainer = document.getElementById('hall-selector-container');
+    const facultyContainer = document.getElementById('faculty-selector-container');
     const facultyDeptSelect = document.getElementById('faculty_dept_select');
     const hallHostelSelect = document.getElementById('hall_hostel_select');
     const suggestionsContainer = document.getElementById('suggestions-container');
@@ -424,9 +443,59 @@
         .catch(err => console.error('Error updating AI assessment:', err));
     }
 
+    // ── Zone Switcher & Handlers ──
+    let currentZone = 'hall';
+
+    function setZone(zone, resetFields = true) {
+      currentZone = zone;
+      if (zone === 'hall') {
+        if (zoneHallBtn) {
+          zoneHallBtn.className = 'py-2 px-3 rounded-md text-center transition-all bg-white text-slate-900 shadow-sm font-semibold';
+        }
+        if (zoneFacultyBtn) {
+          zoneFacultyBtn.className = 'py-2 px-3 rounded-md text-center transition-all text-slate-600 hover:text-slate-900 font-normal';
+        }
+        if (hallContainer) hallContainer.classList.remove('hidden');
+        if (facultyContainer) facultyContainer.classList.add('hidden');
+        if (facultyDeptSelect) facultyDeptSelect.value = '';
+      } else {
+        if (zoneFacultyBtn) {
+          zoneFacultyBtn.className = 'py-2 px-3 rounded-md text-center transition-all bg-white text-slate-900 shadow-sm font-semibold';
+        }
+        if (zoneHallBtn) {
+          zoneHallBtn.className = 'py-2 px-3 rounded-md text-center transition-all text-slate-600 hover:text-slate-900 font-normal';
+        }
+        if (facultyContainer) facultyContainer.classList.remove('hidden');
+        if (hallContainer) hallContainer.classList.add('hidden');
+        if (hallHostelSelect) hallHostelSelect.value = '';
+      }
+
+      if (resetFields) {
+        if (locationField) locationField.value = '';
+        if (roomField) roomField.value = '';
+        if (roomLookupFeedback) {
+          roomLookupFeedback.classList.add('hidden');
+          roomLookupFeedback.textContent = '';
+        }
+        onAnyInputChange();
+      }
+    }
+
+    if (zoneHallBtn) {
+      zoneHallBtn.addEventListener('click', function () {
+        if (currentZone !== 'hall') setZone('hall', true);
+      });
+    }
+
+    if (zoneFacultyBtn) {
+      zoneFacultyBtn.addEventListener('click', function () {
+        if (currentZone !== 'faculty') setZone('faculty', true);
+      });
+    }
+
     // ── Room Lookup ──
-    function handleRoomLookup() {
-      const roomVal = roomField ? roomField.value.trim() : '';
+    function handleRoomLookup(overrideQuery) {
+      const roomVal = overrideQuery || (roomField ? roomField.value.trim() : '');
       if (!roomVal) {
         if (roomLookupFeedback) roomLookupFeedback.classList.add('hidden');
         return;
@@ -434,13 +503,18 @@
 
       let hallVal = '';
       let hostelVal = '';
-      if (hallHostelSelect && hallHostelSelect.selectedIndex > 0) {
+      let facultyVal = '';
+      if (currentZone === 'hall' && hallHostelSelect && hallHostelSelect.selectedIndex > 0) {
         const opt = hallHostelSelect.options[hallHostelSelect.selectedIndex];
         hallVal = opt.dataset.hall || '';
         hostelVal = opt.dataset.hostel || '';
+      } else if (currentZone === 'faculty' && facultyDeptSelect && facultyDeptSelect.selectedIndex > 0) {
+        const opt = facultyDeptSelect.options[facultyDeptSelect.selectedIndex];
+        facultyVal = opt.dataset.faculty || '';
       }
 
-      const url = `/api/room-lookup/?q=${encodeURIComponent(roomVal)}&hall=${encodeURIComponent(hallVal)}&hostel=${encodeURIComponent(hostelVal)}`;
+      const zoneParam = currentZone === 'faculty' ? 'FACULTY' : 'HALL';
+      const url = `/api/room-lookup/?q=${encodeURIComponent(roomVal)}&hall=${encodeURIComponent(hallVal)}&hostel=${encodeURIComponent(hostelVal)}&faculty=${encodeURIComponent(facultyVal)}&zone_type=${zoneParam}`;
       fetch(url)
         .then(res => res.json())
         .then(data => {
@@ -449,16 +523,35 @@
             if (data.found) {
               roomLookupFeedback.className = 'mt-1 text-xs font-medium text-emerald-600';
               roomLookupFeedback.textContent = `Recognized: ${data.display}`;
-              if (locationField && !locationField.value.trim()) {
+              if (locationField && (!locationField.value.trim() || overrideQuery)) {
                 locationField.value = data.display;
               }
-              if (hallHostelSelect && (!hallHostelSelect.value || hallHostelSelect.selectedIndex <= 0)) {
-                for (let i = 0; i < hallHostelSelect.options.length; i++) {
-                  const opt = hallHostelSelect.options[i];
-                  if ((data.hostel_code && opt.dataset.code === data.hostel_code) ||
-                    (data.hall_code && opt.dataset.code === data.hall_code)) {
-                    hallHostelSelect.selectedIndex = i;
-                    break;
+              if (roomField && (!roomField.value.trim() || overrideQuery)) {
+                roomField.value = data.room_number;
+              }
+
+              // Auto-activate matching zone if QR scan or override
+              if (data.is_faculty) {
+                setZone('faculty', false);
+                if (facultyDeptSelect) {
+                  for (let i = 0; i < facultyDeptSelect.options.length; i++) {
+                    const opt = facultyDeptSelect.options[i];
+                    if (opt.dataset.faculty === data.building_code || opt.value.includes(data.building_name)) {
+                      facultyDeptSelect.selectedIndex = i;
+                      break;
+                    }
+                  }
+                }
+              } else if (data.is_residential) {
+                setZone('hall', false);
+                if (hallHostelSelect) {
+                  for (let i = 0; i < hallHostelSelect.options.length; i++) {
+                    const opt = hallHostelSelect.options[i];
+                    if ((data.hostel_code && opt.dataset.code === data.hostel_code) ||
+                      (data.hall_code && opt.dataset.code === data.hall_code)) {
+                      hallHostelSelect.selectedIndex = i;
+                      break;
+                    }
                   }
                 }
               }
@@ -477,7 +570,9 @@
         const val = this.value;
         if (val && locationField) {
           locationField.value = val;
-          if (hallHostelSelect) hallHostelSelect.value = '';
+        }
+        if (roomField && roomField.value.trim()) {
+          handleRoomLookup();
         }
         onAnyInputChange();
       });
@@ -488,13 +583,26 @@
         const val = this.value;
         if (val && locationField) {
           locationField.value = val;
-          if (facultyDeptSelect) facultyDeptSelect.value = '';
         }
         if (roomField && roomField.value.trim()) {
           handleRoomLookup();
         }
         onAnyInputChange();
       });
+    }
+
+    // Handle initial QR scan or pre-filled room parameters
+    const urlParams = new URLSearchParams(window.location.search);
+    const qrParam = urlParams.get('room') || urlParams.get('token');
+    if (qrParam) {
+      handleRoomLookup(qrParam);
+    } else if (locationField && locationField.value.trim()) {
+      const locVal = locationField.value.toLowerCase();
+      if (locVal.includes('faculty') || locVal.includes('department of') || locVal.includes('college')) {
+        setZone('faculty', false);
+      } else {
+        setZone('hall', false);
+      }
     }
 
     function onAnyInputChange() {

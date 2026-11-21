@@ -22,6 +22,7 @@ def _load_staff():
 
 DEPT_FULL_NAMES = {
     "EMERG": "Campus Safety & Emergency Response (EMERG)",
+    "MESS": "Hostel Mess & Dining Services (MESS)",
     "ELEC": "Electrical (ELEC)",
     "PLUMB": "Plumbing (PLUMB)",
     "CIVIL": "Civil (CIVIL)",
@@ -252,6 +253,33 @@ def suggest_staff(category_name, location_description="", title="", description=
 
     staff_roster = _load_staff()
     target_location = match_canonical_location(f"{location_description} {title} {description}")
+
+    # 0b. MESS / DINING FAST-PATH
+    if dept_code == "MESS" or any(cat_kw in (category_name or "").lower() for cat_kw in ("food", "mess", "dining")):
+        try:
+            from core.models import UserProfile
+            staff_qs = UserProfile.objects.filter(department__code="MESS").select_related("user", "managed_building")
+            matched_profile = None
+            if target_location:
+                matched_profile = staff_qs.filter(hall_location__icontains=target_location).first()
+            if not matched_profile:
+                matched_profile = staff_qs.filter(user__username="dining_central_1").first() or staff_qs.first()
+            if matched_profile:
+                user = matched_profile.user
+                bldg_name = matched_profile.managed_building.name if matched_profile.managed_building else (matched_profile.hall_location or "Central Dining Services")
+                return [{
+                    "location": bldg_name,
+                    "name": user.get_full_name() or user.username,
+                    "role": "Dining / Mess Supervisor",
+                    "dept": "Hostel Mess & Dining Services (MESS)",
+                    "username": user.username,
+                    "contact": matched_profile.phone or "+91 98970 10000",
+                    "dept_code": "MESS",
+                    "match_score": 1.0,
+                    "match_reason": f"Dedicated Dining Supervisor ({bldg_name})",
+                }]
+        except Exception:
+            pass
 
     dept_full = DEPT_FULL_NAMES.get(dept_code, "Civil (CIVIL)")
     candidates = [s for s in staff_roster if s["dept"] == dept_full]

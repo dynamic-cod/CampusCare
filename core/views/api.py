@@ -220,29 +220,44 @@ def analyze_urgency_api(request):
 
 def room_lookup_api(request):
     """
-    API endpoint: search and auto-identify Room, Hostel, and Hall from query.
-    GET/POST params: q, query, room, hall, hostel, or token.
+    API endpoint: search and auto-identify Room, Hostel, Hall, and Faculty from query.
+    GET/POST params: q, query, room, hall, hostel, faculty, zone_type, or token.
     """
+    zone_type = ""
+    faculty_param = ""
     if request.method == "POST":
         try:
             body = json.loads(request.body)
-            q = body.get("q") or body.get("query") or body.get("room") or ""
+            q = body.get("q") or body.get("query") or body.get("room") or body.get("token") or ""
             hall_param = body.get("hall", "")
             hostel_param = body.get("hostel", "")
+            faculty_param = body.get("faculty", "")
+            zone_type = body.get("zone_type", "")
         except (json.JSONDecodeError, ValueError):
-            q = request.POST.get("q") or request.POST.get("query") or request.POST.get("room") or ""
+            q = request.POST.get("q") or request.POST.get("query") or request.POST.get("room") or request.POST.get("token") or ""
             hall_param = request.POST.get("hall", "")
             hostel_param = request.POST.get("hostel", "")
+            faculty_param = request.POST.get("faculty", "")
+            zone_type = request.POST.get("zone_type", "")
     else:
-        q = request.GET.get("q") or request.GET.get("query") or request.GET.get("room") or ""
+        q = request.GET.get("q") or request.GET.get("query") or request.GET.get("room") or request.GET.get("token") or ""
         hall_param = request.GET.get("hall", "")
         hostel_param = request.GET.get("hostel", "")
+        faculty_param = request.GET.get("faculty", "")
+        zone_type = request.GET.get("zone_type", "")
 
     q = str(q).strip()
     hall_param = str(hall_param).strip()
     hostel_param = str(hostel_param).strip()
+    faculty_param = str(faculty_param).strip()
+    zone_type = str(zone_type).strip().upper()
 
     rooms_qs = Room.objects.filter(is_active=True).select_related("floor__building", "floor__building__parent")
+
+    if zone_type == "HALL":
+        rooms_qs = rooms_qs.filter(floor__building__building_type__in=["HALL", "hall", "HOSTEL", "hostel"])
+    elif zone_type == "FACULTY":
+        rooms_qs = rooms_qs.filter(floor__building__building_type__in=["FACULTY", "faculty", "academic"])
 
     if hostel_param:
         rooms_qs = rooms_qs.filter(
@@ -256,6 +271,11 @@ def room_lookup_api(request):
             | Q(floor__building__parent__code__iexact=hall_param)
             | Q(floor__building__parent__name__icontains=hall_param)
             | Q(floor__building__name__icontains=hall_param)
+        )
+    elif faculty_param:
+        rooms_qs = rooms_qs.filter(
+            Q(floor__building__code__iexact=faculty_param)
+            | Q(floor__building__name__icontains=faculty_param)
         )
 
     matched_room = None
@@ -278,6 +298,15 @@ def room_lookup_api(request):
         bldg = matched_room.floor.building
         parent_hall = bldg.parent if bldg.parent else bldg
         hostel_name = bldg.short_name if bldg.parent else ""
+        b_type = (bldg.building_type or "HALL").upper()
+        is_faculty = b_type in ("FACULTY", "ACADEMIC")
+        is_residential = b_type in ("HALL", "HOSTEL")
+
+        if is_faculty:
+            display = f"{bldg.name} · Room {matched_room.number}"
+        else:
+            display = f"{parent_hall.name} · {hostel_name + ' · ' if hostel_name else ''}Room {matched_room.number}"
+
         return JsonResponse({
             "found": True,
             "room_id": matched_room.id,
@@ -288,12 +317,15 @@ def room_lookup_api(request):
             "building_id": bldg.id,
             "building_name": bldg.name,
             "building_code": bldg.code,
+            "building_type": b_type,
+            "is_residential": is_residential,
+            "is_faculty": is_faculty,
             "hostel_name": hostel_name,
             "hostel_code": bldg.code if bldg.parent else "",
             "hall_id": parent_hall.id,
             "hall_name": parent_hall.name,
             "hall_code": parent_hall.code,
-            "display": f"{parent_hall.name} · {hostel_name + ' · ' if hostel_name else ''}Room {matched_room.number}",
+            "display": display,
         })
 
     return JsonResponse({

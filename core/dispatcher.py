@@ -143,7 +143,7 @@ def select_best_technician(complaint: Complaint):
         if emerg_dept_staff:
             return emerg_dept_staff
 
-    # 0b. MESS / DINING fast-path — route directly to the hall's Dining Incharge
+    # 0b. MESS / DINING fast-path — route directly to the hall's Dining Incharge or central reserve
     if dept and dept.code in MESS_DEPT_CODES:
         if target_buildings:
             dining_user = pick_least_loaded_staff(
@@ -154,8 +154,21 @@ def select_best_technician(complaint: Complaint):
             )
             if dining_user:
                 return dining_user
+            for tb in target_buildings:
+                dining_by_loc = pick_least_loaded_staff(
+                    staff_base.filter(
+                        profile__department__code__in=MESS_DEPT_CODES,
+                        profile__hall_location__icontains=tb.name,
+                    )
+                )
+                if dining_by_loc:
+                    return dining_by_loc
+        # Central reserve dining supervisors
+        central_dining = pick_least_loaded_staff(staff_base.filter(username__in=["dining_central_1", "dining_central_2"]))
+        if central_dining:
+            return central_dining
         # Hall not resolved — pick the least-loaded Dining Incharge across campus
-        dining_any = pick_least_loaded_staff(staff_base.filter(username__startswith="dining_"))
+        dining_any = pick_least_loaded_staff(staff_base.filter(profile__department__code__in=MESS_DEPT_CODES))
         if dining_any:
             return dining_any
 
