@@ -35,7 +35,7 @@ EMERG_CATEGORIES = [
     },
 ]
 
-# 6 EMERG staff: hall_location = "Central Campus Works"
+# 10 EMERG staff: Emergency Response Team (Emergency Assistance)
 EMERG_STAFF = [
     {
         "username": "emerg_centra_1",
@@ -43,8 +43,8 @@ EMERG_STAFF = [
         "last_name": "Hussain",
         "email": "emerg_centra_1@amucare.edu.in",
         "hall_location": "Central Campus Works",
-        "phone": "9412345601",
-        "title": "Wildlife & Snake Rescue Handler",
+        "phone": "+91 94121 00001",
+        "title": "Wildlife & Snake Rescue Lead",
     },
     {
         "username": "emerg_centra_2",
@@ -52,8 +52,8 @@ EMERG_STAFF = [
         "last_name": "Ansari",
         "email": "emerg_centra_2@amucare.edu.in",
         "hall_location": "Central Campus Works",
-        "phone": "9412345602",
-        "title": "Wildlife & Snake Rescue Handler",
+        "phone": "+91 94121 00002",
+        "title": "Venomous Reptile Rescue Specialist",
     },
     {
         "username": "emerg_centra_3",
@@ -61,7 +61,7 @@ EMERG_STAFF = [
         "last_name": "Siddiqui",
         "email": "emerg_centra_3@amucare.edu.in",
         "hall_location": "Central Campus Works",
-        "phone": "9412345603",
+        "phone": "+91 94121 00003",
         "title": "Campus Fire & Gas Safety Officer",
     },
     {
@@ -70,7 +70,7 @@ EMERG_STAFF = [
         "last_name": "Irfan",
         "email": "emerg_centra_4@amucare.edu.in",
         "hall_location": "Central Campus Works",
-        "phone": "9412345604",
+        "phone": "+91 94121 00004",
         "title": "Proctorial Rapid Response Guard",
     },
     {
@@ -79,7 +79,7 @@ EMERG_STAFF = [
         "last_name": "Khan",
         "email": "emerg_centra_5@amucare.edu.in",
         "hall_location": "Central Campus Works",
-        "phone": "9412345605",
+        "phone": "+91 94121 00005",
         "title": "Proctorial Rapid Response Guard",
     },
     {
@@ -88,8 +88,44 @@ EMERG_STAFF = [
         "last_name": "Rauf",
         "email": "emerg_centra_6@amucare.edu.in",
         "hall_location": "Central Campus Works",
-        "phone": "9412345606",
+        "phone": "+91 94121 00006",
         "title": "Night Shift Emergency Coordinator",
+    },
+    {
+        "username": "emerg_centra_7",
+        "first_name": "Salman",
+        "last_name": "Qureshi",
+        "email": "emerg_centra_7@amucare.edu.in",
+        "hall_location": "Central Campus Works",
+        "phone": "+91 94121 00007",
+        "title": "Wildlife & Reptile Rescue Handler",
+    },
+    {
+        "username": "emerg_centra_8",
+        "first_name": "Waseem",
+        "last_name": "Akram",
+        "email": "emerg_centra_8@amucare.edu.in",
+        "hall_location": "Central Campus Works",
+        "phone": "+91 94121 00008",
+        "title": "Aggressive Animal & Canine Squad Officer",
+    },
+    {
+        "username": "emerg_centra_9",
+        "first_name": "Rashid",
+        "last_name": "Mehmood",
+        "email": "emerg_centra_9@amucare.edu.in",
+        "hall_location": "Central Campus Works",
+        "phone": "+91 94121 00009",
+        "title": "Beehive, Wasp & Toxic Pest Controller",
+    },
+    {
+        "username": "emerg_centra_10",
+        "first_name": "Imran",
+        "last_name": "Zaidi",
+        "email": "emerg_centra_10@amucare.edu.in",
+        "hall_location": "Central Campus Works",
+        "phone": "+91 94121 00010",
+        "title": "Disaster & Structural Evacuation Officer",
     },
 ]
 

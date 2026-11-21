@@ -111,15 +111,36 @@ def analyze_urgency_api(request):
     score, priority, reason, sla_hours = score_priority(
         text, title=title, description=description, category_name=category_name, location=location,
     )
-    priority_display = {"urgent": "Urgent", "high": "High", "normal": "Normal", "low": "Low"}.get(priority, priority)
-    if sla_hours <= 2:
-        sla_display = f"{sla_hours}h (Emergency)"
-    elif sla_hours <= 6:
-        sla_display = f"{sla_hours}h (Same day)"
-    elif sla_hours <= 24:
-        sla_display = f"{sla_hours}h (Next business day)"
+    from core.ai_triage import check_safety_guardrail
+    safety = check_safety_guardrail(title=title, description=description, location=location)
+    is_emergency = safety.get("matched", False) or any(
+        kw in f"{title} {description} {category_name}".lower()
+        for kw in (
+            "snake", "saamp", "saap", "cobra", "viper", "python", "reptile", "slithering",
+            "beehive", "hornet", "wasp", "bee swarm", "fire", "gas leak", "cylinder leak",
+            "dog bite", "monkey", "rabid", "animal attack", "electrocution"
+        )
+    ) or any(
+        cat_kw in category_name.lower()
+        for cat_kw in ("snake", "reptile", "beehive", "hazard", "fire", "gas leak", "safety threat")
+    )
+
+    if is_emergency:
+        priority = "urgent"
+        priority_display = "Urgent"
+        sla_hours = 0.5
+        sla_display = "30m (Emergency Rapid Response)"
     else:
-        sla_display = f"{sla_hours}h ({sla_hours // 24} days)"
+        priority_display = {"urgent": "Urgent", "high": "High", "normal": "Normal", "low": "Low"}.get(priority, priority)
+        if sla_hours <= 2:
+            sla_display = f"{sla_hours}h (Emergency)"
+        elif sla_hours <= 6:
+            sla_display = f"{sla_hours}h (Same day)"
+        elif sla_hours <= 24:
+            sla_display = f"{sla_hours}h (Next business day)"
+        else:
+            sla_display = f"{sla_hours}h ({sla_hours // 24} days)"
+
     staff_matches = suggest_staff(
         category_name=category_name,
         location_description=location,
@@ -129,14 +150,14 @@ def analyze_urgency_api(request):
     )
     suggested_staff = None
 
-    # Detect mess/dining category — look up Dining Incharge from DB for the given hall
+    # Detect mess/dining category — look up Dining Incharge from DB for the given hall (non-emergency only)
     mess_dept = Department.objects.filter(code="MESS").first()
     category_is_mess = (
         mess_dept
         and any(mess_kw in category_name.lower() for mess_kw in ("dining", "mess", "food", "ration", "water & utilities"))
     ) or is_mess_complaint(title + " " + description)
 
-    if category_is_mess and mess_dept:
+    if not is_emergency and category_is_mess and mess_dept:
         # Try to resolve the hall from the location string
         building, _ = extract_building_and_department(
             location_text=location, title=title, description=description

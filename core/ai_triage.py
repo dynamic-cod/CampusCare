@@ -174,6 +174,7 @@ BUILDING_ALIASES = {
     "mohsin-ul-mulk": "MMH",
     "mohsinul mulk": "MMH",
     "mm hall": "MMH",
+    "mm":"MMH",
     "m.m. hall": "MMH",
     "ross masood": "RMH",
     "rm hall": "RMH",

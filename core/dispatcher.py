@@ -107,12 +107,36 @@ def select_best_technician(complaint: Complaint):
         is_emerg = safety.get("matched", False)
 
     if is_emerg:
-        emerg_staff = pick_least_loaded_staff(
-            staff_base.filter(username__startswith="emerg_centra_")
-        )
+        combined_text = f"{complaint.title or ''} {complaint.description or ''} {category_name}".lower()
+        emerg_qs = staff_base.filter(username__startswith="emerg_centra_")
+        
+        # 1. Match exact emergency specialty among the 10 dedicated staff
+        if any(w in combined_text for w in ("snake", "saamp", "saap", "cobra", "viper", "python", "reptile", "krait", "slithering")):
+            specialist = pick_least_loaded_staff(emerg_qs.filter(username__in=["emerg_centra_1", "emerg_centra_2", "emerg_centra_7"]))
+            if specialist:
+                return specialist
+        elif any(w in combined_text for w in ("fire", "smoke", "gas leak", "cylinder leak", "lpg", "flames", "burning smell")):
+            specialist = pick_least_loaded_staff(emerg_qs.filter(username__in=["emerg_centra_3"]))
+            if specialist:
+                return specialist
+        elif any(w in combined_text for w in ("beehive", "bee hive", "hornet", "wasp", "bee swarm", "bees")):
+            specialist = pick_least_loaded_staff(emerg_qs.filter(username__in=["emerg_centra_9"]))
+            if specialist:
+                return specialist
+        elif any(w in combined_text for w in ("dog bite", "dogbite", "rabid", "rabies", "monkey", "animal attack", "wild animal")):
+            specialist = pick_least_loaded_staff(emerg_qs.filter(username__in=["emerg_centra_8"]))
+            if specialist:
+                return specialist
+        elif any(w in combined_text for w in ("collapse", "electrocution", "live wire", "disaster")):
+            specialist = pick_least_loaded_staff(emerg_qs.filter(username__in=["emerg_centra_10"]))
+            if specialist:
+                return specialist
+
+        # 2. General Emergency Team pick: least-loaded of the 10 dedicated staff
+        emerg_staff = pick_least_loaded_staff(emerg_qs)
         if emerg_staff:
             return emerg_staff
-        # Wider EMERG fallback: any staff in EMERG department
+        # 3. Wider EMERG fallback: any staff in EMERG department
         emerg_dept_staff = pick_least_loaded_staff(
             staff_base.filter(profile__department__code=EMERG_DEPT_CODE)
         )
